@@ -1,0 +1,204 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Save, User, Lock, Bell, Store, Loader2, Camera } from 'lucide-react';
+
+export default function SettingsView() {
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Simple state for all settings
+    const [formData, setFormData] = useState({
+        storeName: 'JS Mart',
+        email: 'admin@jsmart.com',
+        phone: '+1 (555) 123-4567',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        notifications: true,
+        darkMode: false
+    });
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsSaving(false);
+        // Reset password fields for security
+        setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+                    <p className="text-slate-500 text-sm">Manage your account and preferences.</p>
+                </div>
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-200 disabled:opacity-70"
+                >
+                    {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                    <span>Save Changes</span>
+                </button>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <form onSubmit={handleSave} className="divide-y divide-slate-100">
+
+                    {/* Profile Section */}
+                    <div className="p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <Store size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-900">Store Profile</h2>
+                                <p className="text-sm text-slate-500">Update your store's basic information.</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-8 items-start">
+                            {/* Avatar / Logo Placeholder */}
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center border-2 border-slate-200 text-slate-400 relative overflow-hidden group cursor-pointer">
+                                    <User size={40} />
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera size={24} className="text-white" />
+                                    </div>
+                                </div>
+                                <span className="text-xs font-semibold text-emerald-600 cursor-pointer hover:underline">Change Logo</span>
+                            </div>
+
+                            {/* Inputs */}
+                            <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-700 uppercase">Store Name</label>
+                                    <input
+                                        type="text"
+                                        name="storeName"
+                                        value={formData.storeName}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-700 uppercase">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-xs font-bold text-slate-700 uppercase">Email Address</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Security Section */}
+                    <div className="p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
+                                <Lock size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-900">Security</h2>
+                                <p className="text-sm text-slate-500">Update your password to keep your account safe.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase">Current Password</label>
+                                <input
+                                    type="password"
+                                    name="currentPassword"
+                                    value={formData.currentPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase">New Password</label>
+                                <input
+                                    type="password"
+                                    name="newPassword"
+                                    value={formData.newPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 uppercase">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Preferences / Notifications */}
+                    <div className="p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                <Bell size={24} />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-900">Preferences</h2>
+                                <p className="text-sm text-slate-500">Manage your notification and display settings.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-900">Email Notifications</p>
+                                    <p className="text-xs text-slate-500">Receive updates about orders and stock.</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="notifications"
+                                        checked={formData.notifications}
+                                        onChange={handleChange}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                            {/* Add more preferences here if needed */}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
