@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Menu, X, LogOut } from 'lucide-react';
 import { navigationItems } from '@/data/navigation';
 import { cn } from '@/lib/utils';
 
@@ -39,11 +39,11 @@ export function Sidebar() {
                 animate={{ width: isOpen ? 280 : 80 }}
                 suppressHydrationWarning
                 className={cn(
-                    "fixed left-0 top-0 h-screen bg-slate-900 text-slate-300 transition-all duration-300 z-40 overflow-y-auto overflow-x-hidden border-r border-slate-800",
+                    "fixed left-0 top-0 h-screen bg-slate-900 text-slate-300 transition-all duration-300 z-40 border-r border-slate-800 flex flex-col",
                     !isOpen && "items-center"
                 )}
             >
-                <div className="p-4 flex items-center gap-3">
+                <div className="p-4 flex items-center gap-3 shrink-0">
                     <div className="relative w-12 h-12 shrink-0">
                         <Image
                             src="/logo.png"
@@ -64,7 +64,7 @@ export function Sidebar() {
                     )}
                 </div>
 
-                <nav className="px-3 py-4 space-y-1">
+                <nav className="px-3 py-4 space-y-1 flex-1 overflow-y-auto overflow-x-hidden w-full custom-scrollbar">
                     {navigationItems.map((item) => {
                         const hasSubItems = item.items && item.items.length > 0;
                         const isExpanded = expandedItems.includes(item.title);
@@ -137,6 +137,19 @@ export function Sidebar() {
                     })}
                 </nav>
 
+                <div className="p-3 border-t border-slate-800 w-full shrink-0">
+                    <Link
+                        href="/login"
+                        className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group w-full hover:bg-red-500/10 hover:text-red-400 text-slate-400"
+                        )}
+                    >
+                        <LogOut size={20} className="shrink-0" />
+                        {isOpen && (
+                            <span className="text-sm font-medium">Logout</span>
+                        )}
+                    </Link>
+                </div>
 
             </motion.aside>
         </>
