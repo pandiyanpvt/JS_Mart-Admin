@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { StatsCard } from "@/components/StatsCard";
+import React, { useEffect, useMemo, useState } from 'react';
 import { SalesChart } from "@/components/SalesChart";
-import { summaryStats, topProducts, stockMovements } from "@/data/mock";
 import {
     ShoppingBag,
     TrendingUp,
@@ -16,7 +14,6 @@ import {
     Search,
     LayoutDashboard,
     Zap,
-    Download,
     CreditCard,
     Image as ImageIcon,
     Tag,
@@ -27,22 +24,50 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from 'next/link';
+import { dashboardService } from "@/lib/api";
 
 export default function DashboardView() {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) return <div className="p-8"><div className="w-full h-96 bg-slate-50 animate-pulse rounded-3xl" /></div>;
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [summary, setSummary] = useState(null);
 
     const QuickLinks = [
-        { title: 'Flash Sales', href: '/promotions/flash-sales', icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
+        { title: 'Offers', href: '/marketing/offers', icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
         { title: 'Discount Coupons', href: '/promotions/coupons', icon: Tag, color: 'text-purple-600', bg: 'bg-purple-50' },
-        { title: 'Site Banners', href: '/cms/banners', icon: ImageIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { title: 'Web Banners', href: '/cms/banners', icon: ImageIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
         { title: 'Store Settings', href: '/settings', icon: Settings, color: 'text-slate-600', bg: 'bg-slate-50' },
     ];
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                setLoading(true);
+                setError('');
+                const data = await dashboardService.getSummary();
+                setSummary(data);
+            } catch (e) {
+                console.error('Failed to load dashboard summary:', e);
+                setError(e?.message || 'Failed to load dashboard data');
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
+    }, []);
+
+    const formatCurrency = (amount) =>
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(amount || 0));
+
+    const summaryStats = useMemo(() => {
+        const s = summary?.stats;
+        if (!s) return [];
+        return [
+            { title: 'Total Revenue', value: formatCurrency(s.totalRevenue), change: '—', type: 'up' },
+            { title: 'Pending Orders', value: String(s.ordersByStatus?.PENDING || 0), change: '—', type: 'up' },
+            { title: 'Orders (YTD)', value: String(s.totalOrders || 0), change: '—', type: 'up' },
+            { title: 'Customers', value: String(s.totalCustomers || 0), change: '—', type: 'up' },
+        ];
+    }, [summary]);
 
     return (
         <div className="space-y-8 pb-12">
@@ -53,10 +78,6 @@ export default function DashboardView() {
                     <p className="text-slate-500 text-sm">Overview of your store's performance.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-                        <Download size={16} />
-                        Export Data
-                    </button>
                     <Link href="/products/add" className="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
                         <Zap size={16} fill="currentColor" />
                         Add Product
@@ -66,25 +87,41 @@ export default function DashboardView() {
 
             {/* Summary Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {summaryStats.map((stat, i) => (
-                    <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-xs font-bold text-slate-500 uppercase">{stat.title}</span>
-                            <div className={cn(
-                                "flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full",
-                                stat.type === 'up' ? "text-emerald-700 bg-emerald-50" : "text-rose-700 bg-rose-50"
-                            )}>
-                                {stat.type === 'up' ? <TrendingUp size={12} /> : <TrendingUp size={12} className="rotate-180" />}
-                                {stat.change}
+                {loading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                            <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
+                            <div className="mt-4 h-8 w-40 bg-slate-100 rounded animate-pulse" />
+                            <div className="mt-6 h-2 w-full bg-slate-100 rounded animate-pulse" />
+                        </div>
+                    ))
+                ) : (
+                    summaryStats.map((stat, i) => (
+                        <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs font-bold text-slate-500 uppercase">{stat.title}</span>
+                                <div className={cn(
+                                    "flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full",
+                                    stat.type === 'up' ? "text-emerald-700 bg-emerald-50" : "text-rose-700 bg-rose-50"
+                                )}>
+                                    <TrendingUp size={12} />
+                                    {stat.change}
+                                </div>
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
+                            <div className="mt-4 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-emerald-500" style={{ width: '70%' }} />
                             </div>
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
-                        <div className="mt-4 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className={cn("h-full rounded-full bg-slate-900", stat.type === 'up' ? "bg-emerald-500" : "bg-rose-500")} style={{ width: '70%' }} />
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
+
+            {error ? (
+                <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-sm font-semibold">
+                    {error}
+                </div>
+            ) : null}
 
             {/* Quick Actions / Modules */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -116,7 +153,7 @@ export default function DashboardView() {
                     </div>
                     <div className="h-[300px] w-full">
                         {/* Placeholder for Chart - In real app, pass data props */}
-                        <SalesChart />
+                        <SalesChart data={summary?.revenueByMonth || []} />
                     </div>
                 </div>
 
@@ -128,7 +165,7 @@ export default function DashboardView() {
                             <Link href="/products" className="text-xs font-bold text-emerald-600 hover:text-emerald-700">View All</Link>
                         </div>
                         <div className="space-y-4">
-                            {topProducts.slice(0, 4).map((product) => (
+                            {(summary?.topProducts || []).slice(0, 4).map((product) => (
                                 <div key={product.id} className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-lg bg-slate-100 relative overflow-hidden shrink-0 border border-slate-100">
                                         {product.image ? (
@@ -139,11 +176,14 @@ export default function DashboardView() {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-slate-900 truncate">{product.name}</p>
-                                        <p className="text-xs text-slate-500">{product.sales} sales</p>
+                                        <p className="text-xs text-slate-500">{product.sales} sold</p>
                                     </div>
-                                    <span className="text-xs font-bold text-emerald-600">{product.revenue}</span>
+                                    <span className="text-xs font-bold text-emerald-600">{formatCurrency(product.revenue)}</span>
                                 </div>
                             ))}
+                            {!loading && (summary?.topProducts || []).length === 0 ? (
+                                <p className="text-sm text-slate-500">No sales data for this period.</p>
+                            ) : null}
                         </div>
                     </div>
 
@@ -151,10 +191,10 @@ export default function DashboardView() {
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Zap size={100} />
                         </div>
-                        <h3 className="text-lg font-bold mb-1">Boost Sales</h3>
-                        <p className="text-sm text-slate-300 mb-4">Create a new flash sale campaign to drive revenue.</p>
-                        <Link href="/promotions/flash-sales" className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-all">
-                            <Zap size={16} fill="currentColor" /> Create Campaign
+                        <h3 className="text-lg font-bold mb-1">Add Offers</h3>
+                        <p className="text-sm text-slate-300 mb-4">Create a new offer to boost sales and drive revenue.</p>
+                        <Link href="/marketing/offers" className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-all">
+                            <Zap size={16} fill="currentColor" /> Add Offer
                         </Link>
                     </div>
                 </div>
@@ -180,18 +220,29 @@ export default function DashboardView() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {[1, 2, 3, 4, 5].map((item) => (
-                                <tr key={item} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-6 py-4 text-sm font-medium text-slate-900">#ORD-202{item}</td>
-                                    <td className="px-6 py-4 text-sm text-slate-600">Alex Johnson</td>
-                                    <td className="px-6 py-4">
-                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                            Completed
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm font-bold text-slate-900 text-right">$12{item}.00</td>
-                                </tr>
-                            ))}
+                            {loading ? (
+                                Array.from({ length: 5 }).map((_, idx) => (
+                                    <tr key={idx}>
+                                        <td className="px-6 py-4"><div className="h-4 w-24 bg-slate-100 rounded animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-4 w-40 bg-slate-100 rounded animate-pulse" /></td>
+                                        <td className="px-6 py-4"><div className="h-6 w-24 bg-slate-100 rounded-full animate-pulse" /></td>
+                                        <td className="px-6 py-4 text-right"><div className="h-4 w-20 bg-slate-100 rounded animate-pulse ml-auto" /></td>
+                                    </tr>
+                                ))
+                            ) : (
+                                (summary?.recentOrders || []).map((o) => (
+                                    <tr key={o.id} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4 text-sm font-medium text-slate-900">#{o.id}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-600">{o.customer}</td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200">
+                                                {o.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-bold text-slate-900 text-right">{formatCurrency(o.totalAmount)}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

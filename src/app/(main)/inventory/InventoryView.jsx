@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { inventoryItems, stockMovements as mockMovements } from '@/data/mock';
 import { getProducts, updateProduct } from '@/lib/products';
 import Image from 'next/image';
+import * as XLSX from 'xlsx';
 
 export default function InventoryView() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -121,6 +122,28 @@ export default function InventoryView() {
         }
     };
 
+    const handleExport = () => {
+        const dataToExport = allInventory.map(item => ({
+            'ID': item.id,
+            'Product Name': item.name,
+            'SKU': item.sku,
+            'Category': item.category,
+            'Current Stock': item.currentStock,
+            'Min Level': item.minLevel,
+            'Max Level': item.maxLevel,
+            'Unit': item.unit,
+            'Location': item.location,
+            'Supplier': item.supplier,
+            'Last Restocked': item.lastRestocked,
+            'Asset Value': item.value
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+        XLSX.writeFile(wb, `Inventory_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -129,7 +152,10 @@ export default function InventoryView() {
                     <p className="text-slate-500 text-sm">Monitor stock levels and manage supply chain.</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+                    >
                         <Download size={18} />
                         <span>Export Report</span>
                     </button>

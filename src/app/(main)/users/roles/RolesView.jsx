@@ -1,74 +1,51 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, Shield, Lock, CheckCircle2, XCircle, Users, Loader2, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Mock Data for Roles
-const mockRoles = [
-    {
-        id: 1,
-        name: 'Super Admin',
-        description: 'Full access to all system features',
-        usersCount: 2,
-        status: 'Active',
-        permissions: {
-            dashboard: ['read'],
-            products: ['read', 'write', 'delete'],
-            orders: ['read', 'write', 'delete'],
-            users: ['read', 'write', 'delete'],
-            settings: ['read', 'write']
-        }
-    },
-    {
-        id: 2,
-        name: 'Store Manager',
-        description: 'Manage products, orders, and inventory',
-        usersCount: 5,
-        status: 'Active',
-        permissions: {
-            dashboard: ['read'],
-            products: ['read', 'write'],
-            orders: ['read', 'write'],
-            users: ['read'],
-            settings: []
-        }
-    },
-    {
-        id: 3,
-        name: 'Support Agent',
-        description: 'Handle customer inquiries and view orders',
-        usersCount: 12,
-        status: 'Active',
-        permissions: {
-            dashboard: ['read'],
-            products: ['read'],
-            orders: ['read', 'write'], // Can update status
-            users: ['read'],
-            settings: []
-        }
-    },
-    {
-        id: 4,
-        name: 'Content Editor',
-        description: 'Manage blog posts, banners, and promotions',
-        usersCount: 3,
-        status: 'Active',
-        permissions: {
-            dashboard: ['read'],
-            products: ['read'],
-            content: ['read', 'write', 'delete'],
-            settings: []
-        }
-    }
-];
+import { userRoleService, authService } from '@/lib/api';
 
 const MODULES = ['dashboard', 'products', 'orders', 'users', 'content', 'settings', 'inventory'];
 const ACTIONS = ['read', 'write', 'delete'];
 
 export default function RolesView() {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
-    const [roles, setRoles] = useState(mockRoles);
+    const [roles, setRoles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const user = authService.getCurrentUser();
+        if (user?.role !== 'DEVELOPER') {
+            router.push('/dashboard');
+            return;
+        }
+        loadRoles();
+    }, []);
+
+    const loadRoles = async () => {
+        try {
+            setIsLoading(true);
+            const data = await userRoleService.getAll();
+            // Map API data to UI model
+            // Note: API might return slightly different structure, adjust accordingly
+            // Assuming data is array of UserRole objects
+            const mappedRoles = data.map(role => ({
+                id: role.id,
+                name: role.role, // "role" is the name field in backend model
+                description: role.description || 'No description provided', // description might not exist in backend UserRole model yet
+                usersCount: role.users ? role.users.length : 0, // Assuming users included
+                status: role.isActive ? 'Active' : 'Inactive',
+                permissions: role.permissions || {} // Assuming permissions field exists or we default
+            }));
+            setRoles(mappedRoles);
+        } catch (error) {
+            console.error('Failed to load roles:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Modal States
     const [viewRole, setViewRole] = useState(null);
@@ -124,27 +101,44 @@ export default function RolesView() {
     const handleSave = async (e) => {
         e.preventDefault();
         setIsSaving(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
+        try {
+            // Map UI model back to API model
+            const apiData = {
+                role: editingRole.name,
+                description: editingRole.description,
+                isActive: editingRole.status === 'Active',
+                permissions: editingRole.permissions
+            };
 
-        if (isNewRole) {
-            const newId = Math.max(...roles.map(r => r.id), 0) + 1;
-            const newRole = { ...editingRole, id: newId, usersCount: 0 };
-            setRoles([newRole, ...roles]);
-        } else {
-            setRoles(roles.map(r => r.id === editingRole.id ? editingRole : r));
+            if (isNewRole) {
+                await userRoleService.create(apiData);
+            } else {
+                await userRoleService.update(editingRole.id, apiData);
+            }
+            await loadRoles();
+            setEditingRole(null);
+        } catch (error) {
+            console.error('Failed to save role:', error);
+            alert('Failed to save role');
+        } finally {
+            setIsSaving(false);
         }
-
-        setIsSaving(false);
-        setEditingRole(null);
     };
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
     };
 
-    const confirmDelete = () => {
-        setRoles(roles.filter(r => r.id !== deleteId));
-        setDeleteId(null);
+    const confirmDelete = async () => {
+        try {
+            await userRoleService.delete(deleteId);
+            await loadRoles();
+        } catch (error) {
+            console.error('Failed to delete role:', error);
+            alert('Failed to delete role');
+        } finally {
+            setDeleteId(null);
+        }
     };
 
     const FormInput = ({ label, name, required = false, placeholder = "" }) => (

@@ -1,138 +1,168 @@
-// Product management utilities using localStorage
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-const STORAGE_KEY = 'jsmart_products';
+async function fetchAPI(endpoint, options = {}) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-// Get all products from localStorage
-export function getProducts() {
-    if (typeof window === 'undefined') return [];
-    
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            return JSON.parse(stored);
-        }
-    } catch (error) {
-        console.error('Error reading products from localStorage:', error);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...options.headers,
+        },
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'An error occurred' }));
+        throw new Error(error.message || 'Something went wrong');
     }
-    return [];
+
+    return response.json();
 }
 
-// Save a new product
-export function saveProduct(productData) {
-    if (typeof window === 'undefined') return null;
-    
+export async function getProducts() {
     try {
-        const products = getProducts();
-        
-        // Generate ID if not provided
-        const newId = products.length > 0 
-            ? Math.max(...products.map(p => p.id || 0)) + 1 
-            : 1;
-        
-        // Format price
-        const price = parseFloat(productData.price) || 0;
-        const comparePrice = productData.comparePrice ? parseFloat(productData.comparePrice) : null;
-        
-        // Create product object
-        const newProduct = {
-            id: newId,
-            name: productData.name,
-            sku: productData.sku,
-            category: productData.category,
-            price: price,
-            comparePrice: comparePrice,
-            stock: parseInt(productData.stock) || 0,
-            minStock: parseInt(productData.minStock) || 0,
-            description: productData.description || '',
-            shortDescription: productData.shortDescription || '',
-            weight: productData.weight ? parseFloat(productData.weight) : null,
-            unit: productData.unit || 'kg',
-            status: productData.status || 'active',
-            featured: productData.featured || false,
-            image: productData.image || null,
-            images: productData.images || [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            // Additional fields for compatibility with existing data structure
-            sales: 0,
-            revenue: `$${(price * (parseInt(productData.stock) || 0)).toFixed(2)}`,
-        };
-        
-        products.push(newProduct);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-        
-        return newProduct;
+        const products = await fetchAPI('/products');
+        return mapProducts(products);
     } catch (error) {
-        console.error('Error saving product to localStorage:', error);
+        console.error('Error fetching products:', error);
+        return [];
+    }
+}
+
+export async function getProductsPaginated(page = 1, limit = 10) {
+    try {
+        const data = await fetchAPI(`/products/paginated?page=${page}&limit=${limit}`);
+        return {
+            products: mapProducts(data.products),
+            totalItems: data.totalItems,
+            totalPages: data.totalPages,
+            currentPage: data.currentPage
+        };
+    } catch (error) {
+        console.error('Error fetching paginated products:', error);
+        return { products: [], totalItems: 0, totalPages: 0, currentPage: 1 };
+    }
+}
+
+export async function getProductById(id) {
+    try {
+        const p = await fetchAPI(`/products/${id}`);
+        return mapProduct(p);
+    } catch (error) {
+        console.error('Error fetching product:', error);
         throw error;
     }
 }
 
-// Update an existing product
-export function updateProduct(productId, productData) {
-    if (typeof window === 'undefined') return null;
-    
+export async function saveProduct(productData) {
+    const payload = {
+        productName: productData.name,
+        productCategoryId: parseInt(productData.categoryId) || 1,
+        brandId: parseInt(productData.brandId) || 1,
+        description: productData.description || productData.shortDescription,
+        quantity: 0, // Stocks managed via batches
+        weight: parseFloat(productData.weight) || null,
+        price: parseFloat(productData.price)
+    };
+
+    return await fetchAPI('/products', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    });
+}
+
+export async function updateProduct(productId, productData) {
+    const payload = {
+        productName: productData.name,
+        productCategoryId: parseInt(productData.categoryId),
+        brandId: parseInt(productData.brandId),
+        description: productData.description || productData.shortDescription,
+        price: parseFloat(productData.price)
+    };
+    return await fetchAPI(`/products/${productId}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+    });
+}
+
+export async function deleteProduct(productId) {
+    await fetchAPI(`/products/${productId}`, { method: 'DELETE' });
+    return true;
+}
+
+export async function getCategories() {
+    return await fetchAPI('/product-categories');
+}
+
+export async function getBrands() {
+    return await fetchAPI('/brands');
+}
+
+export async function searchProducts(query) {
     try {
-        const products = getProducts();
-        const index = products.findIndex(p => p.id === productId);
-        
-        if (index === -1) {
-            throw new Error('Product not found');
-        }
-        
-        const price = parseFloat(productData.price) || 0;
-        const comparePrice = productData.comparePrice ? parseFloat(productData.comparePrice) : null;
-        
-        products[index] = {
-            ...products[index],
-            ...productData,
-            price: price,
-            comparePrice: comparePrice,
-            stock: parseInt(productData.stock) || products[index].stock,
-            minStock: parseInt(productData.minStock) || products[index].minStock,
-            updatedAt: new Date().toISOString(),
-        };
-        
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-        return products[index];
+        const products = await fetchAPI(`/products/search/query?query=${encodeURIComponent(query)}`);
+        return mapProducts(products);
     } catch (error) {
-        console.error('Error updating product in localStorage:', error);
-        throw error;
+        console.error('Error searching products:', error);
+        return [];
     }
 }
 
-// Delete a product
-export function deleteProduct(productId) {
-    if (typeof window === 'undefined') return false;
-    
+export async function getProductsByBrand(brandId) {
     try {
-        const products = getProducts();
-        const filtered = products.filter(p => p.id !== productId);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-        return true;
+        const products = await fetchAPI(`/products/brand/${brandId}`);
+        return mapProducts(products);
     } catch (error) {
-        console.error('Error deleting product from localStorage:', error);
-        return false;
+        console.error('Error fetching products by brand:', error);
+        return [];
     }
 }
 
-// Get a single product by ID
-export function getProductById(productId) {
-    const products = getProducts();
-    return products.find(p => p.id === productId) || null;
+export async function getProductsByCategory(categoryId) {
+    try {
+        const products = await fetchAPI(`/products/category/${categoryId}`);
+        return mapProducts(products);
+    } catch (error) {
+        console.error('Error fetching products by category:', error);
+        return [];
+    }
 }
 
-// Get products by category
-export function getProductsByCategory(category) {
-    const products = getProducts();
-    if (category === 'all' || !category) return products;
-    return products.filter(p => p.category === category);
+export async function getProductsByPriceRange(min, max) {
+    try {
+        const products = await fetchAPI(`/products/price/range?min=${min}&max=${max}`);
+        return mapProducts(products);
+    } catch (error) {
+        console.error('Error fetching products by price range:', error);
+        return [];
+    }
 }
 
-// Merge with mock data (for initial load)
-export function getAllProducts() {
-    const savedProducts = getProducts();
-    // You can merge with mock data here if needed
-    return savedProducts;
+function mapProduct(p) {
+    return {
+        id: p.id,
+        name: p.productName,
+        sku: `PROD-${p.id}`,
+        category: p.product_category?.category || 'General',
+        categoryId: p.productCategoryId,
+        brand: p.brand?.brand || 'No Brand',
+        brandId: p.brandId,
+        price: p.price,
+        stock: p.quantity,
+        description: p.description,
+        weight: p.weight,
+        images: p.images || [],
+        image: p.images?.[0]?.productImg || null,
+        status: p.isActive ? 'active' : 'archived',
+        unit: 'pcs',
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        isFeatured: p.isFeatured
+    };
 }
 
+function mapProducts(products) {
+    if (!products || !Array.isArray(products)) return [];
+    return products.map(p => mapProduct(p));
+}

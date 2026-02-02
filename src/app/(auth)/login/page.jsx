@@ -1,28 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { authService } from "@/lib/api";
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const router = useRouter();
+
+    React.useEffect(() => {
+        if (authService.isAuthenticated()) {
+            router.push('/dashboard');
+        }
+    }, [router]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate login delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        // Redirect to dashboard
-        router.push("/dashboard");
+        setError("");
+
+        try {
+            await authService.login(email, password);
+            router.push("/dashboard");
+
+        } catch (err) {
+            setError(err.message || "Invalid credentials. Please try again.");
+            console.error("Login Error:", err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -77,8 +93,20 @@ export default function LoginPage() {
                     >
                         <div className="mb-12 text-center lg:text-left">
                             <h2 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Welcome Back</h2>
-                            <p className="text-slate-500 text-lg">Sign in to manage your empire.</p>
+                            <p className="text-slate-500 text-lg mb-6">Sign in to manage your empire.</p>
+
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-semibold mb-6 flex items-center gap-3"
+                                >
+                                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                    {error}
+                                </motion.div>
+                            )}
                         </div>
+
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
