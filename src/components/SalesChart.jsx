@@ -1,25 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { salesStats } from '@/data/mock';
 
-export function SalesChart() {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) {
-        return <div className="h-[350px] w-full" />;
-    }
+export function SalesChart({ data = [] }) {
 
     return (
         <div className="h-[350px] w-full min-w-0" style={{ minWidth: 0, minHeight: 350 }}>
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                    data={salesStats}
+                    data={data}
                     margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
                 >
                     <defs>

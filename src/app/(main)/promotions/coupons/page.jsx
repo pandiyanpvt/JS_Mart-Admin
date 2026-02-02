@@ -1,10 +1,7 @@
-import CouponsView from './CouponsView';
+'use client';
 
-export const metadata = {
-    title: 'Coupons | JS Mart Admin',
-    description: 'Manage discount codes and promotions',
-};
+import CouponsList from './CouponsList';
 
 export default function CouponsPage() {
-    return <CouponsView />;
+    return <CouponsList />;
 }

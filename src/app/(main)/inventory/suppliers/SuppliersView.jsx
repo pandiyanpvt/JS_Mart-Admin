@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Filter, Plus, Eye, Edit, Trash2, Phone, Mail, MapPin, Building2, CheckCircle2, XCircle, MoreHorizontal, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, Plus, Eye, Edit, Trash2, Phone, Mail, MapPin, Building2, CheckCircle2, XCircle, MoreHorizontal, Loader2, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { inventoryItems } from '@/data/mock';
+import { supplierService } from '@/lib/api';
+import * as XLSX from 'xlsx';
 
-// Generate mock suppliers based on inventory items
 const initialSuppliers = [
     {
         id: 1,
@@ -19,71 +19,26 @@ const initialSuppliers = [
         suppliedCategories: ['Vegetables'],
         lastDelivery: '2026-01-15'
     },
-    {
-        id: 2,
-        name: 'Orchard Fresh',
-        contactPerson: 'Sarah Appleby',
-        email: 'orders@orchardfresh.net',
-        phone: '+1 (555) 987-6543',
-        address: '456 Orchard Way, Fruitville, WA',
-        status: 'Active',
-        rating: 4.6,
-        suppliedCategories: ['Fruits'],
-        lastDelivery: '2026-01-18'
-    },
-    {
-        id: 3,
-        name: 'Baby Care Inc.',
-        contactPerson: 'Jennifer Small',
-        email: 'supply@babycare.com',
-        phone: '+1 (555) 222-3333',
-        address: '789 Nursery Blvd, Totstown, NY',
-        status: 'Active',
-        rating: 4.9,
-        suppliedCategories: ['Baby Products'],
-        lastDelivery: '2026-01-10'
-    },
-    {
-        id: 4,
-        name: 'Dairy Farm Ltd.',
-        contactPerson: 'Mike Cheesy',
-        email: 'mike@dairyfarmltd.com',
-        phone: '+1 (555) 444-5555',
-        address: '101 Milk Route, Cowford, WI',
-        status: 'Inactive',
-        rating: 4.2,
-        suppliedCategories: ['Dairy'],
-        lastDelivery: '2026-01-19'
-    },
-    {
-        id: 5,
-        name: 'Tropical Fruits Co.',
-        contactPerson: 'Juan Tropicana',
-        email: 'juan@tropicalfruits.com',
-        phone: '+1 (555) 777-8888',
-        address: '222 Palm St, Sunnydale, FL',
-        status: 'Active',
-        rating: 4.5,
-        suppliedCategories: ['Fruits'],
-        lastDelivery: '2026-01-16'
-    },
-    {
-        id: 6,
-        name: 'Bakery Fresh',
-        contactPerson: 'Loaf Baker',
-        email: 'loaf@bakeryfresh.com',
-        phone: '+1 (555) 333-2222',
-        address: '333 Yeast Ct, Breadville, OR',
-        status: 'Active',
-        rating: 4.7,
-        suppliedCategories: ['Bakery'],
-        lastDelivery: '2026-01-19'
-    }
 ];
+
+const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
+    <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <input
+            type={type}
+            required={required}
+            value={value || ''}
+            onChange={onChange}
+            placeholder={placeholder}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
+        />
+    </div>
+);
 
 export default function SuppliersView() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [suppliers, setSuppliers] = useState(initialSuppliers);
+    const [suppliers, setSuppliers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Modal Interaction States
     const [viewSupplier, setViewSupplier] = useState(null);
@@ -98,8 +53,25 @@ export default function SuppliersView() {
         supplier.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    useEffect(() => {
+        loadSuppliers();
+    }, []);
+
+    const loadSuppliers = async () => {
+        try {
+            setIsLoading(true);
+            const data = await supplierService.getAll();
+            setSuppliers(data);
+        } catch (error) {
+            console.error('Failed to load suppliers:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const getProductCount = (supplierName) => {
-        return inventoryItems.filter(item => item.supplier === supplierName).length;
+        // This logic needs to be updated if we want actual product counts per supplier
+        return 0;
     };
 
     // --- Handlers ---
@@ -111,9 +83,7 @@ export default function SuppliersView() {
             email: '',
             phone: '',
             address: '',
-            status: 'Active',
-            rating: 5.0,
-            suppliedCategories: []
+            isActive: true
         });
         setIsNewSupplier(true);
     };
@@ -127,50 +97,51 @@ export default function SuppliersView() {
         e.preventDefault();
         setIsSaving(true);
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        if (isNewSupplier) {
-            const newId = Math.max(...suppliers.map(s => s.id), 0) + 1;
-            const newSupplier = {
-                ...editingSupplier,
-                id: newId,
-                suppliedCategories: typeof editingSupplier.suppliedCategories === 'string'
-                    ? editingSupplier.suppliedCategories.split(',').map(s => s.trim())
-                    : editingSupplier.suppliedCategories || []
-            };
-            setSuppliers([newSupplier, ...suppliers]);
-        } else {
-            setSuppliers(suppliers.map(s => s.id === editingSupplier.id ? editingSupplier : s));
+        try {
+            if (isNewSupplier) {
+                await supplierService.create(editingSupplier);
+            } else {
+                await supplierService.update(editingSupplier.id, editingSupplier);
+            }
+            await loadSuppliers();
+            setEditingSupplier(null);
+        } catch (error) {
+            console.error('Failed to save supplier:', error);
+        } finally {
+            setIsSaving(false);
         }
-
-        setIsSaving(false);
-        setEditingSupplier(null);
     };
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
     };
 
-    const confirmDelete = () => {
-        setSuppliers(suppliers.filter(s => s.id !== deleteId));
-        setDeleteId(null);
+    const confirmDelete = async () => {
+        try {
+            await supplierService.delete(deleteId);
+            await loadSuppliers();
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Failed to delete supplier:', error);
+        }
     };
 
-    // Common Form Components
-    const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
-        <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
-            <input
-                type={type}
-                required={required}
-                value={editingSupplier?.[name] || ''}
-                onChange={e => setEditingSupplier({ ...editingSupplier, [name]: e.target.value })}
-                placeholder={placeholder}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
-            />
-        </div>
-    );
+    const handleExport = () => {
+        const dataToExport = suppliers.map(s => ({
+            'ID': s.id,
+            'Company Name': s.name,
+            'Contact Person': s.contactPerson,
+            'Email': s.email,
+            'Phone': s.phone,
+            'Address': s.address,
+            'Status': s.isActive ? 'Active' : 'Inactive'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Suppliers");
+        XLSX.writeFile(wb, `Suppliers_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
 
     return (
         <div className="space-y-8">
@@ -179,13 +150,22 @@ export default function SuppliersView() {
                     <h1 className="text-2xl font-bold text-slate-900">Suppliers</h1>
                     <p className="text-slate-500 text-sm">Manage your supply chain partners and contacts.</p>
                 </div>
-                <button
-                    onClick={handleOpenAdd}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-200"
-                >
-                    <Plus size={18} />
-                    <span>Add Supplier</span>
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm"
+                    >
+                        <Download size={18} className="rotate-180" />
+                        <span>Export</span>
+                    </button>
+                    <button
+                        onClick={handleOpenAdd}
+                        className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-200"
+                    >
+                        <Plus size={18} />
+                        <span>Add Supplier</span>
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -208,9 +188,8 @@ export default function SuppliersView() {
                             <tr className="bg-slate-50/50">
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Supplier Name</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Info</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rating</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
@@ -231,7 +210,6 @@ export default function SuppliersView() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{supplier.name}</p>
-                                                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">{getProductCount(supplier.name)} Products</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -248,41 +226,22 @@ export default function SuppliersView() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-wrap gap-1">
-                                                {(supplier.suppliedCategories || []).map((cat, idx) => (
-                                                    <span key={idx} className="px-2 py-0.5 bg-slate-50 border border-slate-100 rounded text-[10px] font-medium text-slate-600 uppercase">
-                                                        {cat}
-                                                    </span>
-                                                ))}
+                                        <td className="px-6 py-4 max-w-[200px]">
+                                            <div className="flex items-start gap-2 text-slate-600">
+                                                <MapPin size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                                                <p className="text-xs line-clamp-2">{supplier.address || 'No address'}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
                                                 "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                supplier.status === 'Active'
+                                                supplier.isActive
                                                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                     : "bg-slate-50 text-slate-500 border-slate-100"
                                             )}>
-                                                {supplier.status === 'Active' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                                                {supplier.status}
+                                                {supplier.isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                                                {supplier.isActive ? 'Active' : 'Inactive'}
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-sm font-bold text-slate-700">{supplier.rating}</span>
-                                                <div className="flex gap-0.5">
-                                                    {[1, 2, 3, 4, 5].map((s) => (
-                                                        <div
-                                                            key={s}
-                                                            className={cn(
-                                                                "w-1.5 h-1.5 rounded-full",
-                                                                s <= Math.round(supplier.rating) ? "bg-amber-400" : "bg-slate-200"
-                                                            )}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -355,10 +314,10 @@ export default function SuppliersView() {
                                     <h4 className="text-xl font-bold text-slate-900">{viewSupplier.name}</h4>
                                     <span className={cn(
                                         "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border mt-1",
-                                        viewSupplier.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                                        viewSupplier.isActive ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                                     )}>
-                                        {viewSupplier.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
-                                        {viewSupplier.status}
+                                        {viewSupplier.isActive ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+                                        {viewSupplier.isActive ? 'Active' : 'Inactive'}
                                     </span>
                                 </div>
                             </div>
@@ -366,17 +325,6 @@ export default function SuppliersView() {
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                                     <span className="text-xs font-bold text-slate-500 uppercase">Contact Person</span>
                                     <p className="font-semibold text-slate-900">{viewSupplier.contactPerson}</p>
-                                </div>
-                                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Rating</span>
-                                    <div className="flex items-center gap-1">
-                                        <span className="font-bold text-slate-900">{viewSupplier.rating}</span>
-                                        <div className="flex gap-0.5">
-                                            {[1, 2, 3, 4, 5].map(s => (
-                                                <div key={s} className={cn("w-1.5 h-1.5 rounded-full", s <= Math.round(viewSupplier.rating) ? "bg-amber-400" : "bg-slate-300")} />
-                                            ))}
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                             <div className="space-y-4">
@@ -437,12 +385,41 @@ export default function SuppliersView() {
                             <form id="supplier-form" onSubmit={handleSave} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Company Name" name="name" required placeholder="e.g. Fresh Foods Ltd" />
+                                        <FormInput
+                                            label="Company Name"
+                                            name="name"
+                                            required
+                                            placeholder="e.g. Fresh Foods Ltd"
+                                            value={editingSupplier.name}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, name: e.target.value })}
+                                        />
                                     </div>
-                                    <FormInput label="Contact Person" name="contactPerson" required placeholder="e.g. John Doe" />
-                                    <FormInput label="Phone Number" name="phone" required placeholder="+1 (555) 000-0000" />
+                                    <FormInput
+                                        label="Contact Person"
+                                        name="contactPerson"
+                                        required
+                                        placeholder="e.g. John Doe"
+                                        value={editingSupplier.contactPerson}
+                                        onChange={e => setEditingSupplier({ ...editingSupplier, contactPerson: e.target.value })}
+                                    />
+                                    <FormInput
+                                        label="Phone Number"
+                                        name="phone"
+                                        required
+                                        placeholder="+1 (555) 000-0000"
+                                        value={editingSupplier.phone}
+                                        onChange={e => setEditingSupplier({ ...editingSupplier, phone: e.target.value })}
+                                    />
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Email Address" name="email" type="email" required placeholder="contact@company.com" />
+                                        <FormInput
+                                            label="Email Address"
+                                            name="email"
+                                            type="email"
+                                            required
+                                            placeholder="contact@company.com"
+                                            value={editingSupplier.email}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, email: e.target.value })}
+                                        />
                                     </div>
                                     <div className="sm:col-span-2">
                                         <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Address</label>
@@ -453,20 +430,6 @@ export default function SuppliersView() {
                                             rows="3"
                                             placeholder="Full business address..."
                                         />
-                                    </div>
-                                    <div className="sm:col-span-2">
-                                        <FormInput label="Categories (Comma separated)" name="suppliedCategories" placeholder="Vegetables, Fruits, Dairy..." />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
-                                        <select
-                                            value={editingSupplier.status}
-                                            onChange={e => setEditingSupplier({ ...editingSupplier, status: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none"
-                                        >
-                                            <option value="Active">Active</option>
-                                            <option value="Inactive">Inactive</option>
-                                        </select>
                                     </div>
                                 </div>
                             </form>

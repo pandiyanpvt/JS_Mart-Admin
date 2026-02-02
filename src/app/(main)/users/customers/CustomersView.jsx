@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, Mail, Phone, Calendar, MapPin, User, CheckCircle2, XCircle, ShoppingBag, DollarSign, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { userService } from '@/lib/api';
+import { useEffect } from 'react';
+import * as XLSX from 'xlsx';
 
 // Mock Data for Customers
 const mockCustomers = [
@@ -19,7 +21,7 @@ const mockCustomers = [
         address: '123 Maple Ave, Springfield, IL',
         role: 'Customer',
         avatar: null
-    
+
     },
     {
         id: 2,
@@ -65,7 +67,8 @@ const mockCustomers = [
 export default function CustomersView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
-    const [customers, setCustomers] = useState(mockCustomers);
+    const [customers, setCustomers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Modal States
     const [viewCustomer, setViewCustomer] = useState(null);
@@ -99,40 +102,77 @@ export default function CustomersView() {
         setIsNewCustomer(true);
     };
 
+    useEffect(() => {
+        loadCustomers();
+    }, []);
+
+    const loadCustomers = async () => {
+        try {
+            setIsLoading(true);
+            const data = await userService.getAll();
+            // Filter only customers (roleId: 1 for USER)
+            setCustomers(data.filter(u => u.userRoleId === 1));
+        } catch (error) {
+            console.error('Failed to load customers:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleOpenEdit = (customer) => {
         setEditingCustomer({ ...customer });
         setIsNewCustomer(false);
     };
 
     const handleSave = async (e) => {
-        e.preventDefault();
-        setIsSaving(true);
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        if (isNewCustomer) {
-            const newId = Math.max(...customers.map(c => c.id), 0) + 1;
-            const newCustomer = {
-                ...editingCustomer,
-                id: newId,
-            };
-            setCustomers([newCustomer, ...customers]);
-        } else {
-            setCustomers(customers.map(c => c.id === editingCustomer.id ? editingCustomer : c));
+        try {
+            if (isNewCustomer) {
+                // For simplified flow, we might not allow adding customers directly from admin
+                // OR we can implement registration API here too. 
+                // Let's assume registration is handled elsewhere or use the same update logic if needed
+            } else {
+                await userService.update(editingCustomer.id, editingCustomer);
+            }
+            await loadCustomers();
+            setEditingCustomer(null);
+        } catch (error) {
+            console.error('Failed to save customer:', error);
+        } finally {
+            setIsSaving(false);
         }
-
-        setIsSaving(false);
-        setEditingCustomer(null);
     };
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
     };
 
-    const confirmDelete = () => {
-        setCustomers(customers.filter(c => c.id !== deleteId));
-        setDeleteId(null);
+    const confirmDelete = async () => {
+        try {
+            await userService.delete(deleteId);
+            await loadCustomers();
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Failed to delete customer:', error);
+        }
+    };
+
+    const handleExport = () => {
+        const dataToExport = customers.map(c => ({
+            'ID': c.id,
+            'Full Name': c.fullName || 'N/A',
+            'Email': c.emailAddress,
+            'Phone': c.phoneNumber,
+            'Status': c.status,
+            'Joined Date': new Date(c.createdAt).toLocaleDateString(),
+            'Total Orders': c.totalOrders,
+            'Total Spent': c.totalSpent.toFixed(2),
+            'Address': c.address || 'N/A'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Customers");
+        XLSX.writeFile(wb, `Customers_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
@@ -156,13 +196,22 @@ export default function CustomersView() {
                     <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
                     <p className="text-slate-500 text-sm">Manage your registered users and their details.</p>
                 </div>
-                <button
-                    onClick={handleOpenAdd}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-200"
-                >
-                    <Plus size={18} />
-                    <span>Add New Customer</span>
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm"
+                    >
+                        <Plus className="rotate-45" size={18} />
+                        <span>Export</span>
+                    </button>
+                    <button
+                        onClick={handleOpenAdd}
+                        className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-200"
+                    >
+                        <Plus size={18} />
+                        <span>Add New Customer</span>
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -213,12 +262,12 @@ export default function CustomersView() {
                                     <tr key={customer.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 border border-slate-200 overflow-hidden">
-                                                    <User size={20} />
+                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 border border-slate-200 overflow-hidden text-xs font-bold uppercase">
+                                                    {(customer.fullName || 'U').split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-slate-900 truncate">{customer.name}</p>
-                                                    <p className="text-[10px] text-slate-500 uppercase">Joined: {new Date(customer.joinDate).toLocaleDateString()}</p>
+                                                    <p className="text-sm font-semibold text-slate-900 truncate">{customer.fullName || customer.emailAddress}</p>
+                                                    <p className="text-[10px] text-slate-500 uppercase">Joined: {new Date(customer.createdAt).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -226,11 +275,11 @@ export default function CustomersView() {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2 text-xs text-slate-600">
                                                     <Mail size={12} className="text-slate-400" />
-                                                    {customer.email}
+                                                    {customer.emailAddress}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-slate-600">
                                                     <Phone size={12} className="text-slate-400" />
-                                                    {customer.phone}
+                                                    {customer.phoneNumber}
                                                 </div>
                                             </div>
                                         </td>
@@ -323,7 +372,8 @@ export default function CustomersView() {
                                     <User size={32} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-bold text-slate-900">{viewCustomer.name}</h4>
+                                    <h4 className="text-xl font-bold text-slate-900">{viewCustomer.fullName || viewCustomer.emailAddress}</h4>
+                                    <p className="text-xs text-slate-500">{viewCustomer.emailAddress}</p>
                                     <div className="flex gap-2 mt-1">
                                         <span className={cn(
                                             "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
@@ -353,14 +403,14 @@ export default function CustomersView() {
                                     <Mail className="text-emerald-600 mt-0.5" size={18} />
                                     <div>
                                         <p className="text-xs font-bold text-slate-500 uppercase">Email Address</p>
-                                        <p className="text-sm font-medium text-slate-900">{viewCustomer.email}</p>
+                                        <p className="text-sm font-medium text-slate-900">{viewCustomer.emailAddress}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Phone className="text-blue-600 mt-0.5" size={18} />
                                     <div>
                                         <p className="text-xs font-bold text-slate-500 uppercase">Phone Number</p>
-                                        <p className="text-sm font-medium text-slate-900">{viewCustomer.phone}</p>
+                                        <p className="text-sm font-medium text-slate-900">{viewCustomer.phoneNumber}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
@@ -413,12 +463,12 @@ export default function CustomersView() {
                             <form id="customer-form" onSubmit={handleSave} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Full Name" name="name" required placeholder="e.g. John Doe" />
+                                        <FormInput label="Full Name" name="fullName" required placeholder="e.g. John Doe" />
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Email Address" name="email" type="email" required placeholder="john@example.com" />
+                                        <FormInput label="Email Address" name="emailAddress" type="email" required placeholder="john@example.com" />
                                     </div>
-                                    <FormInput label="Phone Number" name="phone" required placeholder="+1 (555) 000-0000" />
+                                    <FormInput label="Phone Number" name="phoneNumber" required placeholder="+1 (555) 000-0000" />
                                     <div>
                                         <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
                                         <select

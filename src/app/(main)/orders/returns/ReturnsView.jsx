@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { refundService, refundTrackingService } from '@/lib/api';
 import {
     ArrowLeft,
     Search,
@@ -14,11 +15,13 @@ import {
     CornerUpLeft,
     FileText,
     DollarSign,
-    PackageX
+    PackageX,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const initialReturns = [
     {
@@ -63,17 +66,50 @@ const initialReturns = [
 ];
 
 export default function ReturnsView() {
-    const [returns, setReturns] = useState(initialReturns);
+    const [returns, setReturns] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [selectedReturn, setSelectedReturn] = useState(null);
+    const [refundTracking, setRefundTracking] = useState([]);
+
+    useEffect(() => {
+        loadRefunds();
+    }, []);
+
+    const loadRefunds = async () => {
+        try {
+            setLoading(true);
+            const data = await refundService.getAll();
+            const mappedReturns = data.map(r => ({
+                id: r.id.toString(),
+                orderId: r.order ? r.order.id.toString() : 'N/A',
+                customer: r.user ? (r.user.fullName || r.user.emailAddress) : 'Unknown',
+                product: r.product ? r.product.productName : 'Unknown Product',
+                sku: r.product ? `PROD-${r.product.id}` : 'N/A',
+                image: (r.product && r.product.images && r.product.images.length > 0) ? r.product.images[0].productImg : null,
+                amount: parseFloat(r.refundAmount),
+                reason: r.reason,
+                status: r.status.charAt(0) + r.status.slice(1).toLowerCase(), // Capitalize
+                date: new Date(r.createdAt).toLocaleDateString(),
+                comment: r.adminComment || '',
+                refundMethod: r.refundMethod,
+                original: r
+            }));
+            setReturns(mappedReturns);
+        } catch (error) {
+            console.error("Failed to load refunds:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredReturns = returns.filter(item => {
         const matchesSearch =
             item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.customer.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesFilter = filterStatus === 'All' || item.status === filterStatus;
+        const matchesFilter = filterStatus === 'All' || item.status.toUpperCase() === filterStatus.toUpperCase();
         return matchesSearch && matchesFilter;
     });
 
@@ -83,66 +119,92 @@ export default function ReturnsView() {
             case 'Pending': return "bg-amber-100 text-amber-700 border-amber-200";
             case 'Rejected': return "bg-rose-100 text-rose-700 border-rose-200";
             case 'Completed': return "bg-blue-100 text-blue-700 border-blue-200";
+            case 'Collected': return "bg-indigo-100 text-indigo-700 border-indigo-200";
             default: return "bg-slate-100 text-slate-700 border-slate-200";
         }
     };
 
-    const handleUpdateStatus = (id, newStatus) => {
+    const handleUpdateStatus = async (id, newStatus) => {
         if (window.confirm(`Are you sure you want to mark this return as ${newStatus}?`)) {
-            setReturns(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
-            if (selectedReturn && selectedReturn.id === id) {
-                setSelectedReturn(prev => ({ ...prev, status: newStatus }));
+            try {
+                // Determine API status value (UPPERCASE)
+                const apiStatus = newStatus.toUpperCase();
+                const comment = selectedReturn?.comment || selectedReturn?.original?.adminComment || '';
+                await refundService.updateStatus(id, apiStatus, comment);
+                await loadRefunds();
+                setSelectedReturn(null);
+                setRefundTracking([]);
+            } catch (error) {
+                console.error("Failed to update status:", error);
+                alert("Failed to update status");
             }
         }
     };
 
-    return (
-        <div className="space-y-8 pb-12">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Link
-                        href="/orders"
-                        className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-slate-700 rounded-xl transition-all shadow-sm"
-                    >
-                        <ArrowLeft size={18} />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Returns Management</h1>
-                        <p className="text-slate-500 text-sm">Handle return requests, refunds, and exchanges.</p>
-                    </div>
-                </div>
+    const openReturnDetails = async (item) => {
+        setSelectedReturn(item);
+        try {
+            const tracking = await refundTrackingService.getByRefundId(item.id);
+            setRefundTracking(tracking || []);
+        } catch (e) {
+            console.error("Failed to load refund tracking:", e);
+            setRefundTracking([]);
+        }
+    };
 
-                <div className="flex gap-2">
-                    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-rose-50 rounded-lg border border-rose-100">
-                        <AlertCircle size={14} className="text-rose-500" />
-                        <span className="text-xs font-semibold text-rose-700">{returns.filter(r => r.status === 'Pending').length} Pending</span>
+    return (
+        <div className="max-w-[1600px] mx-auto space-y-8 pb-12 font-sans">
+            {/* Header Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-1">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <Link href="/orders" className="p-2.5 bg-white rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-all shadow-sm">
+                            <ArrowLeft size={18} />
+                        </Link>
+                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Returns Management</h1>
+                    </div>
+                    <p className="text-slate-500 ml-1 font-medium">Monitor, approve, and process customer return requests.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                        <div className="relative">
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                            <div className="absolute inset-0 rounded-full bg-amber-500 animate-ping opacity-25" />
+                        </div>
+                        <span className="text-sm font-bold text-slate-700">
+                            {returns.filter(r => r.status === 'Pending').length} Pending Requests
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            {/* Main Content Card */}
+            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-100/50 overflow-hidden">
                 {/* Toolbar */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <div className="p-6 border-b border-slate-100 flex flex-col lg:flex-row gap-6 items-center justify-between bg-slate-50/30">
+                    <div className="relative w-full lg:w-96 group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                        </div>
                         <input
                             type="text"
-                            placeholder="Search by Return ID, Order #, or Customer..."
+                            className="block w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-2xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-medium shadow-sm group-hover:border-slate-300"
+                            placeholder="Search returns..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 transition-all outline-none"
                         />
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                        {['All', 'Pending', 'Approved', 'Rejected'].map((status) => (
+
+                    <div className="flex p-1.5 bg-slate-100/80 rounded-2xl gap-1 overflow-x-auto">
+                        {['All', 'Pending', 'Approved', 'Collected', 'Completed', 'Rejected'].map((status) => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
                                 className={cn(
-                                    "px-4 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border",
+                                    "px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
                                     filterStatus === status
-                                        ? "bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-200"
-                                        : "bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100"
+                                        ? "bg-white text-slate-900 shadow-sm shadow-slate-200 ring-1 ring-slate-100"
+                                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                 )}
                             >
                                 {status}
@@ -151,102 +213,137 @@ export default function ReturnsView() {
                     </div>
                 </div>
 
-                {/* Table List */}
-                <div className="overflow-x-auto min-h-[400px]">
-                    <table className="w-full text-left border-collapse">
+                {/* Table Area */}
+                <div className="relative overflow-x-auto min-h-[500px]">
+                    <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Return Details</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Reason</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                            <tr className="border-b border-slate-100 bg-slate-50/50">
+                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Product Info</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Customer</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Reason</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Amount</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredReturns.length === 0 ? (
+                        <tbody className="divide-y divide-slate-50">
+                            {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
-                                        No returns found matching your filters.
+                                    <td colSpan="6" className="px-6 py-32 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-4">
+                                            <div className="relative">
+                                                <div className="w-12 h-12 border-4 border-slate-100 border-t-emerald-500 rounded-full animate-spin" />
+                                            </div>
+                                            <p className="text-sm font-bold text-slate-400 animate-pulse">Loading return requests...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredReturns.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-24 text-center">
+                                        <div className="flex flex-col items-center justify-center gap-4">
+                                            <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center border border-slate-100">
+                                                <Search className="text-slate-300" size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-slate-900 font-bold">No returns found</p>
+                                                <p className="text-slate-400 text-sm mt-1">Try adjusting your search or filters</p>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
-                                filteredReturns.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                                                    <Image
-                                                        src={item.image}
-                                                        alt={item.product}
-                                                        fill
-                                                        className="object-cover"
-                                                        unoptimized
-                                                    />
+                                <AnimatePresence mode='popLayout'>
+                                    {filteredReturns.map((item) => (
+                                        <motion.tr
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.2 }}
+                                            key={item.id}
+                                            className="group hover:bg-slate-50/80 transition-colors"
+                                        >
+                                            <td className="px-8 py-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                                        {item.image ? (
+                                                            <Image
+                                                                src={item.image}
+                                                                alt={item.product}
+                                                                fill
+                                                                className="object-cover"
+                                                                unoptimized
+                                                            />
+                                                        ) : (
+                                                            <PackageX size={20} className="text-slate-400" />
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-bold text-slate-900 truncate group-hover:text-emerald-700 transition-colors">{item.product}</p>
+                                                        <p className="text-xs font-semibold text-slate-400 mt-0.5 font-mono bg-slate-100 inline-block px-1.5 py-0.5 rounded">SKU: {item.sku}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-slate-900 truncate">{item.product}</p>
-                                                    <p className="text-xs text-slate-500">SKU: {item.sku}</p>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">{item.orderId}</span>
+                                                    <span className="text-sm font-semibold text-slate-700">{item.customer}</span>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-medium text-slate-900">{item.orderId}</span>
-                                                <span className="text-xs text-slate-500">{item.customer}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1.5">
-                                                <CornerUpLeft size={12} className="text-rose-500" />
-                                                <span className="text-sm text-slate-700">{item.reason}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-semibold text-slate-900">${item.amount.toFixed(2)}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide",
-                                                getStatusStyle(item.status)
-                                            )}>
-                                                <div className={cn("w-1.5 h-1.5 rounded-full",
-                                                    item.status === 'Approved' ? "bg-emerald-500" :
-                                                        item.status === 'Pending' ? "bg-amber-500" :
-                                                            item.status === 'Rejected' ? "bg-rose-500" :
-                                                                "bg-blue-500"
-                                                )} />
-                                                {item.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="p-1.5 rounded-lg bg-rose-50 text-rose-500">
+                                                        <CornerUpLeft size={14} />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-slate-700">{item.reason}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <span className="text-sm font-bold text-slate-900 font-mono">${item.amount.toFixed(2)}</span>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <span className={cn(
+                                                    "inline-flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wide border transform transition-transform group-hover:scale-105",
+                                                    getStatusStyle(item.status)
+                                                )}>
+                                                    <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse",
+                                                        item.status === 'Approved' ? "bg-emerald-500 animate-none" :
+                                                            item.status === 'Pending' ? "bg-amber-500" :
+                                                                item.status === 'Rejected' ? "bg-rose-500 animate-none" :
+                                                                    item.status === 'Collected' ? "bg-indigo-500 animate-none" :
+                                                                        "bg-blue-500 animate-none"
+                                                    )} />
+                                                    {item.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-right">
                                                 <button
-                                                    onClick={() => setSelectedReturn(item)}
-                                                    className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                                                    title="View Details"
+                                                    onClick={() => openReturnDetails(item)}
+                                                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
                                                 >
-                                                    <Eye size={16} />
+                                                    <Eye size={14} />
+                                                    <span>View</span>
                                                 </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
                             )}
                         </tbody>
                     </table>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
-                    <p className="text-sm text-slate-500">
+                {/* Footer/Pagination */}
+                <div className="px-8 py-6 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-sm font-medium text-slate-500">
                         {filteredReturns.length === 0
-                            ? 'No returns found'
+                            ? 'No items to show'
                             : `Showing ${filteredReturns.length} of ${returns.length} requests`}
                     </p>
-                    <div className="flex gap-2">
-                        <button className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50">Previous</button>
-                        <button className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">Next</button>
+                    <div className="flex gap-3">
+                        <button className="px-5 py-2.5 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-all disabled:opacity-50 shadow-sm">Previous</button>
+                        <button className="px-5 py-2.5 text-xs font-bold text-white bg-slate-900 border border-slate-900 rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">Next Page</button>
                     </div>
                 </div>
             </div>
@@ -254,91 +351,158 @@ export default function ReturnsView() {
             {/* Detail Modal */}
             {selectedReturn && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         onClick={() => setSelectedReturn(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden">
-                        <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="relative w-full max-w-xl bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]"
+                    >
+                        <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between shrink-0">
                             <div>
-                                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Return Request</h2>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {selectedReturn.id}</p>
+                                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Return Request Details</h2>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">ID: {selectedReturn.id}</span>
+                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                    <span className="text-xs font-medium text-slate-500">{selectedReturn.date}</span>
+                                </div>
                             </div>
                             <button
                                 onClick={() => setSelectedReturn(null)}
-                                className="p-3 hover:bg-slate-200 rounded-2xl transition-all text-slate-500"
+                                className="p-2.5 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-slate-600"
                             >
                                 <XCircle size={24} />
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-8">
+                        <div className="p-8 space-y-8 overflow-y-auto">
                             {/* Product Info */}
-                            <div className="flex items-center gap-6 p-4 bg-slate-50 rounded-3xl border border-slate-100">
-                                <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-sm shrink-0">
-                                    <Image
-                                        src={selectedReturn.image}
-                                        alt={selectedReturn.product}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                    />
+                            <div className="flex items-center gap-6 p-5 bg-gradient-to-br from-slate-50 to-white rounded-3xl border border-slate-100 shadow-sm">
+                                <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-inner shrink-0 flex items-center justify-center">
+                                    {selectedReturn.image ? (
+                                        <Image
+                                            src={selectedReturn.image}
+                                            alt={selectedReturn.product}
+                                            fill
+                                            className="object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <PackageX size={32} className="text-slate-300" />
+                                    )}
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-900">{selectedReturn.product}</h3>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">SKU: {selectedReturn.sku}</p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase tracking-wide">
-                                            Purchased {selectedReturn.date}
+                                    <h3 className="text-base font-bold text-slate-900">{selectedReturn.product}</h3>
+                                    <p className="text-xs font-medium text-slate-400 mt-1">SKU: {selectedReturn.sku}</p>
+                                    <div className="flex items-center gap-2 mt-3">
+                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-lg text-[10px] font-bold uppercase tracking-wide">
+                                            Verified Purchase
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Details Grid */}
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-2 gap-8 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Customer</label>
-                                    <p className="text-sm font-bold text-slate-700">{selectedReturn.customer}</p>
-                                    <p className="text-xs text-slate-400">{selectedReturn.orderId}</p>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Customer Info</label>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                                            {selectedReturn.customer.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-700 leading-tight">{selectedReturn.customer}</p>
+                                            <p className="text-[10px] text-slate-400 font-mono mt-0.5">{selectedReturn.orderId}</p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Refund Amount</label>
-                                    <p className="text-xl font-black text-slate-900">${selectedReturn.amount.toFixed(2)}</p>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Refund Amount</label>
+                                    <div className="flex items-baseline gap-1">
+                                        <p className="text-2xl font-black text-slate-900">${selectedReturn.amount.toFixed(2)}</p>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">USD</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Reason for Return</label>
-                                <div className="p-4 bg-white border border-slate-200 rounded-2xl">
-                                    <p className="text-sm font-bold text-rose-500 mb-1 flex items-center gap-2">
-                                        <AlertCircle size={14} /> {selectedReturn.reason}
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                    <AlertCircle size={12} /> Reason for Return
+                                </label>
+                                <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                                    <p className="text-sm font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                        {selectedReturn.reason}
                                     </p>
-                                    <p className="text-sm text-slate-600 italic">"{selectedReturn.comment}"</p>
+                                    <p className="text-sm text-slate-600 leading-relaxed pl-2 border-l-2 border-slate-100">
+                                        "{selectedReturn.comment}"
+                                    </p>
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-slate-100 flex gap-3">
+                            {/* Refund Tracking Timeline */}
+                            {refundTracking.length > 0 && (
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                        <FileText size={12} /> Return / Refund Log
+                                    </label>
+                                    <div className="space-y-3">
+                                        {refundTracking.map((t) => (
+                                            <div key={t.id} className="flex items-start gap-3 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                                                <div className="w-2.5 h-2.5 rounded-full bg-slate-900 mt-1.5" />
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold text-slate-900">{t.status}</p>
+                                                    <p className="text-xs text-slate-500 mt-0.5">
+                                                        {new Date(t.dateTime).toLocaleString()}
+                                                    </p>
+                                                    {t.note ? (
+                                                        <p className="text-xs text-slate-600 mt-2">{t.note}</p>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 block shrink-0">
+                            <div className="flex gap-3">
                                 {selectedReturn.status === 'Pending' && (
                                     <>
                                         <button
                                             onClick={() => handleUpdateStatus(selectedReturn.id, 'Rejected')}
-                                            className="flex-1 py-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                                            className="flex-1 py-3.5 bg-white text-rose-600 border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
                                         >
                                             Reject
                                         </button>
                                         <button
                                             onClick={() => handleUpdateStatus(selectedReturn.id, 'Approved')}
-                                            className="flex-1 py-4 bg-emerald-600 text-white shadow-xl shadow-emerald-200 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 transition-all"
+                                            className="flex-1 py-3.5 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
                                         >
-                                            Approve Return
+                                            Approve Request
                                         </button>
                                     </>
                                 )}
                                 {selectedReturn.status === 'Approved' && (
                                     <button
+                                        onClick={() => handleUpdateStatus(selectedReturn.id, 'Collected')}
+                                        className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+                                    >
+                                        <RefreshCw size={16} />
+                                        Mark as Collected
+                                    </button>
+                                )}
+                                {selectedReturn.status === 'Collected' && (
+                                    <button
                                         onClick={() => handleUpdateStatus(selectedReturn.id, 'Completed')}
-                                        className="flex-1 py-4 bg-blue-600 text-white shadow-xl shadow-blue-200 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
                                     >
                                         <DollarSign size={16} />
                                         Process Refund
@@ -347,14 +511,14 @@ export default function ReturnsView() {
                                 {(selectedReturn.status === 'Rejected' || selectedReturn.status === 'Completed') && (
                                     <button
                                         onClick={() => setSelectedReturn(null)}
-                                        className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                                        className="flex-1 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md"
                                     >
-                                        Close
+                                        Close Details
                                     </button>
                                 )}
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
         </div>

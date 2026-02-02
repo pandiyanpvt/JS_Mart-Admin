@@ -1,27 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     BarChart3,
     TrendingUp,
-    Users,
     ShoppingBag,
-    ArrowUpRight,
-    ArrowDownRight,
-    Calendar,
-    Download,
-    Filter,
-    Layers,
-    MousePointer2,
     DollarSign,
     Target,
-    Activity
+    Activity,
+    CreditCard,
+    RefreshCw,
+    AlertCircle
 } from 'lucide-react';
 import {
     AreaChart,
     Area,
-    BarChart,
-    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -31,52 +24,55 @@ import {
     Pie,
     Cell
 } from 'recharts';
-import { StatsCard } from '@/components/StatsCard';
-
-const salesData = [
-    { name: 'Mon', revenue: 4500, orders: 120, target: 4000 },
-    { name: 'Tue', revenue: 5200, orders: 145, target: 4000 },
-    { name: 'Wed', revenue: 4800, orders: 130, target: 4000 },
-    { name: 'Thu', revenue: 6100, orders: 170, target: 4000 },
-    { name: 'Fri', revenue: 5900, orders: 160, target: 4000 },
-    { name: 'Sat', revenue: 8200, orders: 220, target: 4000 },
-    { name: 'Sun', revenue: 7500, orders: 190, target: 4000 },
-];
-
-const categoryData = [
-    { name: 'Vegetables', value: 35, color: '#10b981', icon: '🥦' },
-    { name: 'Fruits', value: 25, color: '#34d399', icon: '🍎' },
-    { name: 'Dairy', value: 20, color: '#6ee7b7', icon: '🥛' },
-    { name: 'Meat', value: 15, color: '#a7f3d0', icon: '🥩' },
-    { name: 'Bakery', value: 5, color: '#d1fae5', icon: '🥐' },
-];
-
-const trafficData = [
-    { source: 'Direct Search', value: 45, color: 'bg-emerald-500' },
-    { source: 'Social Media', value: 30, color: 'bg-teal-500' },
-    { source: 'Referral', value: 15, color: 'bg-emerald-400' },
-    { source: 'Email', value: 10, color: 'bg-emerald-300' },
-];
+import { cn } from '@/lib/utils';
+import { analyticsService } from '@/lib/api';
 
 export default function AnalyticsView() {
-    const [mounted, setMounted] = useState(false);
-    const [activeRange, setActiveRange] = useState('Last 7 Days');
+    const [activeRange, setActiveRange] = useState('7d');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [data, setData] = useState(null);
+
+    const load = async (range = activeRange) => {
+        try {
+            setLoading(true);
+            setError('');
+            const res = await analyticsService.getSummary(range);
+            setData(res);
+        } catch (e) {
+            console.error('Failed to load analytics:', e);
+            setError(e?.message || 'Failed to load analytics');
+            setData(null);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        load(activeRange);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeRange]);
 
-    if (!mounted) {
-        return (
-            <div className="space-y-8 animate-pulse">
-                <div className="h-20 bg-slate-100 rounded-3xl" />
-                <div className="grid grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-100 rounded-3xl" />)}
-                </div>
-                <div className="h-96 bg-slate-100 rounded-3xl" />
-            </div>
-        );
-    }
+    const formatCurrency = (amount) =>
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(amount || 0));
+
+    const palette = ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#047857', '#0ea5e9', '#a78bfa', '#f59e0b'];
+
+    const categoryData = useMemo(() => {
+        const items = data?.breakdowns?.categoryShare || [];
+        return items.map((c, idx) => ({
+            name: c.name,
+            value: c.value,
+            color: palette[idx % palette.length],
+        }));
+    }, [data]);
+
+    const paymentData = useMemo(() => {
+        const mix = data?.breakdowns?.paymentMix || {};
+        return Object.entries(mix)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    }, [data]);
 
     return (
         <div className="space-y-8">
@@ -92,7 +88,7 @@ export default function AnalyticsView() {
                             onClick={() => setActiveRange(range)}
                             className={cn(
                                 "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
-                                (range === '7d' && activeRange === '7d') || activeRange === range
+                                activeRange === range
                                     ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
                                     : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
                             )}
@@ -101,11 +97,22 @@ export default function AnalyticsView() {
                         </button>
                     ))}
                     <div className="w-[1px] h-6 bg-slate-100 mx-1" />
-                    <button className="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all">
-                        <Download size={20} />
+                    <button
+                        onClick={() => load(activeRange)}
+                        className="p-2.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                        title="Refresh"
+                    >
+                        <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
                     </button>
                 </div>
             </div>
+
+            {error ? (
+                <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-sm font-semibold flex items-center gap-2">
+                    <AlertCircle size={16} />
+                    {error}
+                </div>
+            ) : null}
 
             {/* Core Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,7 +124,9 @@ export default function AnalyticsView() {
                         <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+12.5%</span>
                     </div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Net Revenue</p>
-                    <h3 className="text-2xl font-black text-slate-900 mt-1">$52,489.00</h3>
+                    <h3 className="text-2xl font-black text-slate-900 mt-1">
+                        {loading ? '—' : formatCurrency(data?.metrics?.netRevenue)}
+                    </h3>
                 </div>
 
                 <div className="group bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-blue-200 transition-all duration-500">
@@ -128,18 +137,22 @@ export default function AnalyticsView() {
                         <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+8.2%</span>
                     </div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Orders</p>
-                    <h3 className="text-2xl font-black text-slate-900 mt-1">1,284</h3>
+                    <h3 className="text-2xl font-black text-slate-900 mt-1">
+                        {loading ? '—' : (data?.metrics?.totalOrders ?? 0)}
+                    </h3>
                 </div>
 
                 <div className="group bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-purple-200 transition-all duration-500">
                     <div className="flex items-center justify-between mb-4">
                         <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                            <MousePointer2 size={24} />
+                            <Target size={24} />
                         </div>
-                        <span className="text-xs font-black text-rose-600 bg-rose-50 px-2 py-1 rounded-lg">-0.5%</span>
+                        <span className="text-xs font-black text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">Repeat</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Conv. Rate</p>
-                    <h3 className="text-2xl font-black text-slate-900 mt-1">3.42%</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Repeat Rate</p>
+                    <h3 className="text-2xl font-black text-slate-900 mt-1">
+                        {loading ? '—' : `${(data?.metrics?.repeatRate ?? 0).toFixed(1)}%`}
+                    </h3>
                 </div>
 
                 <div className="group bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:border-amber-200 transition-all duration-500">
@@ -150,7 +163,9 @@ export default function AnalyticsView() {
                         <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+2.4%</span>
                     </div>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Avg. Ticket</p>
-                    <h3 className="text-2xl font-black text-slate-900 mt-1">$40.87</h3>
+                    <h3 className="text-2xl font-black text-slate-900 mt-1">
+                        {loading ? '—' : formatCurrency(data?.metrics?.aov)}
+                    </h3>
                 </div>
             </div>
 
@@ -178,7 +193,7 @@ export default function AnalyticsView() {
 
                     <div className="h-[400px] w-full min-w-0" style={{ minWidth: 0, minHeight: 400 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={salesData}>
+                            <AreaChart data={data?.series || []}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
@@ -217,14 +232,6 @@ export default function AnalyticsView() {
                                     strokeWidth={4}
                                     fillOpacity={1}
                                     fill="url(#colorRev)"
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="target"
-                                    stroke="#e2e8f0"
-                                    strokeWidth={2}
-                                    strokeDasharray="5 5"
-                                    fill="transparent"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -279,53 +286,48 @@ export default function AnalyticsView() {
                     <div className="mt-8 space-y-4 flex-1">
                         {categoryData.map((cat) => (
                             <div key={cat.name} className="flex items-center justify-between group cursor-default">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm" style={{ backgroundColor: `${cat.color}15`, color: cat.color }}>
-                                        {cat.icon}
-                                    </div>
-                                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-wider">{cat.name}</span>
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-wider truncate">{cat.name}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="w-24 h-1.5 bg-slate-50 rounded-full overflow-hidden">
                                         <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${cat.value}%`, backgroundColor: cat.color }} />
                                     </div>
-                                    <span className="text-xs font-black text-slate-900 min-w-[30px]">{cat.value}%</span>
+                                    <span className="text-xs font-black text-slate-900 min-w-[40px] text-right">{cat.value}%</span>
                                 </div>
                             </div>
                         ))}
+                        {!loading && categoryData.length === 0 ? (
+                            <p className="text-sm text-slate-500">No category sales data.</p>
+                        ) : null}
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Traffic Acquisition */}
+                {/* Payment Mix */}
                 <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500" />
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-xl font-black text-slate-900">User Acquisition</h2>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Top performing channels</p>
+                            <h2 className="text-xl font-black text-slate-900">Payment Mix</h2>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Orders by payment method</p>
                         </div>
-                        <button className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-600 rounded-xl transition-all">Details</button>
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                            <CreditCard size={20} />
+                        </div>
                     </div>
 
-                    <div className="space-y-6">
-                        {trafficData.map((item) => (
-                            <div key={item.source} className="group cursor-pointer">
-                                <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.1em] mb-3">
-                                    <span className="text-slate-500">{item.source}</span>
-                                    <span className="text-slate-900">{item.value}% Impact</span>
-                                </div>
-                                <div className="w-full h-3 bg-slate-50 rounded-full overflow-hidden relative border border-slate-100/50">
-                                    <div
-                                        className={cn("h-full transition-all duration-1000 relative rounded-full", item.color)}
-                                        style={{ width: `${item.value}%` }}
-                                    >
-                                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                                    </div>
-                                </div>
+                    <div className="space-y-4">
+                        {paymentData.map((p) => (
+                            <div key={p.name} className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{p.name}</span>
+                                <span className="text-sm font-black text-slate-900">{p.value}</span>
                             </div>
                         ))}
+                        {!loading && paymentData.length === 0 ? (
+                            <p className="text-sm text-slate-500">No payment data.</p>
+                        ) : null}
                     </div>
 
                     <div className="mt-10 p-5 bg-emerald-50/50 rounded-3xl border border-emerald-100 flex items-center gap-4">
@@ -333,8 +335,8 @@ export default function AnalyticsView() {
                             <TrendingUp size={24} />
                         </div>
                         <p className="text-xs font-bold text-emerald-800 leading-relaxed">
-                            <span className="block text-sm font-black mb-0.5">Growth Insight</span>
-                            Direct search has grown by 15% this week. SEO optimization is yielding positive results.
+                            <span className="block text-sm font-black mb-0.5">Operational Insight</span>
+                            Promote your preferred payment methods to reduce failed deliveries and speed up settlements.
                         </p>
                     </div>
                 </div>
@@ -352,31 +354,28 @@ export default function AnalyticsView() {
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
                             <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">New Customers</p>
                             <div className="flex items-baseline gap-2">
-                                <h3 className="text-3xl font-black">342</h3>
-                                <span className="text-emerald-400 text-xs font-bold">+15%</span>
+                                <h3 className="text-3xl font-black">{loading ? '—' : (data?.metrics?.newCustomers ?? 0)}</h3>
+                                <span className="text-emerald-400 text-xs font-bold">range</span>
                             </div>
                         </div>
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
                             <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Returning</p>
                             <div className="flex items-baseline gap-2">
-                                <h3 className="text-3xl font-black">842</h3>
-                                <span className="text-emerald-400 text-xs font-bold">+5%</span>
+                                <h3 className="text-3xl font-black">{loading ? '—' : (data?.metrics?.returningCustomers ?? 0)}</h3>
+                                <span className="text-emerald-400 text-xs font-bold">{loading ? '' : `${(data?.metrics?.repeatRate ?? 0).toFixed(1)}%`}</span>
                             </div>
                         </div>
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Satisfaction</p>
+                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Refund Rate</p>
                             <div className="flex items-center gap-2">
-                                <h3 className="text-3xl font-black">4.8</h3>
-                                <div className="flex gap-0.5">
-                                    {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-emerald-400" />)}
-                                </div>
+                                <h3 className="text-3xl font-black">{loading ? '—' : `${(data?.metrics?.refundRate ?? 0).toFixed(1)}%`}</h3>
                             </div>
                         </div>
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Avg. Session</p>
+                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Active Customers</p>
                             <div className="flex items-baseline gap-2">
-                                <h3 className="text-3xl font-black">8m</h3>
-                                <span className="text-blue-400 text-xs font-bold">+2m</span>
+                                <h3 className="text-3xl font-black">{loading ? '—' : (data?.metrics?.activeCustomers ?? 0)}</h3>
+                                <span className="text-blue-400 text-xs font-bold">range</span>
                             </div>
                         </div>
                     </div>
@@ -387,8 +386,8 @@ export default function AnalyticsView() {
                                 <Target size={24} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loyalty Target</p>
-                                <p className="text-lg font-black tracking-tight">85% Goal Achievement</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Refunded Amount</p>
+                                <p className="text-lg font-black tracking-tight">{loading ? '—' : formatCurrency(data?.metrics?.refundedAmount)}</p>
                             </div>
                         </div>
                         <div className="w-12 h-12 rounded-full border-4 border-emerald-500 border-t-slate-100 animate-spin-slow flex items-center justify-center">

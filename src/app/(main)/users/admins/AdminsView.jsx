@@ -1,58 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, Mail, Shield, ShieldCheck, Lock, Calendar, CheckCircle2, XCircle, Key, Loader2, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { userService, userRoleService, authService } from '@/lib/api';
+import * as XLSX from 'xlsx';
 
-// Mock Data for Admin Users
-const mockAdmins = [
-    {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@jsmart.com',
-        role: 'Super Admin',
-        status: 'Active',
-        lastLogin: '2026-01-21 14:30',
-        permissions: ['all'],
-        avatar: null
-    },
-    {
-        id: 2,
-        name: 'Sarah Manager',
-        email: 'sarah.m@jsmart.com',
-        role: 'Store Manager',
-        status: 'Active',
-        lastLogin: '2026-01-20 09:15',
-        permissions: ['products:write', 'orders:read', 'inventory:write'],
-        avatar: null
-    },
-    {
-        id: 3,
-        name: 'Mike Support',
-        email: 'mike.s@jsmart.com',
-        role: 'Support Agent',
-        status: 'Active',
-        lastLogin: '2026-01-21 11:45',
-        permissions: ['orders:read', 'users:read'],
-        avatar: null
-    },
-    {
-        id: 4,
-        name: 'John Content',
-        email: 'john.c@jsmart.com',
-        role: 'Content Editor',
-        status: 'Inactive',
-        lastLogin: '2025-12-15 16:20',
-        permissions: ['cms:write'],
-        avatar: null
-    },
-];
+const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
+    <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <input
+            type={type}
+            required={required}
+            value={value || ''}
+            onChange={onChange}
+            placeholder={placeholder}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
+        />
+    </div>
+);
 
 export default function AdminsView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('All Roles');
-    const [admins, setAdmins] = useState(mockAdmins);
+    const [admins, setAdmins] = useState([]);
+    const [availableRoles, setAvailableRoles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
 
     // Modal States
     const [viewAdmin, setViewAdmin] = useState(null);
@@ -61,79 +36,194 @@ export default function AdminsView() {
     const [deleteId, setDeleteId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
+    useEffect(() => {
+        const user = authService.getCurrentUser();
+        // Manager should not see this page
+        if (user?.role === 'MANAGER') {
+            router.push('/dashboard');
+            return;
+        }
+        setCurrentUser(user);
+        loadData(user);
+    }, []);
+
+    const loadData = async (user) => {
+        try {
+            setIsLoading(true);
+            const [usersData, rolesData] = await Promise.all([
+                userService.getAll(),
+                userRoleService.getAll()
+            ]);
+
+            setAvailableRoles(rolesData);
+
+            // Filter for only admin-like roles (assuming ID 1 is User/Customer, others are admin/staff)
+            // Adjust logic based on your actual role structure. 
+            // If roles have a 'type' or similar, use that. For now assuming ID > 1 is admin-like.
+            const mappedAdmins = usersData
+                .filter(u => u.userRoleId && u.userRoleId !== 1) // Access logic
+                .map(u => {
+                    const roleObj = rolesData.find(r => r.id === u.userRoleId);
+                    return {
+                        id: u.id,
+                        fullName: u.fullName,
+                        name: u.fullName || (u.emailAddress ? u.emailAddress.split('@')[0] : 'User'),
+                        emailAddress: u.emailAddress,
+                        userRoleId: u.userRoleId,
+                        role: roleObj ? roleObj.role : 'Unknown',
+                        status: u.isActive ? 'Active' : 'Inactive',
+                        lastLogin: u.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : 'Never',
+                        permissions: ['all'], // Placeholder
+                        phoneNumber: u.phoneNumber
+                    };
+                })
+                .filter(admin => {
+                    // RBAC Filtering Logic
+                    if (user?.role === 'DEVELOPER') return true;
+                    if (user?.role === 'ADMIN') {
+                        // Admin sees Admin and Manager, but NOT Developer
+                        return admin.role !== 'DEVELOPER';
+                    }
+                    // Default fallback (e.g. if user role is unknown or new type)
+                    return admin.role !== 'DEVELOPER';
+                });
+            setAdmins(mappedAdmins);
+        } catch (error) {
+            console.error('Failed to load data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const loadAdmins = async () => {
+        // Helper to just reload admins if roles are already loaded
+        try {
+            const usersData = await userService.getAll();
+            const mappedAdmins = usersData
+                .filter(u => u.userRoleId && u.userRoleId !== 1)
+                .map(u => {
+                    const roleObj = availableRoles.find(r => r.id === u.userRoleId);
+                    return {
+                        id: u.id,
+                        fullName: u.fullName,
+                        name: u.fullName || (u.emailAddress ? u.emailAddress.split('@')[0] : 'User'),
+                        emailAddress: u.emailAddress,
+                        userRoleId: u.userRoleId,
+                        role: roleObj ? roleObj.role : 'Unknown',
+                        status: u.isActive ? 'Active' : 'Inactive',
+                        lastLogin: u.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : 'Never',
+                        permissions: ['all'],
+                        phoneNumber: u.phoneNumber
+                    };
+                })
+                .filter(admin => {
+                    // RBAC Filtering Logic
+                    if (currentUser?.role === 'DEVELOPER') return true;
+                    if (currentUser?.role === 'ADMIN') {
+                        return admin.role !== 'DEVELOPER';
+                    }
+                    return admin.role !== 'DEVELOPER';
+                });
+            setAdmins(mappedAdmins);
+        } catch (error) {
+            console.error('Failed to reload admins:', error);
+        }
+    };
+
     // Filter Logic
     const filteredAdmins = admins.filter(admin => {
-        const matchesSearch = admin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            admin.email.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (admin.emailAddress || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (admin.fullName || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesRole = roleFilter === 'All Roles' || admin.role === roleFilter;
         return matchesSearch && matchesRole;
     });
 
     // Handlers
     const handleOpenAdd = () => {
+        // Default to first available admin role or just the first one
+        const defaultRole = availableRoles.find(r => r.id !== 1) || availableRoles[0];
         setEditingAdmin({
-            name: '',
-            email: '',
-            role: 'Support Agent',
+            fullName: '',
+            emailAddress: '',
+            userRoleId: defaultRole ? defaultRole.id : '',
             status: 'Active',
-            permissions: [],
-            password: '', // Should be handled securely in real app
+            phoneNumber: '',
+            password: '',
             confirmPassword: ''
         });
         setIsNewAdmin(true);
     };
 
     const handleOpenEdit = (admin) => {
-        setEditingAdmin({ ...admin });
+        setEditingAdmin({
+            ...admin,
+            password: '' // Don't fill password on edit
+        });
         setIsNewAdmin(false);
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
         setIsSaving(true);
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        if (isNewAdmin) {
-            const newId = Math.max(...admins.map(a => a.id), 0) + 1;
-            const newAdmin = {
-                ...editingAdmin,
-                id: newId,
-                lastLogin: 'Never',
-                // password fields would not be stored in frontend state like this in production
+        try {
+            const apiData = {
+                fullName: editingAdmin.fullName,
+                emailAddress: editingAdmin.emailAddress,
+                phoneNumber: editingAdmin.phoneNumber || '0000000000', // Ensure phone is present if required
+                userRoleId: parseInt(editingAdmin.userRoleId),
+                isActive: editingAdmin.status === 'Active'
             };
-            setAdmins([newAdmin, ...admins]);
-        } else {
-            setAdmins(admins.map(a => a.id === editingAdmin.id ? editingAdmin : a));
-        }
 
-        setIsSaving(false);
-        setEditingAdmin(null);
+            if (isNewAdmin) {
+                // Register requires password
+                await userService.create({
+                    ...apiData,
+                    password: editingAdmin.password
+                });
+            } else {
+                // Update doesn't strictly require password unless changing
+                await userService.update(editingAdmin.id, apiData);
+            }
+            await loadAdmins();
+            setEditingAdmin(null);
+        } catch (error) {
+            console.error('Failed to save admin:', error);
+            alert('Failed to save: ' + error.message);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleDeleteClick = (id) => {
         setDeleteId(id);
     };
 
-    const confirmDelete = () => {
-        setAdmins(admins.filter(a => a.id !== deleteId));
-        setDeleteId(null);
+    const confirmDelete = async () => {
+        try {
+            await userService.delete(deleteId);
+            await loadAdmins();
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Failed to delete admin:', error);
+        }
     };
 
-    const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
-        <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
-            <input
-                type={type}
-                required={required}
-                value={editingAdmin?.[name] || ''}
-                onChange={e => setEditingAdmin({ ...editingAdmin, [name]: e.target.value })}
-                placeholder={placeholder}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
-            />
-        </div>
-    );
+    const handleExport = () => {
+        const dataToExport = admins.map(a => ({
+            'ID': a.id,
+            'Full Name': a.fullName || 'N/A',
+            'Email': a.emailAddress,
+            'Role': a.role,
+            'Status': a.status,
+            'Last Login': a.lastLogin,
+            'Phone': a.phoneNumber
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Admins");
+        XLSX.writeFile(wb, `Admins_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
 
     return (
         <div className="space-y-8">
@@ -142,13 +232,22 @@ export default function AdminsView() {
                     <h1 className="text-2xl font-bold text-slate-900">Admin Users</h1>
                     <p className="text-slate-500 text-sm">Manage administrative access and roles.</p>
                 </div>
-                <button
-                    onClick={handleOpenAdd}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-200"
-                >
-                    <Plus size={18} />
-                    <span>Add New Admin</span>
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm"
+                    >
+                        <Plus className="rotate-45" size={18} />
+                        <span>Export</span>
+                    </button>
+                    <button
+                        onClick={handleOpenAdd}
+                        className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-200"
+                    >
+                        <Plus size={18} />
+                        <span>Add New Admin</span>
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -170,10 +269,9 @@ export default function AdminsView() {
                             className="bg-slate-50 border border-slate-100 text-sm font-medium rounded-xl px-4 py-2 focus:ring-0 text-slate-600 outline-none"
                         >
                             <option>All Roles</option>
-                            <option>Super Admin</option>
-                            <option>Store Manager</option>
-                            <option>Support Agent</option>
-                            <option>Content Editor</option>
+                            {availableRoles.filter(r => r.id !== 1).map(role => (
+                                <option key={role.id} value={role.role}>{role.role}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -190,7 +288,13 @@ export default function AdminsView() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {filteredAdmins.length === 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                        <div className="flex justify-center"><Loader2 className="animate-spin" /></div>
+                                    </td>
+                                </tr>
+                            ) : filteredAdmins.length === 0 ? (
                                 <tr>
                                     <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
                                         No admin users found.
@@ -208,7 +312,7 @@ export default function AdminsView() {
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{admin.name}</p>
                                                     <div className="flex items-center gap-1.5 text-xs text-slate-500">
                                                         <Mail size={10} />
-                                                        {admin.email}
+                                                        {admin.emailAddress}
                                                     </div>
                                                 </div>
                                             </div>
@@ -216,9 +320,7 @@ export default function AdminsView() {
                                         <td className="px-6 py-4">
                                             <span className={cn(
                                                 "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                admin.role === 'Super Admin' ? "bg-purple-50 text-purple-700 border-purple-100" :
-                                                    admin.role === 'Store Manager' ? "bg-blue-50 text-blue-700 border-blue-100" :
-                                                        "bg-slate-50 text-slate-600 border-slate-100"
+                                                "bg-slate-50 text-slate-600 border-slate-100"
                                             )}>
                                                 <ShieldCheck size={12} />
                                                 {admin.role}
@@ -274,15 +376,7 @@ export default function AdminsView() {
                 </div>
 
                 <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
-                    <p className="text-sm text-slate-500">
-                        {filteredAdmins.length === 0
-                            ? 'No admins found'
-                            : `Showing ${filteredAdmins.length} admin users`}
-                    </p>
-                    <div className="flex gap-2">
-                        <button className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all disabled:opacity-50">Previous</button>
-                        <button className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">Next</button>
-                    </div>
+                    {/* Pagination UI */}
                 </div>
             </div>
 
@@ -309,14 +403,10 @@ export default function AdminsView() {
                                     <UserCog size={32} />
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-bold text-slate-900">{viewAdmin.name}</h4>
+                                    <h4 className="text-xl font-bold text-slate-900">{viewAdmin.fullName || viewAdmin.name}</h4>
+                                    <p className="text-xs text-slate-500">{viewAdmin.emailAddress}</p>
                                     <div className="flex gap-2 mt-1">
-                                        <span className={cn(
-                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                            viewAdmin.role === 'Super Admin' ? "bg-purple-50 text-purple-700 border-purple-100" :
-                                                viewAdmin.role === 'Store Manager' ? "bg-blue-50 text-blue-700 border-blue-100" :
-                                                    "bg-slate-50 text-slate-600 border-slate-100"
-                                        )}>
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border bg-slate-50 text-slate-600 border-slate-100">
                                             <ShieldCheck size={10} />
                                             {viewAdmin.role}
                                         </span>
@@ -336,7 +426,7 @@ export default function AdminsView() {
                                     <Mail className="text-emerald-600 mt-0.5" size={18} />
                                     <div>
                                         <p className="text-xs font-bold text-slate-500 uppercase">Email Address</p>
-                                        <p className="text-sm font-medium text-slate-900">{viewAdmin.email}</p>
+                                        <p className="text-sm font-medium text-slate-900">{viewAdmin.emailAddress}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
@@ -344,25 +434,6 @@ export default function AdminsView() {
                                     <div>
                                         <p className="text-xs font-bold text-slate-500 uppercase">Last Login</p>
                                         <p className="text-sm font-medium text-slate-900">{viewAdmin.lastLogin}</p>
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                                    <p className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
-                                        <Key size={14} /> Assigned Permissions
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {viewAdmin.permissions.includes('all') ? (
-                                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-md text-xs font-bold uppercase">All Access</span>
-                                        ) : (
-                                            viewAdmin.permissions.map((perm, idx) => (
-                                                <span key={idx} className="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-md text-xs font-medium font-mono">
-                                                    {perm}
-                                                </span>
-                                            ))
-                                        )}
-                                        {viewAdmin.permissions.length === 0 && (
-                                            <span className="text-xs text-slate-400 italic">No specific permissions assigned</span>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -401,22 +472,37 @@ export default function AdminsView() {
                             <form id="admin-form" onSubmit={handleSave} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Full Name" name="name" required placeholder="e.g. Admin Name" />
+                                        <FormInput
+                                            label="Full Name"
+                                            name="fullName"
+                                            required
+                                            placeholder="e.g. Admin Name"
+                                            value={editingAdmin.fullName}
+                                            onChange={e => setEditingAdmin({ ...editingAdmin, fullName: e.target.value })}
+                                        />
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Email Address" name="email" type="email" required placeholder="admin@domain.com" />
+                                        <FormInput
+                                            label="Email Address"
+                                            name="emailAddress"
+                                            type="email"
+                                            required
+                                            placeholder="admin@domain.com"
+                                            value={editingAdmin.emailAddress}
+                                            onChange={e => setEditingAdmin({ ...editingAdmin, emailAddress: e.target.value })}
+                                        />
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Role</label>
                                         <select
-                                            value={editingAdmin.role}
-                                            onChange={e => setEditingAdmin({ ...editingAdmin, role: e.target.value })}
+                                            value={editingAdmin.userRoleId}
+                                            onChange={e => setEditingAdmin({ ...editingAdmin, userRoleId: e.target.value })}
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500"
                                         >
-                                            <option value="Super Admin">Super Admin</option>
-                                            <option value="Store Manager">Store Manager</option>
-                                            <option value="Support Agent">Support Agent</option>
-                                            <option value="Content Editor">Content Editor</option>
+                                            <option value="">Select Role</option>
+                                            {availableRoles.filter(r => r.id !== 1).map(role => (
+                                                <option key={role.id} value={role.id}>{role.role}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
@@ -433,7 +519,15 @@ export default function AdminsView() {
                                     {isNewAdmin && (
                                         <>
                                             <div className="sm:col-span-2 relative">
-                                                <FormInput label="Temporary Password" name="password" type="password" required={isNewAdmin} placeholder="••••••••" />
+                                                <FormInput
+                                                    label="Temporary Password"
+                                                    name="password"
+                                                    type="password"
+                                                    required={isNewAdmin}
+                                                    placeholder="••••••••"
+                                                    value={editingAdmin.password || ''}
+                                                    onChange={e => setEditingAdmin({ ...editingAdmin, password: e.target.value })}
+                                                />
                                                 <div className="absolute top-0 right-0 text-[10px] text-amber-600 font-medium flex items-center gap-1">
                                                     <Lock size={10} />
                                                     Required for new users

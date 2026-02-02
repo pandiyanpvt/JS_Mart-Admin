@@ -4,32 +4,43 @@ import {
     ShoppingCart,
     Users,
     BarChart3,
-    Truck,
     Settings,
     Image as ImageIcon,
     BadgePercent,
-    ClipboardList
+    ClipboardList,
+    ShieldCheck,
+    Layers
 } from 'lucide-react';
 
 export const navigationItems = [
     {
         title: 'Dashboard',
         icon: LayoutDashboard,
-        href: '/',
+        href: '/dashboard',
     },
-    // {
-    //     title: 'Analytics',
-    //     icon: BarChart3,
-    //     href: '/analytics',
-    // },
     {
         title: 'Product Management',
         icon: Package,
         items: [
             { title: 'Products List', href: '/products' },
             { title: 'Add Product', href: '/products/add' },
+            { title: 'Low Stock', href: '/products/low-stock' },
             { title: 'Categories', href: '/categories' },
+            { title: 'Brands', href: '/brands' },
         ],
+    },
+    {
+        title: 'Stock Management',
+        icon: ClipboardList,
+        items: [
+            { title: 'Stock Logs', href: '/stocks/logs' },
+            { title: 'Add Stock', href: '/stocks/add' },
+            { title: 'Remove Stock', href: '/stocks/remove' },
+            { title: 'Removal Approvals', href: '/stocks/approvals' },
+            { title: 'Suppliers', href: '/inventory/suppliers' },
+        ],
+
+
     },
     {
         title: 'Order Management',
@@ -37,15 +48,6 @@ export const navigationItems = [
         items: [
             { title: 'Orders List', href: '/orders' },
             { title: 'Returns', href: '/orders/returns' },
-        ],
-    },
-    {
-        title: 'Inventory',
-        icon: ClipboardList,
-        items: [
-            { title: 'Stock Levels', href: '/inventory' },
-            { title: 'Low Stock Alerts', href: '/inventory/alerts' },
-            { title: 'Suppliers', href: '/inventory/suppliers' },
         ],
     },
     {
@@ -58,27 +60,21 @@ export const navigationItems = [
         ],
     },
     {
-        title: 'Delivery',
-        icon: Truck,
-        items: [
-            { title: 'Delivery Areas', href: '/delivery/areas' },
-            { title: 'Partners', href: '/delivery/partners' },
-        ],
-    },
-    {
-        title: 'Promotions',
+        title: 'Marketing',
         icon: BadgePercent,
         items: [
+            { title: 'Web Banners', href: '/promotions/banners' },
+            { title: 'Active Offers', href: '/marketing/offers' },
             { title: 'Coupons', href: '/promotions/coupons' },
-            { title: 'Flash Sales', href: '/promotions/flash-sales' },
         ],
     },
     {
-        title: 'Content (CMS)',
-        icon: ImageIcon,
+        title: 'Analysis',
+        icon: BarChart3,
         items: [
-            { title: 'Home Banners', href: '/cms/banners' },
-            { title: 'Offers Section', href: '/cms/offers' },
+            { title: 'Business Intelligence', href: '/analytics/business' },
+            { title: 'Product Analysis', href: '/analytics/products' },
+            { title: 'Customer Analysis', href: '/analytics/customers' },
         ],
     },
     {
