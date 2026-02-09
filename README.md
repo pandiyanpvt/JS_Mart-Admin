@@ -66,3 +66,68 @@ The dashboard uses a hybrid data approach:
 
 ## 📄 License
 This project is proprietary for the JS Mart Admin Dashboard.
+
+# Project Folder Structure
+
+I have reorganized the project to follow Next.js App Router best practices.
+
+## Overview
+
+- **`src/app`**: Contains **only** routing logic (`page.jsx`, `layout.jsx`). Components here are minimal wrappers.
+- **`src/components`**: Contains all UI logic and presentation components.
+  - **`layout`**: Application shell (Header, Sidebar).
+  - **`providers`**: Context providers (AuthProvider).
+  - **`features`**: Feature-specific components grouped by domain.
+
+## Detailed Structure
+
+```
+src/
+├── app/                  # Route definitions
+│   ├── (auth)/           # Authentication routes
+│   └── (main)/           # Main application routes
+│       ├── dashboard/    # /dashboard
+│       ├── products/     # /products
+│       ├── orders/       # /orders
+│       └── ...
+│
+├── components/           # Reusable components
+│   ├── layout/           # Global layout components
+│   │   ├── Header.jsx
+│   │   └── Sidebar.jsx
+│   │
+│   ├── providers/        # Context Providers
+│   │   └── AuthProvider.jsx
+│   │
+│   └── features/         # Feature-specific logic
+│       ├── dashboard/    # Dashboard widgets & views
+│       │   ├── DashboardView.jsx
+│       │   ├── SalesChart.jsx
+│       │   └── StatsCard.jsx
+│       │
+│       ├── products/     # Product management
+│       │   ├── ProductsList.jsx
+│       │   └── AddProductForm.jsx
+│       │
+│       ├── orders/       # Order management
+│       │   ├── OrdersView.jsx
+│       │   └── OrderReceipt.jsx
+│       │
+│       └── ... (analytics, customers, inventory, etc.)
+```
+
+## Benefits
+
+1.  **Separation of Concerns**: Routing is separate from UI logic.
+2.  **Maintainability**: Features are self-contained in `components/features`.
+3.  **Scalability**: Easy to add new features without cluttering the route tree.
+4.  **Reusability**: Components can be imported and reused across pages if needed.
+
+## How to Import
+
+Use the absolute path alias `@/` to import components:
+
+```javascript
+import { Header } from "@/components/layout/Header";
+import ProductsList from "@/components/features/products/ProductsList";
+```

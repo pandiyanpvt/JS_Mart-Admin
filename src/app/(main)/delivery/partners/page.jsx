@@ -1,10 +1,7 @@
-import PartnersView from './PartnersView';
+"use client";
 
-export const metadata = {
-    title: 'Delivery Partners | JS Mart Admin',
-    description: 'Manage courier services and logistic partners',
-};
+import PartnersView from "@/components/features/delivery/PartnersView";
 
-export default function PartnersPage() {
+export default function Page() {
     return <PartnersView />;
 }

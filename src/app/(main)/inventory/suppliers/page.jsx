@@ -1,5 +1,7 @@
-import SuppliersView from './SuppliersView';
+"use client";
 
-export default function SuppliersPage() {
+import SuppliersView from "@/components/features/inventory/SuppliersView";
+
+export default function Page() {
     return <SuppliersView />;
 }

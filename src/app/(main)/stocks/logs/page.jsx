@@ -1,5 +1,7 @@
-import StockLogsList from './StockLogsList';
+"use client";
 
-export default function StockLogsPage() {
+import StockLogsList from "@/components/features/stocks/StockLogsList";
+
+export default function Page() {
     return <StockLogsList />;
 }

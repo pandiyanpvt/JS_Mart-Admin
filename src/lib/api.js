@@ -26,9 +26,16 @@ async function fetchAPI(endpoint, options = {}) {
         headers,
     });
 
-
-
     if (!response.ok) {
+        // Handle 401 Unauthorized - clear auth and redirect to login
+        if (response.status === 401) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('jsmart_token');
+                localStorage.removeItem('jsmart_user');
+                window.location.href = '/login';
+            }
+        }
+
         const error = await response.json().catch(() => ({ message: 'An error occurred' }));
         throw new Error(error.message || 'Something went wrong');
     }

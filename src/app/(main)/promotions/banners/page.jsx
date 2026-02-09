@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import BannersList from './BannersList';
+import BannersList from "@/components/features/promotions/BannersList";
 
-export default function BannersPage() {
+export default function Page() {
     return <BannersList />;
 }

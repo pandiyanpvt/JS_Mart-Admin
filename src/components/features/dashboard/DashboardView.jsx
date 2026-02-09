@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { SalesChart } from "@/components/SalesChart";
+import { SalesChart } from "@/components/features/dashboard/SalesChart";
 import {
     ShoppingBag,
     TrendingUp,

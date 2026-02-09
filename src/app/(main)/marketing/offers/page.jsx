@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import OffersList from './OffersList';
+import OffersList from "@/components/features/marketing/OffersList";
 
-export default function OffersPage() {
+export default function Page() {
     return <OffersList />;
 }

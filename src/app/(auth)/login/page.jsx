@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { authService } from "@/lib/api";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,12 +16,13 @@ export default function LoginPage() {
     const [error, setError] = useState("");
 
     const router = useRouter();
+    const { login, user } = useAuth();
 
     React.useEffect(() => {
-        if (authService.isAuthenticated()) {
+        if (user) {
             router.push('/dashboard');
         }
-    }, [router]);
+    }, [user, router]);
 
 
     const handleSubmit = async (e) => {
@@ -30,7 +31,7 @@ export default function LoginPage() {
         setError("");
 
         try {
-            await authService.login(email, password);
+            await login(email, password);
             router.push("/dashboard");
 
         } catch (err) {

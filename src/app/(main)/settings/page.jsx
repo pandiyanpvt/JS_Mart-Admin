@@ -1,10 +1,7 @@
-import SettingsView from './SettingsView';
+"use client";
 
-export const metadata = {
-    title: 'Settings | JS Mart Admin',
-    description: 'Manage application preferences and configurations',
-};
+import SettingsView from "@/components/features/settings/SettingsView";
 
-export default function SettingsPage() {
+export default function Page() {
     return <SettingsView />;
 }

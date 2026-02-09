@@ -1,5 +1,7 @@
-import LowStockView from './LowStockView';
+"use client";
 
-export default function LowStockPage() {
+import LowStockView from "@/components/features/inventory/LowStockView";
+
+export default function Page() {
     return <LowStockView />;
 }

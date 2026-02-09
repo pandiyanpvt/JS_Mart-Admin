@@ -1,10 +1,7 @@
-import RolesView from './RolesView';
+"use client";
 
-export const metadata = {
-    title: 'Roles & Permissions | JS Mart Admin',
-    description: 'Manage user roles and access control',
-};
+import RolesView from "@/components/features/users/RolesView";
 
-export default function RolesPage() {
+export default function Page() {
     return <RolesView />;
 }

@@ -31,7 +31,7 @@ import Image from 'next/image';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import OrderReceipt from '@/components/OrderReceipt';
+import OrderReceipt from '@/components/features/orders/OrderReceipt';
 
 const STATUS_FLOW = {
     'PENDING': ['PROCESSING', 'CANCELLED'],
@@ -105,17 +105,17 @@ export default function OrdersView() {
                 orderId: orderId,
                 orderStatus: newStatus
             });
-            
+
             // Reload orders to get updated data
             await loadOrders();
-            
+
             // If viewing order details, reload tracking history
             if (selectedOrder && selectedOrder.id === orderId) {
                 await loadTrackingHistory(orderId);
                 // Update selected order status
                 setSelectedOrder({ ...selectedOrder, status: newStatus });
             }
-            
+
             alert(`Order status updated to ${newStatus} successfully!`);
         } catch (error) {
             console.error('Failed to update status:', error);
@@ -130,9 +130,9 @@ export default function OrdersView() {
             order.id.toString().includes(searchQuery) ||
             (order.user && (order.user.fullName || order.user.emailAddress || '').toLowerCase().includes(searchQuery.toLowerCase())) ||
             (order.shippingAddress && (order.shippingAddress.address || '').toLowerCase().includes(searchQuery.toLowerCase()));
-        
+
         const matchesFilter = filterStatus === 'All' || order.status === filterStatus;
-        
+
         return matchesSearch && matchesFilter;
     });
 
@@ -324,8 +324,8 @@ export default function OrdersView() {
             {/* Stats Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 w-full">
                 {['All', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'].map((status) => {
-                    const count = status === 'All' 
-                        ? orders.length 
+                    const count = status === 'All'
+                        ? orders.length
                         : orders.filter(o => o.status === status).length;
                     return (
                         <motion.div
@@ -572,7 +572,7 @@ export default function OrdersView() {
                                         {selectedOrder.status}
                                     </span>
                                 </div>
-                                
+
                                 {getNextStatuses(selectedOrder.status).length > 0 && (
                                     <div className="flex gap-2 mt-4">
                                         {getNextStatuses(selectedOrder.status).map((nextStatus) => (

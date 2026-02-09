@@ -1,10 +1,7 @@
-import BannersView from './BannersView';
+"use client";
 
-export const metadata = {
-    title: 'Home Banners | JS Mart Admin',
-    description: 'Manage homepage hero sliders and promotional banners',
-};
+import BannersView from "@/components/features/cms/BannersView";
 
-export default function BannersPage() {
+export default function Page() {
     return <BannersView />;
 }

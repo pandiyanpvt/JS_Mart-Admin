@@ -1,5 +1,7 @@
-import BatchesList from './BatchesList';
+"use client";
 
-export default function BatchesPage() {
+import BatchesList from "@/components/features/stocks/BatchesList";
+
+export default function Page() {
     return <BatchesList />;
 }

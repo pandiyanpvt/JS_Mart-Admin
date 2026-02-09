@@ -1,10 +1,7 @@
-import DeliveryAreasView from './DeliveryAreasView';
+"use client";
 
-export const metadata = {
-    title: 'Delivery Areas | JS Mart Admin',
-    description: 'Manage delivery zones and shipping costs',
-};
+import DeliveryAreasView from "@/components/features/delivery/DeliveryAreasView";
 
-export default function DeliveryAreasPage() {
+export default function Page() {
     return <DeliveryAreasView />;
 }

@@ -1,5 +1,7 @@
-import BrandsView from './BrandsView';
+"use client";
 
-export default function BrandsPage() {
+import BrandsView from "@/components/features/brands/BrandsView";
+
+export default function Page() {
     return <BrandsView />;
 }

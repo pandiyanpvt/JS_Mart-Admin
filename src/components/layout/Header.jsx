@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, LogOut, ChevronDown } from 'lucide-react';
 import { authService, notificationService } from '@/lib/api';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export function Header() {
     const [user, setUser] = useState(null);
@@ -11,7 +12,11 @@ export function Header() {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isNotifOpen, setIsNotifOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const notifRef = useRef(null);
+    const profileRef = useRef(null);
+
+    const { logout } = useAuth();
 
     useEffect(() => {
         const currentUser = authService.getCurrentUser();
@@ -54,6 +59,21 @@ export function Header() {
         }
         return () => document.removeEventListener('mousedown', handler);
     }, [isNotifOpen]);
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (!profileRef.current) return;
+            if (!profileRef.current.contains(e.target)) {
+                setIsProfileOpen(false);
+            }
+        };
+        if (isProfileOpen) {
+            document.addEventListener('mousedown', handler);
+        } else {
+            document.removeEventListener('mousedown', handler);
+        }
+        return () => document.removeEventListener('mousedown', handler);
+    }, [isProfileOpen]);
 
     const handleToggleNotif = () => {
         setIsNotifOpen((open) => !open);
@@ -143,9 +163,8 @@ export function Header() {
                                             key={n.id}
                                             type="button"
                                             onClick={() => handleNotificationClick(n)}
-                                            className={`w-full text-left px-4 py-3 text-xs border-b border-slate-50 last:border-b-0 hover:bg-slate-50 transition-colors ${
-                                                n.isRead ? 'bg-white' : 'bg-emerald-50/60'
-                                            }`}
+                                            className={`w-full text-left px-4 py-3 text-xs border-b border-slate-50 last:border-b-0 hover:bg-slate-50 transition-colors ${n.isRead ? 'bg-white' : 'bg-emerald-50/60'
+                                                }`}
                                         >
                                             <p className="font-semibold text-slate-900 truncate">
                                                 {n.title}
@@ -173,18 +192,46 @@ export function Header() {
 
                 <div className="h-8 w-px bg-slate-200 mx-1" />
 
-                <div className="flex items-center gap-3 pl-2 group cursor-pointer">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                            {user?.emailAddress?.split('@')[0] || 'Guest'}
-                        </p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                            {roleName}
-                        </p>
-                    </div>
-                    <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 border border-slate-300 group-hover:border-emerald-300 transition-all overflow-hidden relative">
-                        <User size={20} />
-                    </div>
+                <div className="relative" ref={profileRef}>
+                    <button
+                        type="button"
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className="flex items-center gap-3 pl-2 group cursor-pointer hover:bg-slate-50 rounded-lg px-3 py-2 transition-colors"
+                    >
+                        <div className="text-right hidden sm:block">
+                            <p className="text-sm font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                                {user?.emailAddress?.split('@')[0] || 'Guest'}
+                            </p>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">
+                                {roleName}
+                            </p>
+                        </div>
+                        <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 border border-slate-300 group-hover:border-emerald-300 transition-all overflow-hidden relative">
+                            <User size={20} />
+                        </div>
+                        <ChevronDown size={16} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    </button>
+
+                    {isProfileOpen && (
+                        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-40 overflow-hidden">
+                            <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                                <p className="text-sm font-bold text-slate-900 truncate">
+                                    {user?.emailAddress || 'Guest'}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    {roleName}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={logout}
+                                className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3 font-medium"
+                            >
+                                <LogOut size={18} />
+                                Logout
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

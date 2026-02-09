@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import LowStockList from './LowStockList';
+import LowStockList from "@/components/features/products/LowStockList";
 
-export default function LowStockPage() {
+export default function Page() {
     return <LowStockList />;
 }

@@ -1,10 +1,7 @@
-import CustomersView from './CustomersView';
+"use client";
 
-export const metadata = {
-    title: 'Customers | JS Mart Admin',
-    description: 'Manage your customer base',
-};
+import CustomersView from "@/components/features/users/CustomersView";
 
-export default function CustomersPage() {
+export default function Page() {
     return <CustomersView />;
 }
