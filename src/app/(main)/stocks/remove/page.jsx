@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import RemoveStockForm from './RemoveStockForm';
+import RemoveStockForm from "@/components/features/stocks/RemoveStockForm";
 
-export default function RemoveStockPage() {
+export default function Page() {
     return <RemoveStockForm />;
 }

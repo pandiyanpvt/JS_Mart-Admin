@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import AddStockForm from './AddStockForm';
+import AddStockForm from "@/components/features/stocks/AddStockForm";
 
-export default function AddStockPage() {
+export default function Page() {
     return <AddStockForm />;
 }

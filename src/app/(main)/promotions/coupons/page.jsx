@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import CouponsList from './CouponsList';
+import CouponsList from "@/components/features/promotions/CouponsList";
 
 export default function CouponsPage() {
     return <CouponsList />;

@@ -1,10 +1,7 @@
-import AdminsView from './AdminsView';
+"use client";
 
-export const metadata = {
-    title: 'Admin Users | JS Mart Admin',
-    description: 'Manage admin users and permissions',
-};
+import AdminsView from "@/components/features/users/AdminsView";
 
-export default function AdminsPage() {
+export default function Page() {
     return <AdminsView />;
 }

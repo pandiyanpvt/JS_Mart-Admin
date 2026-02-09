@@ -1,10 +1,7 @@
-import FlashSalesView from './FlashSalesView';
+"use client";
 
-export const metadata = {
-    title: 'Flash Sales | JS Mart Admin',
-    description: 'Manage time-limited offers and sales events',
-};
+import FlashSalesView from "@/components/features/promotions/FlashSalesView";
 
-export default function FlashSalesPage() {
+export default function Page() {
     return <FlashSalesView />;
 }

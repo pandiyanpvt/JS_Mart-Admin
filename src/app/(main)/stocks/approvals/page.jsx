@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import ApprovalsList from './ApprovalsList';
+import ApprovalsList from "@/components/features/stocks/ApprovalsList";
 
-export default function ApprovalsPage() {
+export default function Page() {
     return <ApprovalsList />;
 }

@@ -1,10 +1,7 @@
-import OffersView from './OffersView';
+"use client";
 
-export const metadata = {
-    title: 'Offers Section | JS Mart Admin',
-    description: 'Manage featured deals and promotional offer blocks',
-};
+import OffersView from "@/components/features/cms/OffersView";
 
-export default function OffersPage() {
+export default function Page() {
     return <OffersView />;
 }
