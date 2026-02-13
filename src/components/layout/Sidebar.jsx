@@ -1,25 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight, Menu, X, LogOut } from 'lucide-react';
 import { navigationItems } from '@/data/navigation';
 import { cn } from '@/lib/utils';
-
 import Image from 'next/image';
 import { authService, stockLogService, productService } from '@/lib/api';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
     const [expandedItems, setExpandedItems] = useState([]);
     const [isOpen, setIsOpen] = useState(true);
     const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
     const [lowStockCount, setLowStockCount] = useState(0);
+
+    const { logout } = useAuth();
 
     const toggleExpand = (title) => {
         setExpandedItems((prev) =>
@@ -27,13 +27,6 @@ export function Sidebar() {
                 ? prev.filter((item) => item !== title)
                 : [...prev, title]
         );
-    };
-
-    const router = useRouter();
-
-    const handleLogout = () => {
-        authService.logout();
-        router.push('/login');
     };
 
     // Fetch counts for badges
@@ -58,7 +51,6 @@ export function Sidebar() {
         const interval = setInterval(fetchCounts, 30000);
         return () => clearInterval(interval);
     }, []);
-
 
     return (
         <>
@@ -105,7 +97,7 @@ export function Sidebar() {
                     {navigationItems.map((item) => {
                         let filteredItems = item.items;
                         const user = authService.getCurrentUser();
-                        const userRole = user?.role; // Requires re-login to get updated role
+                        const userRole = user?.role;
 
                         if (item.title === 'User Management') {
                             filteredItems = item.items.filter(subItem => {
@@ -118,9 +110,6 @@ export function Sidebar() {
                                 return true;
                             });
                         }
-
-                        // If all children are filtered out, optionally hide the parent. 
-                        // For now, we'll keep the parent but with empty/reduced list.
 
                         const hasSubItems = filteredItems && filteredItems.length > 0;
                         const isExpanded = expandedItems.includes(item.title);
@@ -168,13 +157,11 @@ export function Sidebar() {
                                                             )}
                                                         >
                                                             <span>{subItem.title}</span>
-                                                            {/* Show badge for Removal Approvals */}
                                                             {subItem.title === 'Removal Approvals' && pendingApprovalsCount > 0 && (
                                                                 <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full min-w-[18px] text-center">
                                                                     {pendingApprovalsCount}
                                                                 </span>
                                                             )}
-                                                            {/* Show badge for Low Stock */}
                                                             {subItem.title === 'Low Stock' && lowStockCount > 0 && (
                                                                 <span className="px-1.5 py-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full min-w-[18px] text-center">
                                                                     {lowStockCount}
@@ -187,9 +174,6 @@ export function Sidebar() {
                                         </AnimatePresence>
                                     </div>
                                 ) : (
-                                    // If strictly no subitems originally, OR filtered out all subitems but we want to fail gracefully (though navigation structure implies User Management always has items)
-                                    // This block handles the case where item.items was undefined originally.
-                                    // Logic for creating Link if no subitems:
                                     (!item.items || item.items.length === 0) && (
                                         <Link
                                             href={item.href || '#'}
@@ -212,7 +196,7 @@ export function Sidebar() {
 
                 <div className="p-3 border-t border-slate-800 w-full shrink-0">
                     <button
-                        onClick={handleLogout}
+                        onClick={logout}
                         className={cn(
                             "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group w-full hover:bg-red-500/10 hover:text-red-400 text-slate-400"
                         )}
@@ -224,11 +208,7 @@ export function Sidebar() {
                     </button>
                 </div>
 
-
             </motion.aside>
         </>
     );
 }
-
-
-
