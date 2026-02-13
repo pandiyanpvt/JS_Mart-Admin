@@ -6,7 +6,6 @@ import { authService, notificationService } from '@/lib/api';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export function Header() {
-    const [user, setUser] = useState(null);
     const [roleName, setRoleName] = useState('');
 
     const [notifications, setNotifications] = useState([]);
@@ -16,20 +15,17 @@ export function Header() {
     const notifRef = useRef(null);
     const profileRef = useRef(null);
 
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
 
     useEffect(() => {
-        const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
-
-        if (currentUser?.userRoleId) {
+        if (user?.userRoleId) {
             import('@/lib/api').then(({ userRoleService }) => {
-                userRoleService.getById(currentUser.userRoleId)
+                userRoleService.getById(user.userRoleId)
                     .then(role => setRoleName(role?.role || 'User'))
                     .catch(() => setRoleName('User'));
             });
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         const loadNotifications = async () => {

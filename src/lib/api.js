@@ -264,3 +264,23 @@ export const notificationService = {
         fetchAPI('/notifications/read-all', { method: 'PATCH' }),
 };
 
+export const reviewService = {
+    getAllByAdmin: () => fetchAPI('/user-reviews/all'),
+    approve: (id, isApproved) => fetchAPI(`/user-reviews/${id}/approval`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_approved: isApproved })
+    }),
+};
+
+export const contactService = {
+    getAll: () => fetchAPI('/contact/messages'),
+    getById: (id) => fetchAPI(`/contact/messages/${id}`),
+    reply: (id, data) => fetchAPI(`/contact/messages/${id}/reply`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    markRead: (id) => fetchAPI(`/contact/messages/${id}/read`, {
+        method: 'PUT'
+    }),
+};
+

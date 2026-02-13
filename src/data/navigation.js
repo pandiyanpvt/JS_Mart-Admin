@@ -55,6 +55,8 @@ export const navigationItems = [
         icon: Users,
         items: [
             { title: 'Customers', href: '/users/customers' },
+            { title: 'User Reviews', href: '/reviews' },
+            { title: 'Contact Messages', href: '/messages' },
             { title: 'Admin Users', href: '/users/admins' },
             { title: 'Roles & Permissions', href: '/users/roles' },
         ],
