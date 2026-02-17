@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, Eye, X, Mail, Phone, Calendar, MapPin, User, CheckCircle2, XCircle, ShoppingBag, DollarSign, Loader2 } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Eye, X, Mail, Phone, Calendar, MapPin, User, CheckCircle2, XCircle, ShoppingBag, DollarSign, Loader2, Gem } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { userService } from '@/lib/api';
 import { useEffect } from 'react';
 import * as XLSX from 'xlsx';
+import { MembershipCard } from './MembershipCard';
 
 // Mock Data for Customers
 const mockCustomers = [
@@ -76,12 +77,18 @@ export default function CustomersView() {
     const [isNewCustomer, setIsNewCustomer] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [showCardFor, setShowCardFor] = useState(null);
 
     // Filter Logic
     const filteredCustomers = customers.filter(customer => {
-        const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            customer.phone.includes(searchQuery);
+        const name = (customer.fullName || '').toLowerCase();
+        const email = (customer.emailAddress || '').toLowerCase();
+        const phone = (customer.phoneNumber || '');
+        const query = (searchQuery || '').toLowerCase();
+
+        const matchesSearch = name.includes(query) ||
+            email.includes(query) ||
+            phone.includes(searchQuery);
         const matchesStatus = statusFilter === 'All Status' || customer.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
@@ -163,9 +170,10 @@ export default function CustomersView() {
             'Email': c.emailAddress,
             'Phone': c.phoneNumber,
             'Status': c.status,
-            'Joined Date': new Date(c.createdAt).toLocaleDateString(),
-            'Total Orders': c.totalOrders,
-            'Total Spent': c.totalSpent.toFixed(2),
+            'Joined Date': c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'N/A',
+            'Membership': c.activeSubscription?.plan?.name || 'Free Tier',
+            'Total Orders': c.totalOrders || 0,
+            'Total Spent': (c.totalSpent || 0).toFixed(2),
             'Address': c.address || 'N/A'
         }));
 
@@ -246,6 +254,7 @@ export default function CustomersView() {
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Info</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stats</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Membership</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
@@ -266,8 +275,8 @@ export default function CustomersView() {
                                                     {(customer.fullName || 'U').split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-slate-900 truncate">{customer.fullName || customer.emailAddress}</p>
-                                                    <p className="text-[10px] text-slate-500 uppercase">Joined: {new Date(customer.createdAt).toLocaleDateString()}</p>
+                                                    <p className="text-sm font-semibold text-slate-900 truncate">{customer.fullName || customer.emailAddress || 'Unnamed'}</p>
+                                                    <p className="text-[10px] text-slate-500 uppercase">Joined: {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -286,12 +295,34 @@ export default function CustomersView() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-xs font-medium text-slate-700">
-                                                    {customer.totalOrders} Orders
+                                                    {(customer.totalOrders || 0)} Orders
                                                 </span>
                                                 <span className="text-xs text-slate-500">
-                                                    ${customer.totalSpent.toFixed(2)} spent
+                                                    ${(customer.totalSpent || 0).toFixed(2)} spent
                                                 </span>
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {customer.activeSubscription ? (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className={cn(
+                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border",
+                                                        customer.activeSubscription.plan?.level === 2
+                                                            ? "bg-amber-50 text-amber-600 border-amber-100"
+                                                            : "bg-indigo-50 text-indigo-600 border-indigo-100"
+                                                    )}>
+                                                        <Gem size={10} />
+                                                        {customer.activeSubscription.plan?.name}
+                                                    </span>
+                                                    <span className="text-[9px] text-slate-400 font-bold uppercase pl-1">
+                                                        Until {new Date(customer.activeSubscription.endDate).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">
+                                                    Free Tier
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
@@ -391,11 +422,11 @@ export default function CustomersView() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                                     <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><ShoppingBag size={12} /> Total Orders</span>
-                                    <p className="font-semibold text-slate-900">{viewCustomer.totalOrders}</p>
+                                    <p className="font-semibold text-slate-900">{viewCustomer.totalOrders || 0}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
                                     <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><DollarSign size={12} /> Total Spent</span>
-                                    <p className="font-semibold text-slate-900">${viewCustomer.totalSpent.toFixed(2)}</p>
+                                    <p className="font-semibold text-slate-900">${(viewCustomer.totalSpent || 0).toFixed(2)}</p>
                                 </div>
                             </div>
                             <div className="space-y-4">
@@ -424,7 +455,32 @@ export default function CustomersView() {
                                     <Calendar className="text-amber-600 mt-0.5" size={18} />
                                     <div>
                                         <p className="text-xs font-bold text-slate-500 uppercase">Joined On</p>
-                                        <p className="text-sm font-medium text-slate-900">{new Date(viewCustomer.joinDate).toLocaleDateString()}</p>
+                                        <p className="text-sm font-medium text-slate-900">{viewCustomer.createdAt ? new Date(viewCustomer.createdAt).toLocaleDateString() : (viewCustomer.joinDate ? new Date(viewCustomer.joinDate).toLocaleDateString() : 'N/A')}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/50 border border-slate-100">
+                                    <Gem className="text-indigo-600 mt-0.5" size={18} />
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Membership</p>
+                                        {viewCustomer.activeSubscription ? (
+                                            <div className="mt-1 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-sm font-black text-slate-900">{viewCustomer.activeSubscription.plan?.name}</p>
+                                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">
+                                                        Renews: {new Date(viewCustomer.activeSubscription.endDate).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setShowCardFor(viewCustomer)}
+                                                    className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+                                                >
+                                                    <Gem size={12} />
+                                                    View Card
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm font-bold text-slate-400 mt-1 italic">No Active Subscription</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -547,6 +603,13 @@ export default function CustomersView() {
                         </div>
                     </div>
                 </div>
+            )}
+            {/* Membership Card Overlay */}
+            {showCardFor && (
+                <MembershipCard
+                    user={showCardFor}
+                    onClose={() => setShowCardFor(null)}
+                />
             )}
         </div>
     );

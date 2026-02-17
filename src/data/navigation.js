@@ -55,6 +55,7 @@ export const navigationItems = [
         icon: Users,
         items: [
             { title: 'Customers', href: '/users/customers' },
+            { title: 'User Subscriptions', href: '/users/subscriptions' },
             { title: 'User Reviews', href: '/reviews' },
             { title: 'Contact Messages', href: '/messages' },
             { title: 'Admin Users', href: '/users/admins' },
@@ -66,6 +67,7 @@ export const navigationItems = [
         icon: BadgePercent,
         items: [
             { title: 'Web Banners', href: '/promotions/banners' },
+            { title: 'Membership Plans', href: '/marketing/membership-plans' },
             { title: 'Active Offers', href: '/marketing/offers' },
             { title: 'Coupons', href: '/promotions/coupons' },
         ],

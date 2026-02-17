@@ -284,3 +284,20 @@ export const contactService = {
     }),
 };
 
+export const membershipService = {
+    getPlans: () => fetchAPI('/membership/plans'),
+    createPlan: (data) => fetchAPI('/membership/plans', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    updatePlan: (id, data) => fetchAPI(`/membership/plans/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+    subscribe: (data) => fetchAPI('/membership/subscribe', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    getMySubscription: () => fetchAPI('/membership/me'),
+    getAllSubscriptions: () => fetchAPI('/membership/subscriptions')
+};
