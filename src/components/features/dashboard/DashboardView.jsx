@@ -56,7 +56,7 @@ export default function DashboardView() {
     }, []);
 
     const formatCurrency = (amount) =>
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(amount || 0));
+        new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(Number(amount || 0));
 
     const summaryStats = useMemo(() => {
         const s = summary?.stats;

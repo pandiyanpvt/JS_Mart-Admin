@@ -16,7 +16,8 @@ import {
     Tag,
     ShoppingBag,
     Gift,
-    Box
+    Box,
+    Image as ImageIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,7 @@ export default function OffersList() {
         startDate: '',
         endDate: '',
         bannerImg: null,
+        targetMembershipLevel: 0,
         preview: ''
     });
 
@@ -137,6 +139,7 @@ export default function OffersList() {
             startDate: '',
             endDate: '',
             bannerImg: null,
+            targetMembershipLevel: 0,
             preview: ''
         });
     };
@@ -157,6 +160,7 @@ export default function OffersList() {
             startDate: offer.startDate ? new Date(offer.startDate).toISOString().split('T')[0] : '',
             endDate: offer.endDate ? new Date(offer.endDate).toISOString().split('T')[0] : '',
             bannerImg: null,
+            targetMembershipLevel: offer.targetMembershipLevel || 0,
             preview: offer.bannerImg || ''
         });
         setIsModalOpen(true);
@@ -287,8 +291,23 @@ export default function OffersList() {
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tighter">
+                                        <span className="text-slate-400">Audience</span>
+                                        <span className={cn(
+                                            "px-2 py-0.5 rounded-lg border",
+                                            offer.targetMembershipLevel === 2 ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                                offer.targetMembershipLevel === 1 ? "bg-indigo-50 text-indigo-600 border-indigo-100" :
+                                                    "bg-slate-50 text-slate-600 border-slate-100"
+                                        )}>
+                                            {offer.targetMembershipLevel === 2 ? 'JS Plus Exclusive' :
+                                                offer.targetMembershipLevel === 1 ? 'JS Pro & Above' : 'Everyone'}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tighter">
                                         <span className="text-slate-400">Horizon</span>
-                                        <span className="text-slate-900 flex items-center gap-1"><Calendar size={12} /> {new Date(offer.endDate).toLocaleDateString()}</span>
+                                        <span className="text-slate-900 flex items-center gap-1">
+                                            <Calendar size={12} />
+                                            {offer.endDate ? new Date(offer.endDate).toLocaleDateString() : 'Permanent / Ongoing'}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -368,12 +387,26 @@ export default function OffersList() {
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Activation Date</label>
-                                                    <input required type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
+                                                    <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Termination Date</label>
-                                                    <input required type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
+                                                    <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
                                                 </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Target Audience</label>
+                                                <select
+                                                    value={formData.targetMembershipLevel}
+                                                    onChange={(e) => setFormData({ ...formData, targetMembershipLevel: parseInt(e.target.value) })}
+                                                    className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black outline-none focus:bg-white transition-all appearance-none"
+                                                >
+                                                    <option value={0}>Public (Everyone)</option>
+                                                    <option value={1}>JS Pro & Plus Members</option>
+                                                    <option value={2}>JS Plus Exclusive</option>
+                                                </select>
+                                                <p className="text-[10px] text-slate-400 font-medium pl-1 italic">Assign this offer to specific membership tiers.</p>
                                             </div>
                                         </div>
 

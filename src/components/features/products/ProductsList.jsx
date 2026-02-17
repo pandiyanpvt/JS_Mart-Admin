@@ -207,7 +207,7 @@ export default function ProductsList() {
                             ))}
                         </select>
                         <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-xl px-3 py-1">
-                            <span className="text-xs text-slate-400 font-bold">$</span>
+                            <span className="text-[10px] text-slate-400 font-bold">AUD</span>
                             <input
                                 type="number"
                                 placeholder="Min"
@@ -278,7 +278,7 @@ export default function ProductsList() {
                                 allProducts.map((product) => {
                                     const productId = product.id || `temp-${Math.random()}`;
                                     const sku = product.sku || `PROD-${1000 + (product.id || 0)}`;
-                                    const price = product.price ? `$${parseFloat(product.price).toFixed(2)}` : '$99.00';
+                                    const price = product.price ? `AUD ${parseFloat(product.price).toFixed(2)}` : 'AUD 99.00';
                                     const stock = product.stock !== undefined ? product.stock : 0;
                                     const imageSrc = product.image || (typeof product.image === 'string' && product.image.startsWith('data:') ? product.image : null);
 
@@ -511,10 +511,10 @@ export default function ProductsList() {
                                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                             <div className="flex items-center gap-2 text-slate-500 mb-1">
                                                 <DollarSign size={14} />
-                                                <span className="text-[10px] font-bold uppercase tracking-wider">Price</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">Price (AUD)</span>
                                             </div>
                                             <p className="text-lg font-bold text-slate-900">
-                                                {typeof selectedProduct.price === 'number' ? `$${selectedProduct.price.toFixed(2)}` : selectedProduct.price || '$0.00'}
+                                                {typeof selectedProduct.price === 'number' ? `AUD ${selectedProduct.price.toFixed(2)}` : selectedProduct.price || 'AUD 0.00'}
                                             </p>
                                         </div>
                                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">

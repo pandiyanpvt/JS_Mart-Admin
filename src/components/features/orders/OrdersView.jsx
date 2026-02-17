@@ -190,9 +190,9 @@ export default function OrdersView() {
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-AU', {
             style: 'currency',
-            currency: 'USD'
+            currency: 'AUD'
         }).format(parseFloat(amount || 0));
     };
 

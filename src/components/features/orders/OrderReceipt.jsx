@@ -22,9 +22,9 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
     };
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-AU', {
             style: 'currency',
-            currency: 'USD'
+            currency: 'AUD'
         }).format(toNumber(amount));
     };
 
@@ -51,9 +51,9 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
     const country = shipping.country || '';
 
     return (
-        <div ref={ref} className="print-receipt" style={{ 
-            width: '210mm', 
-            minHeight: '297mm', 
+        <div ref={ref} className="print-receipt" style={{
+            width: '210mm',
+            minHeight: '297mm',
             margin: '0 auto',
             backgroundColor: '#ffffff',
             padding: '32px',

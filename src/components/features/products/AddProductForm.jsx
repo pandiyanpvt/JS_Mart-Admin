@@ -306,9 +306,9 @@ function FormContent() {
                             Price and Stock
                         </h2>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Standard Unit MRP ($)</label>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Standard Unit MRP (AUD)</label>
                             <div className="relative">
-                                <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-slate-300">$</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">AUD</span>
                                 <input
                                     type="number"
                                     name="price"
@@ -316,7 +316,7 @@ function FormContent() {
                                     onChange={handleInputChange}
                                     step="0.01"
                                     className={cn(
-                                        "w-full pl-10 pr-6 py-4 bg-slate-50 border rounded-2xl text-sm font-black focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none",
+                                        "w-full pl-12 pr-6 py-4 bg-slate-50 border rounded-2xl text-sm font-black focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none",
                                         errors.price ? "border-rose-300" : "border-slate-100"
                                     )}
                                 />

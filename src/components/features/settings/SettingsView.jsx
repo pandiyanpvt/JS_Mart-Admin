@@ -29,6 +29,8 @@ export default function SettingsView() {
     const [storeSettings, setStoreSettings] = useState({
         REFUND_DAYS: '',
         LOW_STOCK_THRESHOLD: '',
+        SHIPPING_FEE: '',
+        POINTS_TO_AUD_RATIO: '',
     });
 
     const [logoPreview, setLogoPreview] = useState('');
@@ -125,6 +127,8 @@ export default function SettingsView() {
             await settingsService.updateStoreSettings([
                 { configKey: 'REFUND_DAYS', configValue: storeSettings.REFUND_DAYS, description: 'Number of days allowed for refund after delivery' },
                 { configKey: 'LOW_STOCK_THRESHOLD', configValue: storeSettings.LOW_STOCK_THRESHOLD, description: 'Quantity at or below which a product is considered low stock' },
+                { configKey: 'SHIPPING_FEE', configValue: storeSettings.SHIPPING_FEE, description: 'Default shipping fee for orders in AUD' },
+                { configKey: 'POINTS_TO_AUD_RATIO', configValue: storeSettings.POINTS_TO_AUD_RATIO, description: 'Conversion rate for points to AUD (e.g. 0.01 means 100 points = 1 AUD)' },
             ]);
 
             // Password change could be added via separate API later
@@ -427,6 +431,40 @@ export default function SettingsView() {
                                         value={storeSettings.LOW_STOCK_THRESHOLD || ''}
                                         onChange={handleStoreSettingChange}
                                         className="w-20 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-right focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-1">
+                                            <SettingsIcon size={14} /> Shipping Fee (AUD)
+                                        </p>
+                                        <p className="text-xs text-slate-500">Fixed shipping rate applied to all orders.</p>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        name="SHIPPING_FEE"
+                                        value={storeSettings.SHIPPING_FEE || ''}
+                                        onChange={handleStoreSettingChange}
+                                        className="w-24 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-right focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900 flex items-center gap-1">
+                                            <SettingsIcon size={14} /> Points to AUD Ratio
+                                        </p>
+                                        <p className="text-xs text-slate-500">1 point equals how much AUD (e.g. 0.01 = 1 cent per point).</p>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.0001"
+                                        name="POINTS_TO_AUD_RATIO"
+                                        value={storeSettings.POINTS_TO_AUD_RATIO || ''}
+                                        onChange={handleStoreSettingChange}
+                                        className="w-24 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-right focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none"
                                     />
                                 </div>
                             </div>
