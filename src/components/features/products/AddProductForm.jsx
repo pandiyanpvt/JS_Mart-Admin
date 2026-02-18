@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { productService, categoryService, brandService } from '@/lib/api';
+import { IMAGE_SPECS, validateImageFileSize } from '@/lib/imageSpecs';
 
 
 function FormContent() {
@@ -94,10 +95,19 @@ function FormContent() {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        files.forEach(file => {
+        const validFiles = [];
+        for (const file of files) {
+            const { valid, message } = validateImageFileSize(file, 'productImages');
+            if (!valid) {
+                alert(message);
+                continue;
+            }
+            validFiles.push(file);
+        }
+        validFiles.forEach(file => {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                setImages(prev => [...prev, { file, preview: e.target.result, isExisting: false }]);
+            reader.onload = (ev) => {
+                setImages(prev => [...prev, { file, preview: ev.target.result, isExisting: false }]);
             };
             reader.readAsDataURL(file);
         });
@@ -272,10 +282,14 @@ function FormContent() {
 
                     {/* Media Module */}
                     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
-                        <h2 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                        <h2 className="text-xl font-black text-slate-900 mb-2 flex items-center gap-3">
                             <div className="p-2 bg-blue-50 rounded-xl text-blue-600"><ImageIcon size={20} /></div>
                             Product Images
                         </h2>
+                        <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-6">
+                            <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                            <p className="text-xs font-semibold text-amber-900">{IMAGE_SPECS.productImages.width}×{IMAGE_SPECS.productImages.height} px recommended, max {IMAGE_SPECS.productImages.maxFileSizeLabel}. {IMAGE_SPECS.productImages.formats}.</p>
+                        </div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                             {images.map((img, index) => (
                                 <div key={index} className="relative aspect-square rounded-[1.5rem] overflow-hidden border border-slate-200 group ring-4 ring-transparent hover:ring-emerald-500/10 transition-all">
@@ -292,7 +306,7 @@ function FormContent() {
                             <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-slate-200 rounded-[1.5rem] cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all group text-slate-400 hover:text-emerald-600">
                                 <Upload size={28} className="mb-2 group-hover:-translate-y-1 transition-transform" />
                                 <span className="text-[10px] font-black uppercase tracking-tighter">New Asset</span>
-                                <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
+                                <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/jpg" multiple onChange={handleImageUpload} />
                             </label>
                         </div>
                     </div>
