@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { useModal } from '@/components/providers/ModalProvider';
+
 const initialPromotions = [
     {
         id: 1,
@@ -72,6 +74,7 @@ const initialPromotions = [
 ];
 
 export default function PromotionsView() {
+    const { showModal } = useModal();
     const [promotions, setPromotions] = useState(initialPromotions);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,10 +97,16 @@ export default function PromotionsView() {
     };
 
     const handleDelete = (id) => {
-        if (window.confirm('Delete this promotion?')) {
-            setPromotions(prev => prev.filter(p => p.id !== id));
-            showNotification('Promotion removed permanently', 'error');
-        }
+        showModal({
+            title: "Delete Promotion",
+            message: "Are you sure you want to remove this promotion? This action cannot be undone.",
+            type: "error",
+            confirmLabel: "Delete",
+            onConfirm: () => {
+                setPromotions(prev => prev.filter(p => p.id !== id));
+                showNotification('Promotion removed permanently', 'error');
+            }
+        });
     };
 
     const filteredPromotions = promotions.filter(p =>

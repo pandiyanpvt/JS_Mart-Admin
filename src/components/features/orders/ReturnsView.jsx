@@ -81,7 +81,10 @@ export default function ReturnsView() {
         try {
             setLoading(true);
             const data = await refundService.getAll();
-            const mappedReturns = data.map(r => ({
+            // Filter out whole-order cancellations (productId is null)
+            const returnsOnly = data.filter(r => r.productId !== null);
+
+            const mappedReturns = returnsOnly.map(r => ({
                 id: r.id.toString(),
                 orderId: r.order ? r.order.id.toString() : 'N/A',
                 customer: r.user ? (r.user.fullName || r.user.emailAddress) : 'Unknown',

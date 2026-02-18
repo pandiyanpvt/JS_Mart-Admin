@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useModal } from '@/components/providers/ModalProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { orderService, orderTrackingService } from '@/lib/api';
 import Image from 'next/image';
@@ -63,7 +64,12 @@ export default function OrdersView() {
             setOrders(data || []);
         } catch (error) {
             console.error('Failed to load orders:', error);
-            alert('Failed to load orders. Please try again.');
+            showModal({
+                title: "Error",
+                message: "Failed to load orders. Please try again.",
+                type: "error",
+                confirmLabel: "Close"
+            });
         } finally {
             setLoading(false);
         }
@@ -93,36 +99,36 @@ export default function OrdersView() {
         }
     };
 
-    const handleUpdateStatus = async (orderId, newStatus) => {
-        if (!window.confirm(`Are you sure you want to update this order status to ${newStatus}?`)) {
-            return;
-        }
+    const { showModal } = useModal();
 
-        try {
-            setUpdatingStatus(true);
-            // Update order status via tracking service (which also updates the order)
-            await orderTrackingService.updateStatus({
-                orderId: orderId,
-                orderStatus: newStatus
-            });
+    const handleUpdateStatus = (orderId, newStatus) => {
+        showModal({
+            title: "Update Order Status",
+            message: `Are you sure you want to update this order status to ${newStatus}?`,
+            type: "confirm",
+            confirmLabel: "Update Status",
+            onConfirm: async () => {
+                try {
+                    setUpdatingStatus(true);
+                    await orderTrackingService.updateStatus({
+                        orderId: orderId,
+                        orderStatus: newStatus
+                    });
 
-            // Reload orders to get updated data
-            await loadOrders();
+                    await loadOrders();
 
-            // If viewing order details, reload tracking history
-            if (selectedOrder && selectedOrder.id === orderId) {
-                await loadTrackingHistory(orderId);
-                // Update selected order status
-                setSelectedOrder({ ...selectedOrder, status: newStatus });
+                    if (selectedOrder && selectedOrder.id === orderId) {
+                        await loadTrackingHistory(orderId);
+                        setSelectedOrder({ ...selectedOrder, status: newStatus });
+                    }
+                } catch (error) {
+                    console.error('Failed to update status:', error);
+                    throw error;
+                } finally {
+                    setUpdatingStatus(false);
+                }
             }
-
-            alert(`Order status updated to ${newStatus} successfully!`);
-        } catch (error) {
-            console.error('Failed to update status:', error);
-            alert('Failed to update order status. Please try again.');
-        } finally {
-            setUpdatingStatus(false);
-        }
+        });
     };
 
     const filteredOrders = orders.filter(order => {
@@ -644,17 +650,21 @@ export default function OrdersView() {
                                     {selectedOrder.details?.map((detail, idx) => (
                                         <div key={idx} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
                                             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-                                                {detail.product?.images && detail.product.images.length > 0 ? (
-                                                    <Image
-                                                        src={detail.product.images[0].productImg}
-                                                        alt={detail.product.productName}
-                                                        fill
-                                                        className="object-cover"
-                                                        unoptimized
-                                                    />
-                                                ) : (
-                                                    <Package size={24} className="text-slate-300" />
-                                                )}
+                                                {(() => {
+                                                    const imgRaw = detail.product?.images?.[0]?.productImg || detail.product?.productImage;
+                                                    const imgSrc = imgRaw
+                                                        ? (imgRaw.startsWith('http') ? imgRaw : (imgRaw.startsWith('/') ? imgRaw : `/${imgRaw}`))
+                                                        : '/placeholder.png';
+                                                    return (
+                                                        <Image
+                                                            src={imgSrc}
+                                                            alt={detail.product?.productName || 'Product'}
+                                                            fill
+                                                            className="object-cover"
+                                                            unoptimized
+                                                        />
+                                                    );
+                                                })()}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-bold text-slate-900 truncate">
@@ -674,6 +684,21 @@ export default function OrdersView() {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Discount Breakdown */}
+                            {selectedOrder.discountLogs && selectedOrder.discountLogs.length > 0 && (
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 mb-4">Discount Breakdown</h3>
+                                    <div className="space-y-2">
+                                        {selectedOrder.discountLogs.map((log) => (
+                                            <div key={log.id} className="flex justify-between items-center text-sm p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+                                                <span className="font-medium text-emerald-800">{log.description}</span>
+                                                <span className="font-bold text-emerald-800">-{formatCurrency(log.amount)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Order Summary */}
                             <div className="bg-gradient-to-br from-emerald-50 to-white rounded-3xl border border-emerald-100 p-6">

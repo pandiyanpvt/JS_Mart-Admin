@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, Info, Calendar, Hash, PackageSearch, Tag, DollarSign, Archive, Upload, Loader2, CheckCircle2, ShieldCheck, Star } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useModal } from '@/components/providers/ModalProvider';
 import { topProducts } from '@/data/mock';
 import { getProducts, getProductsPaginated, deleteProduct, updateProduct, saveProduct, getCategories, getBrands, getProductsByBrand, getProductsByCategory, getProductsByPriceRange, searchProducts } from '@/lib/products';
 import Image from 'next/image';
@@ -109,18 +110,25 @@ export default function ProductsList() {
         showNotification('Data exported successfully', 'success');
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            const success = await deleteProduct(id);
-            if (success) {
-                await loadProducts();
-                showNotification('Product deleted successfully', 'success');
-            } else {
-                // For mock data, we just filter it out from local state
-                setAllProducts(prev => prev.filter(p => p.id !== id));
-                showNotification('Product removed from view', 'info');
+    const { showModal } = useModal();
+
+    const handleDelete = (id) => {
+        showModal({
+            title: "Delete Product",
+            message: "Are you sure you want to delete this product? This will remove it from the catalog permanently.",
+            type: "error",
+            confirmLabel: "Delete",
+            onConfirm: async () => {
+                const success = await deleteProduct(id);
+                if (success) {
+                    await loadProducts();
+                    showNotification('Product deleted successfully', 'success');
+                } else {
+                    setAllProducts(prev => prev.filter(p => p.id !== id));
+                    showNotification('Product removed from view', 'info');
+                }
             }
-        }
+        });
     };
 
     const handleReset = () => {
