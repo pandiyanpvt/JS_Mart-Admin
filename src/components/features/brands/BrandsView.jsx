@@ -19,6 +19,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { brandService } from '@/lib/api';
+import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import * as XLSX from 'xlsx';
 
 export default function BrandsView() {
@@ -316,10 +317,14 @@ export default function BrandsView() {
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Brand Logo</label>
+                                    <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-2">
+                                        <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                                        <p className="text-xs font-semibold text-amber-900">{IMAGE_SPECS.brandImages.width}×{IMAGE_SPECS.brandImages.height} px, max {IMAGE_SPECS.brandImages.maxFileSizeLabel}. {IMAGE_SPECS.brandImages.formats}.</p>
+                                    </div>
                                     <div className="relative">
                                         <input
                                             type="file"
-                                            accept="image/*"
+                                            accept="image/jpeg,image/png,image/webp,image/jpg"
                                             onChange={handleImageChange}
                                             className="hidden"
                                             id="brand-image-upload"

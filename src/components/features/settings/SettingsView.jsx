@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Save, User, Lock, Bell, Store, Loader2, Camera, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
 import { settingsService } from '@/lib/api';
+import { IMAGE_SPECS } from '@/lib/imageSpecs';
 
 export default function SettingsView() {
     const [isSaving, setIsSaving] = useState(false);
@@ -206,11 +207,12 @@ export default function SettingsView() {
                                     <span className="mt-2 block text-xs font-semibold text-emerald-600 hover:underline">
                                         Change Logo
                                     </span>
+                                    <p className="mt-1 text-[10px] text-slate-500 font-medium">Image size (before adding): {IMAGE_SPECS.logo.width}×{IMAGE_SPECS.logo.height} px, max {IMAGE_SPECS.logo.maxFileSizeLabel}.</p>
                                 </button>
                                 <input
                                     ref={logoInputRef}
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/png,image/webp,image/jpg"
                                     className="hidden"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];

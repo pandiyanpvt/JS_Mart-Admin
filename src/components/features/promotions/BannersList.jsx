@@ -15,15 +15,25 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { promotionService } from '@/lib/api';
+import { IMAGE_SPECS, validateImageFileSize } from '@/lib/imageSpecs';
 import Image from 'next/image';
 
 const LEVELS = [
     { id: 1, name: 'Level 1: Header Banners', description: 'Top carousel on homepage' },
     { id: 2, name: 'Level 2: Category Hero', description: 'Featured category section' },
-    { id: 3, name: 'Level 3: Middle Promotional', description: 'Wide banners after products' },
+    { id: 3, name: 'Level 3: Mid-Page Banners', description: 'Full-width banners below products' },
     { id: 4, name: 'Level 4: Seasonal Highlights', description: 'Small banners for events' },
     { id: 5, name: 'Level 5: Footer Promotional', description: 'Final call-to-action blocks' },
 ];
+
+/** Preview aspect ratio matches js mart storefront display per level */
+const PREVIEW_ASPECT_BY_LEVEL = {
+    1: 'aspect-[16/5]',   // Hero: same as 1920×600 on js mart
+    2: 'aspect-[16/5]',   // Category hero: same as hero
+    3: 'aspect-[4/5]',    // Middle: js mart middle-banner-section uses aspect-[4/5]
+    4: 'aspect-[4/5]',    // Seasonal: same as middle
+    5: 'aspect-[16/3]',   // Footer: js mart footer uses wide short strip (h-[180px]–[300px])
+};
 
 export default function BannersList() {
     const [promotions, setPromotions] = useState([]);
@@ -64,13 +74,18 @@ export default function BannersList() {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setFormData({
-                ...formData,
-                image: file,
-                preview: URL.createObjectURL(file)
-            });
+        if (!file) return;
+        const { valid, message } = validateImageFileSize(file, 'banners');
+        if (!valid) {
+            showNotification(message, 'error');
+            e.target.value = '';
+            return;
         }
+        setFormData({
+            ...formData,
+            image: file,
+            preview: URL.createObjectURL(file)
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -132,7 +147,7 @@ export default function BannersList() {
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-[0.2em] mb-3">
                         <div className="w-8 h-[2px] bg-indigo-600 rounded-full" />
-                        Visual Merchandising
+                        Promotional Banners
                     </div>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight">Homepage Banners</h1>
                     <p className="text-slate-500 mt-2 font-medium">Manage display real-estate across all platform placements.</p>
@@ -183,13 +198,17 @@ export default function BannersList() {
                                         <motion.div
                                             key={banner.id}
                                             whileHover={{ y: -5 }}
-                                            className="group relative h-48 rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm"
+                                            className={cn(
+                                                'group relative w-full rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm',
+                                                PREVIEW_ASPECT_BY_LEVEL[level.id] || 'aspect-[16/5]'
+                                            )}
                                         >
                                             <Image
                                                 src={banner.promotionImg}
                                                 alt=""
                                                 fill
-                                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                                className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                                                sizes="(max-width: 768px) 100vw, 33vw"
                                             />
                                             <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-between translate-y-4 group-hover:translate-y-0 transition-transform">
                                                 <div className="text-white">
@@ -269,25 +288,36 @@ export default function BannersList() {
 
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Asset Upload</label>
+                                        <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-2">
+                                            <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                                            <p className="text-xs font-semibold text-amber-900">
+                                                {IMAGE_SPECS.banners.width}×{IMAGE_SPECS.banners.height} px recommended, max {IMAGE_SPECS.banners.maxFileSizeLabel}. {IMAGE_SPECS.banners.formats}.
+                                            </p>
+                                        </div>
                                         <div className="relative group">
                                             <input
                                                 type="file"
                                                 id="banner-upload"
                                                 className="hidden"
-                                                accept="image/*"
+                                                accept="image/jpeg,image/png,image/webp,image/jpg"
                                                 onChange={handleFileChange}
                                             />
                                             <label
                                                 htmlFor="banner-upload"
-                                                className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50 cursor-pointer group-hover:bg-white group-hover:border-indigo-600/30 transition-all overflow-hidden relative min-h-[160px]"
+                                                className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50 cursor-pointer group-hover:bg-white group-hover:border-indigo-600/30 transition-all overflow-hidden relative"
                                             >
                                                 {formData.preview ? (
-                                                    <Image src={formData.preview} alt="" fill className="object-cover" />
-                                                ) : (
                                                     <>
+                                                        <div className={cn('relative w-full max-w-md mx-auto rounded-xl overflow-hidden', PREVIEW_ASPECT_BY_LEVEL[formData.level] || 'aspect-[16/5]')}>
+                                                            <Image src={formData.preview} alt="" fill className="object-cover object-center" sizes="(max-width: 768px) 100vw, 28rem" />
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Preview: same ratio as storefront</span>
+                                                    </>
+                                                ) : (
+                                                    <div className="min-h-[160px] flex flex-col items-center justify-center">
                                                         <Upload className="text-slate-400 mb-2 group-hover:text-indigo-600 transition-colors" />
                                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Image Asset</span>
-                                                    </>
+                                                    </div>
                                                 )}
                                             </label>
                                         </div>

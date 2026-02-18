@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { offerService, offerTypeService, productService } from '@/lib/api';
+import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import Image from 'next/image';
 
 export default function OffersList() {
@@ -487,8 +488,12 @@ export default function OffersList() {
                                             {/* Media Upload */}
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Campaign Visual (Banner)</label>
+                                                <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-2">
+                                                    <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                                                    <p className="text-xs font-semibold text-amber-900">{IMAGE_SPECS.offerBanner.width}×{IMAGE_SPECS.offerBanner.height} px, max {IMAGE_SPECS.offerBanner.maxFileSizeLabel}. {IMAGE_SPECS.offerBanner.formats}.</p>
+                                                </div>
                                                 <div className="relative group overflow-hidden rounded-[2rem] border-2 border-dashed border-slate-200 aspect-video flex items-center justify-center bg-slate-50 cursor-pointer hover:bg-white hover:border-emerald-300 transition-all">
-                                                    <input type="file" onChange={handleFileChange} className="hidden" id="banner-media" />
+                                                    <input type="file" onChange={handleFileChange} className="hidden" id="banner-media" accept="image/jpeg,image/png,image/webp,image/jpg" />
                                                     <label htmlFor="banner-media" className="cursor-pointer w-full h-full flex flex-col items-center justify-center gap-2">
                                                         {formData.preview ? (
                                                             <Image src={formData.preview} alt="" fill className="object-cover" />
