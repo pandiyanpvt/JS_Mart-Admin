@@ -142,15 +142,24 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
                                 <td style={{ padding: '12px 8px', wordWrap: 'break-word' }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                                         <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '4px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            {detail.product?.images && detail.product.images.length > 0 ? (
-                                                <img
-                                                    src={detail.product.images[0].productImg}
-                                                    alt={detail.product.productName}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
-                                                />
-                                            ) : (
-                                                <Package size={20} color="#cbd5e1" />
-                                            )}
+                                            {(() => {
+                                                const imgRaw = detail.product?.images?.[0]?.productImg || detail.product?.productImage;
+                                                const imgSrc = imgRaw
+                                                    ? (imgRaw.startsWith('http') ? imgRaw : (imgRaw.startsWith('/') ? imgRaw : `/${imgRaw}`))
+                                                    : '';
+
+                                                if (!imgSrc || imgSrc === '/') {
+                                                    return <Package size={20} color="#cbd5e1" />;
+                                                }
+
+                                                return (
+                                                    <img
+                                                        src={imgSrc}
+                                                        alt={detail.product?.productName}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
+                                                    />
+                                                );
+                                            })()}
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a', margin: 0, wordBreak: 'break-word' }}>{detail.product?.productName || 'Unknown Product'}</p>
@@ -173,6 +182,19 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Discount Breakdown */}
+            {Array.isArray(order?.discountLogs) && order.discountLogs.length > 0 && (
+                <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Discount Breakdown</h3>
+                    {order.discountLogs.map((log, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#166534', margin: '4px 0' }}>
+                            <span>{log.description}</span>
+                            <span style={{ fontWeight: 'bold' }}>-{formatCurrency(log.amount)}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* Order Summary */}
             <div style={{ borderTop: '2px solid #0f172a', paddingTop: '16px', marginBottom: '24px' }}>

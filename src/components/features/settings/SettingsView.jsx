@@ -128,7 +128,7 @@ export default function SettingsView() {
                 { configKey: 'REFUND_DAYS', configValue: storeSettings.REFUND_DAYS, description: 'Number of days allowed for refund after delivery' },
                 { configKey: 'LOW_STOCK_THRESHOLD', configValue: storeSettings.LOW_STOCK_THRESHOLD, description: 'Quantity at or below which a product is considered low stock' },
                 { configKey: 'SHIPPING_FEE', configValue: storeSettings.SHIPPING_FEE, description: 'Default shipping fee for orders in AUD' },
-                { configKey: 'POINTS_TO_AUD_RATIO', configValue: storeSettings.POINTS_TO_AUD_RATIO, description: 'Conversion rate for points to AUD (e.g. 0.01 means 100 points = 1 AUD)' },
+                { configKey: 'POINTS_TO_AUD_RATIO', configValue: storeSettings.POINTS_TO_AUD_RATIO, description: 'Conversion rate for points to AUD (e.g. 1.0 means 1 point = 1 AUD)' },
             ]);
 
             // Password change could be added via separate API later
@@ -455,7 +455,7 @@ export default function SettingsView() {
                                         <p className="text-sm font-bold text-slate-900 flex items-center gap-1">
                                             <SettingsIcon size={14} /> Points to AUD Ratio
                                         </p>
-                                        <p className="text-xs text-slate-500">1 point equals how much AUD (e.g. 0.01 = 1 cent per point).</p>
+                                        <p className="text-xs text-slate-500">1 point equals how much AUD (e.g. 1.0 = 1 AUD per point).</p>
                                     </div>
                                     <input
                                         type="number"

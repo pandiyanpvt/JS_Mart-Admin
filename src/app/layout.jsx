@@ -12,12 +12,16 @@ export const metadata = {
     description: "Advanced e-commerce admin dashboard",
 };
 
+import { ModalProvider } from "@/components/providers/ModalProvider";
+
 export default function RootLayout({ children }) {
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${outfit.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
                 <AuthProvider>
-                    {children}
+                    <ModalProvider>
+                        {children}
+                    </ModalProvider>
                 </AuthProvider>
             </body>
         </html>
