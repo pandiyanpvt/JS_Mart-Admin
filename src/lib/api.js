@@ -27,12 +27,15 @@ async function fetchAPI(endpoint, options = {}) {
     });
 
     if (!response.ok) {
-        // Handle 401 Unauthorized - clear auth and redirect to login
-        if (response.status === 401) {
+        // Handle 401 Unauthorized or 403 Forbidden (No token provided) - clear auth and redirect to login
+        if (response.status === 401 || response.status === 403) {
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('jsmart_token');
                 localStorage.removeItem('jsmart_user');
-                window.location.href = '/login';
+                // Only redirect if not already on login page
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
             }
         }
 

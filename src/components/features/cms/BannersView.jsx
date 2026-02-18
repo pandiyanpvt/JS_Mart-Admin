@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2, Eye, X, Image as ImageIcon, Link as LinkIcon, Layers, CheckCircle2, XCircle, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import Image from 'next/image';
 
 // Mock Data for Banners
@@ -306,12 +307,16 @@ export default function BannersView() {
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">
                             <form id="banner-form" onSubmit={handleSave} className="space-y-6">
+                                <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-4">
+                                    <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                                    <p className="text-xs font-semibold text-amber-900">{IMAGE_SPECS.banners.width}×{IMAGE_SPECS.banners.height} px recommended, max {IMAGE_SPECS.banners.maxFileSizeLabel}. {IMAGE_SPECS.banners.formats}.</p>
+                                </div>
                                 <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-emerald-400 hover:bg-emerald-50/30 transition-all cursor-pointer group">
                                     <div className="w-16 h-16 rounded-full bg-slate-50 group-hover:bg-emerald-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 transition-colors mb-4">
                                         <ImageIcon size={32} />
                                     </div>
                                     <p className="text-sm font-bold text-slate-700">Click to upload image</p>
-                                    <p className="text-xs text-slate-400 mt-1">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                    <p className="text-xs text-slate-400 mt-1">{IMAGE_SPECS.banners.width}×{IMAGE_SPECS.banners.height} px, max {IMAGE_SPECS.banners.maxFileSizeLabel}</p>
                                 </div>
                                 <FormInput label="Title / Headline" name="title" required placeholder="e.g. Summer Sale" />
                                 <FormInput label="Subtitle / Description" name="subtitle" placeholder="e.g. Huge discounts on all items" />

@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { categoryService } from '@/lib/api';
+import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import * as XLSX from 'xlsx';
 
 const CATEGORY_LEVELS = [
@@ -539,6 +540,10 @@ export default function CategoriesView() {
                                     <div className="space-y-6">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Category Image</label>
+                                            <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 mb-2">
+                                                <p className="text-[9px] font-black text-amber-800 uppercase tracking-wider">Image size (before adding)</p>
+                                                <p className="text-[10px] font-semibold text-amber-900">{IMAGE_SPECS.categoryImages.width}×{IMAGE_SPECS.categoryImages.height} px, max {IMAGE_SPECS.categoryImages.maxFileSizeLabel}</p>
+                                            </div>
                                             <div
                                                 className="relative group cursor-pointer"
                                                 onClick={() => document.getElementById('category-img-input').click()}
@@ -553,7 +558,7 @@ export default function CategoriesView() {
                                                         </>
                                                     )}
                                                 </div>
-                                                <input id="category-img-input" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'category')} />
+                                                <input id="category-img-input" type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/jpg" onChange={(e) => handleImageChange(e, 'category')} />
                                                 {categoryPreview && (
                                                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-[1.5rem]">
                                                         <Upload size={24} className="text-white" />
@@ -564,6 +569,10 @@ export default function CategoriesView() {
 
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Banner Image</label>
+                                            <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 mb-2">
+                                                <p className="text-[9px] font-black text-amber-800 uppercase tracking-wider">Image size (before adding)</p>
+                                                <p className="text-[10px] font-semibold text-amber-900">{IMAGE_SPECS.banners.width}×{IMAGE_SPECS.banners.height} px, max {IMAGE_SPECS.banners.maxFileSizeLabel}</p>
+                                            </div>
                                             <div
                                                 className="relative group cursor-pointer"
                                                 onClick={() => document.getElementById('banner-img-input').click()}
@@ -578,7 +587,7 @@ export default function CategoriesView() {
                                                         </>
                                                     )}
                                                 </div>
-                                                <input id="banner-img-input" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageChange(e, 'banner')} />
+                                                <input id="banner-img-input" type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/jpg" onChange={(e) => handleImageChange(e, 'banner')} />
                                                 {bannerPreview && (
                                                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-[1.5rem]">
                                                         <Upload size={24} className="text-white" />

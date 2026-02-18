@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import { productService, stockService, stockLogService } from '@/lib/api';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -297,8 +298,12 @@ export default function RemoveStockForm() {
                                                 <Camera size={14} />
                                                 Evidence Required
                                             </label>
+                                            <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 mb-2">
+                                                <p className="text-[9px] font-black text-amber-800 uppercase tracking-wider">Image size (before adding)</p>
+                                                <p className="text-[10px] font-semibold text-amber-900">Max {IMAGE_SPECS.evidencePhoto.maxFileSizeLabel}. {IMAGE_SPECS.evidencePhoto.formats}.</p>
+                                            </div>
                                             <div className="relative">
-                                                <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" id="evidence-upload-page" />
+                                                <input type="file" accept="image/jpeg,image/png,image/webp,image/jpg" onChange={handlePhotoChange} className="hidden" id="evidence-upload-page" />
                                                 <label htmlFor="evidence-upload-page" className="flex flex-col items-center justify-center gap-2 w-full p-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem] text-sm font-black cursor-pointer hover:bg-white hover:border-rose-300 transition-all group">
                                                     <Upload size={24} className="text-slate-400 group-hover:text-rose-500 transition-colors" />
                                                     <span className="text-slate-500 group-hover:text-rose-600 transition-colors">
