@@ -133,7 +133,7 @@ export default function LowStockList() {
                                             <div className="flex items-center gap-4">
                                                 <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm group-hover:scale-105 transition-transform">
                                                     {product.images?.[0] ? (
-                                                        <Image src={product.images[0].productImg} alt="" fill className="object-cover" />
+                                                        <Image src={product.images[0].productImg} alt="" fill sizes="40px" className="object-cover" />
                                                     ) : (
                                                         <Package className="absolute inset-0 m-auto text-slate-300" size={24} />
                                                     )}

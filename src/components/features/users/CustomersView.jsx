@@ -8,6 +8,20 @@ import { useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { MembershipCard } from './MembershipCard';
 
+const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
+    <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <input
+            type={type}
+            required={required}
+            value={value ?? ''}
+            onChange={e => onChange(name, e.target.value)}
+            placeholder={placeholder}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
+        />
+    </div>
+);
+
 // Mock Data for Customers
 const mockCustomers = [
     {
@@ -96,17 +110,21 @@ export default function CustomersView() {
     // Handlers
     const handleOpenAdd = () => {
         setEditingCustomer({
-            name: '',
-            email: '',
-            phone: '',
+            fullName: '',
+            emailAddress: '',
+            phoneNumber: '',
             address: '',
             status: 'Active',
-            role: 'Customer',
+            userRoleId: 1,
             totalOrders: 0,
             totalSpent: 0,
             joinDate: new Date().toISOString().split('T')[0]
         });
         setIsNewCustomer(true);
+    };
+
+    const handleCustomerFieldChange = (name, value) => {
+        setEditingCustomer(prev => prev ? { ...prev, [name]: value } : null);
     };
 
     useEffect(() => {
@@ -132,11 +150,11 @@ export default function CustomersView() {
     };
 
     const handleSave = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
         try {
             if (isNewCustomer) {
-                // For simplified flow, we might not allow adding customers directly from admin
-                // OR we can implement registration API here too. 
-                // Let's assume registration is handled elsewhere or use the same update logic if needed
+                await userService.create(editingCustomer);
             } else {
                 await userService.update(editingCustomer.id, editingCustomer);
             }
@@ -182,20 +200,6 @@ export default function CustomersView() {
         XLSX.utils.book_append_sheet(wb, ws, "Customers");
         XLSX.writeFile(wb, `Customers_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
-
-    const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
-        <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
-            <input
-                type={type}
-                required={required}
-                value={editingCustomer?.[name] || ''}
-                onChange={e => setEditingCustomer({ ...editingCustomer, [name]: e.target.value })}
-                placeholder={placeholder}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
-            />
-        </div>
-    );
 
     return (
         <div className="space-y-8">
@@ -382,7 +386,7 @@ export default function CustomersView() {
 
             {/* View Modal */}
             {viewCustomer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewCustomer(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -499,12 +503,12 @@ export default function CustomersView() {
 
             {/* Add/Edit Modal */}
             {editingCustomer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingCustomer(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewCustomer ? 'Add Customer' : 'Edit Customer'}</h3>
@@ -519,17 +523,17 @@ export default function CustomersView() {
                             <form id="customer-form" onSubmit={handleSave} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Full Name" name="fullName" required placeholder="e.g. John Doe" />
+                                        <FormInput label="Full Name" name="fullName" required placeholder="e.g. John Doe" value={editingCustomer.fullName} onChange={handleCustomerFieldChange} />
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Email Address" name="emailAddress" type="email" required placeholder="john@example.com" />
+                                        <FormInput label="Email Address" name="emailAddress" type="email" required placeholder="john@example.com" value={editingCustomer.emailAddress} onChange={handleCustomerFieldChange} />
                                     </div>
-                                    <FormInput label="Phone Number" name="phoneNumber" required placeholder="+1 (555) 000-0000" />
+                                    <FormInput label="Phone Number" name="phoneNumber" required placeholder="+1 (555) 000-0000" value={editingCustomer.phoneNumber} onChange={handleCustomerFieldChange} />
                                     <div>
                                         <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
                                         <select
                                             value={editingCustomer.status}
-                                            onChange={e => setEditingCustomer({ ...editingCustomer, status: e.target.value })}
+                                            onChange={e => handleCustomerFieldChange('status', e.target.value)}
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500"
                                         >
                                             <option value="Active">Active</option>
@@ -539,8 +543,8 @@ export default function CustomersView() {
                                     <div className="sm:col-span-2">
                                         <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Address</label>
                                         <textarea
-                                            value={editingCustomer.address}
-                                            onChange={e => setEditingCustomer({ ...editingCustomer, address: e.target.value })}
+                                            value={editingCustomer.address ?? ''}
+                                            onChange={e => handleCustomerFieldChange('address', e.target.value)}
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none resize-none"
                                             rows="3"
                                             placeholder="Full address..."
@@ -574,7 +578,7 @@ export default function CustomersView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

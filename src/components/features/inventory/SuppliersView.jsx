@@ -290,7 +290,7 @@ export default function SuppliersView() {
 
             {/* View Modal */}
             {viewSupplier && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewSupplier(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -365,7 +365,7 @@ export default function SuppliersView() {
 
             {/* Add/Edit Modal */}
             {editingSupplier && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingSupplier(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -459,7 +459,7 @@ export default function SuppliersView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

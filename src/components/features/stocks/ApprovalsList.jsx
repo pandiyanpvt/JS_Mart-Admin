@@ -222,7 +222,7 @@ export default function ApprovalsList() {
             {/* Photo Modal */}
             <AnimatePresence>
                 {selectedPhoto && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-8 lg:p-20">
+                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-8 lg:p-20" data-lock-body-scroll>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={() => setSelectedPhoto(null)} />
                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative max-w-full max-h-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-900">
                             <img src={selectedPhoto} alt="Full Evidence" className="w-full h-full object-contain" />

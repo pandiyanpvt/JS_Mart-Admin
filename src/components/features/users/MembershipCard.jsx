@@ -49,7 +49,7 @@ export function MembershipCard({ user, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" data-lock-body-scroll>
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose} />
 
             <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col p-8 md:p-12 items-center">

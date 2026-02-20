@@ -9,6 +9,7 @@ import {
     Loader2,
     Save,
     X,
+    Trash2,
     TrendingUp,
     Users,
     CreditCard
@@ -21,7 +22,9 @@ export default function MembershipPlansView() {
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingPlan, setEditingPlan] = useState(null);
+    const [deletePlanId, setDeletePlanId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [notification, setNotification] = useState(null);
 
     const loadPlans = async () => {
@@ -89,6 +92,23 @@ export default function MembershipPlansView() {
         setEditingPlan({ ...editingPlan, featuresList: newList });
     };
 
+    const handleDeleteClick = (plan) => setDeletePlanId(plan.id);
+
+    const confirmDelete = async () => {
+        if (!deletePlanId) return;
+        setIsDeleting(true);
+        try {
+            await membershipService.deletePlan(deletePlanId);
+            showNotification('Plan deleted successfully');
+            setDeletePlanId(null);
+            loadPlans();
+        } catch (error) {
+            showNotification(error.message || 'Failed to delete plan', 'error');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center p-32 gap-4">
@@ -151,12 +171,22 @@ export default function MembershipPlansView() {
                                     )}>
                                         <Gem size={32} />
                                     </div>
-                                    <button
-                                        onClick={() => setEditingPlan({ ...plan, featuresList: features })}
-                                        className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-                                    >
-                                        <Edit2 size={18} />
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setEditingPlan({ ...plan, featuresList: features })}
+                                            className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                                            title="Edit plan"
+                                        >
+                                            <Edit2 size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteClick(plan)}
+                                            className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                            title="Delete plan"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <h3 className="text-2xl font-black text-slate-900 mb-2">{plan.name}</h3>
@@ -200,7 +230,7 @@ export default function MembershipPlansView() {
             {/* Edit Modal */}
             <AnimatePresence>
                 {editingPlan && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -212,6 +242,7 @@ export default function MembershipPlansView() {
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
                             className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                         >
                             <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
@@ -326,6 +357,54 @@ export default function MembershipPlansView() {
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Delete confirmation modal */}
+            <AnimatePresence>
+                {deletePlanId && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                            onClick={() => setDeletePlanId(null)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl p-10 text-center"
+                        >
+                            <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-6">
+                                <Trash2 size={32} />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-900 mb-2">Delete membership plan?</h3>
+                            <p className="text-slate-500 text-sm mb-8">
+                                This plan will be removed permanently. It cannot be deleted if any users are currently subscribed.
+                            </p>
+                            <div className="flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeletePlanId(null)}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                    className="flex-1 py-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                                >
+                                    {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                    {isDeleting ? 'Deleting...' : 'Delete plan'}
+                                </button>
                             </div>
                         </motion.div>
                     </div>

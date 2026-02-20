@@ -154,7 +154,7 @@ export default function AddStockForm() {
                                                         )}
                                                     >
                                                         <div className="w-14 h-14 rounded-xl bg-slate-200 overflow-hidden relative border border-slate-100 shrink-0 group-hover:scale-105 transition-transform">
-                                                            {p.images?.[0] ? <Image src={p.images[0].productImg} alt="" fill className="object-cover" /> : <Box size={24} className="absolute inset-0 m-auto text-slate-400" />}
+                                                            {p.images?.[0] ? <Image src={p.images[0].productImg} alt="" fill sizes="80px" className="object-cover" /> : <Box size={24} className="absolute inset-0 m-auto text-slate-400" />}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2">
@@ -189,7 +189,7 @@ export default function AddStockForm() {
                                             <div className="relative z-10 flex items-center gap-6">
                                                 <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-md border border-white/20 relative overflow-hidden shrink-0">
                                                     {allProducts.find(p => p.id === newBatch.productId)?.images?.[0] ? (
-                                                        <Image src={allProducts.find(p => p.id === newBatch.productId).images[0].productImg} alt="" fill className="object-cover" />
+                                                        <Image src={allProducts.find(p => p.id === newBatch.productId).images[0].productImg} alt="" fill sizes="80px" className="object-cover" />
                                                     ) : <Box size={40} className="absolute inset-0 m-auto opacity-30" />}
                                                 </div>
                                                 <div className="flex-1 min-w-0">

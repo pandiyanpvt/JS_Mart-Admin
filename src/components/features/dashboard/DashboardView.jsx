@@ -34,7 +34,7 @@ export default function DashboardView() {
     const QuickLinks = [
         { title: 'Offers', href: '/marketing/offers', icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
         { title: 'Discount Coupons', href: '/promotions/coupons', icon: Tag, color: 'text-purple-600', bg: 'bg-purple-50' },
-        { title: 'Web Banners', href: '/cms/banners', icon: ImageIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+        { title: 'Web Banners', href: '/promotions/banners', icon: ImageIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
         { title: 'Store Settings', href: '/settings', icon: Settings, color: 'text-slate-600', bg: 'bg-slate-50' },
     ];
 
@@ -169,7 +169,7 @@ export default function DashboardView() {
                                 <div key={product.id} className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-lg bg-slate-100 relative overflow-hidden shrink-0 border border-slate-100">
                                         {product.image ? (
-                                            <Image src={product.image} alt={product.name} fill className="object-cover" />
+                                            <Image src={product.image} alt={product.name} fill sizes="48px" className="object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-slate-300"><ImageIcon size={16} /></div>
                                         )}

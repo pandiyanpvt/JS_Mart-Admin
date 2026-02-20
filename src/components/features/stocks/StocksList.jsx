@@ -12,7 +12,6 @@ import {
     Box,
     Hash,
     Layers,
-    RefreshCw,
     History,
     Upload,
     Camera
@@ -223,12 +222,6 @@ export default function StocksList() {
                         <Plus size={18} strokeWidth={3} />
                         <span>Procure New Batch</span>
                     </Link>
-                    <button
-                        onClick={loadData}
-                        className="p-4 bg-white border border-slate-200 text-slate-400 rounded-2xl hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm"
-                    >
-                        <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
-                    </button>
                 </motion.div>
 
             </div>
@@ -319,7 +312,7 @@ export default function StocksList() {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
                                                     <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0">
-                                                        {batch.product?.images?.[0] ? <Image src={batch.product.images[0].productImg} alt="" fill className="object-cover" /> : <Box size={18} className="absolute inset-0 m-auto text-slate-200" />}
+                                                        {batch.product?.images?.[0] ? <Image src={batch.product.images[0].productImg} alt="" fill sizes="40px" className="object-cover" /> : <Box size={18} className="absolute inset-0 m-auto text-slate-200" />}
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-bold text-slate-700 truncate">{batch.product?.productName}</p>
@@ -388,7 +381,7 @@ export default function StocksList() {
             {/* Adjust Stock Modal */}
             <AnimatePresence>
                 {isAdjustOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" data-lock-body-scroll>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setIsAdjustOpen(false)} />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                             <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white z-20 shrink-0">

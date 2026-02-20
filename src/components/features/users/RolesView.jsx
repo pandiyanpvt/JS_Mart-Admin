@@ -9,6 +9,20 @@ import { userRoleService, authService } from '@/lib/api';
 const MODULES = ['dashboard', 'products', 'orders', 'users', 'content', 'settings', 'inventory'];
 const ACTIONS = ['read', 'write', 'delete'];
 
+const FormInput = ({ label, name, required = false, placeholder = '', value, onChange }) => (
+    <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <input
+            type="text"
+            required={required}
+            value={value ?? ''}
+            onChange={e => onChange(name, e.target.value)}
+            placeholder={placeholder}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
+        />
+    </div>
+);
+
 export default function RolesView() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
@@ -81,6 +95,10 @@ export default function RolesView() {
         setIsNewRole(false);
     };
 
+    const handleRoleFieldChange = (name, value) => {
+        setEditingRole(prev => prev ? { ...prev, [name]: value } : null);
+    };
+
     const handlePermissionChange = (module, action) => {
         setEditingRole(prev => {
             const modulePerms = prev.permissions[module] || [];
@@ -140,20 +158,6 @@ export default function RolesView() {
             setDeleteId(null);
         }
     };
-
-    const FormInput = ({ label, name, required = false, placeholder = "" }) => (
-        <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
-            <input
-                type="text"
-                required={required}
-                value={editingRole?.[name] || ''}
-                onChange={e => setEditingRole({ ...editingRole, [name]: e.target.value })}
-                placeholder={placeholder}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
-            />
-        </div>
-    );
 
     return (
         <div className="space-y-8">
@@ -279,12 +283,12 @@ export default function RolesView() {
 
             {/* Add/Edit Modal */}
             {editingRole && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingRole(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
                     />
-                    <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewRole ? 'Create New Role' : 'Edit Role & Permissions'}</h3>
@@ -299,13 +303,13 @@ export default function RolesView() {
                             <form id="role-form" onSubmit={handleSave} className="space-y-6">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="sm:col-span-1">
-                                        <FormInput label="Role Name" name="name" required placeholder="e.g. Finance Manager" />
+                                        <FormInput label="Role Name" name="name" required placeholder="e.g. Finance Manager" value={editingRole.name} onChange={handleRoleFieldChange} />
                                     </div>
                                     <div className="sm:col-span-1">
                                         <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
                                         <select
                                             value={editingRole.status}
-                                            onChange={e => setEditingRole({ ...editingRole, status: e.target.value })}
+                                            onChange={e => handleRoleFieldChange('status', e.target.value)}
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500"
                                         >
                                             <option value="Active">Active</option>
@@ -313,7 +317,7 @@ export default function RolesView() {
                                         </select>
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <FormInput label="Description" name="description" placeholder="Briefly describe the responsibilities..." />
+                                        <FormInput label="Description" name="description" placeholder="Briefly describe the responsibilities..." value={editingRole.description} onChange={handleRoleFieldChange} />
                                     </div>
                                 </div>
 
@@ -385,7 +389,7 @@ export default function RolesView() {
 
             {/* View Modal (Simple Read-only version of Edit) */}
             {viewRole && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewRole(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -438,7 +442,7 @@ export default function RolesView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, Eye, X, Mail, Shield, ShieldCheck, Lock, Calendar, CheckCircle2, XCircle, Key, Loader2, UserCog } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Eye, EyeOff, X, Mail, Shield, ShieldCheck, Lock, Calendar, CheckCircle2, XCircle, Key, Loader2, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { userService, userRoleService, authService } from '@/lib/api';
@@ -35,6 +35,7 @@ export default function AdminsView() {
     const [isNewAdmin, setIsNewAdmin] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const user = authService.getCurrentUser();
@@ -46,6 +47,10 @@ export default function AdminsView() {
         setCurrentUser(user);
         loadData(user);
     }, []);
+
+    useEffect(() => {
+        if (!editingAdmin) setShowPassword(false);
+    }, [editingAdmin]);
 
     const loadData = async (user) => {
         try {
@@ -382,7 +387,7 @@ export default function AdminsView() {
 
             {/* View Modal */}
             {viewAdmin && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewAdmin(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -452,7 +457,7 @@ export default function AdminsView() {
 
             {/* Add/Edit Modal */}
             {editingAdmin && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingAdmin(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -519,15 +524,27 @@ export default function AdminsView() {
                                     {isNewAdmin && (
                                         <>
                                             <div className="sm:col-span-2 relative">
-                                                <FormInput
-                                                    label="Temporary Password"
-                                                    name="password"
-                                                    type="password"
-                                                    required={isNewAdmin}
-                                                    placeholder="••••••••"
-                                                    value={editingAdmin.password || ''}
-                                                    onChange={e => setEditingAdmin({ ...editingAdmin, password: e.target.value })}
-                                                />
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-bold text-slate-700 uppercase">Temporary Password</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type={showPassword ? 'text' : 'password'}
+                                                            required={isNewAdmin}
+                                                            value={editingAdmin.password || ''}
+                                                            onChange={e => setEditingAdmin({ ...editingAdmin, password: e.target.value })}
+                                                            placeholder="••••••••"
+                                                            className="w-full px-4 py-2.5 pr-11 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none placeholder:text-slate-400"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setShowPassword(!showPassword)}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors"
+                                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                                        >
+                                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 <div className="absolute top-0 right-0 text-[10px] text-amber-600 font-medium flex items-center gap-1">
                                                     <Lock size={10} />
                                                     Required for new users
@@ -563,7 +580,7 @@ export default function AdminsView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

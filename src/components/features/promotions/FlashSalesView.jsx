@@ -274,7 +274,7 @@ export default function FlashSalesView() {
 
             {/* View Modal */}
             {viewSale && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewSale(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -351,7 +351,7 @@ export default function FlashSalesView() {
 
             {/* Add/Edit Modal */}
             {editingSale && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingSale(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -427,7 +427,7 @@ export default function FlashSalesView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

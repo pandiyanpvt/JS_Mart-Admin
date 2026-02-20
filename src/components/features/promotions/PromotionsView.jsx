@@ -291,7 +291,7 @@ export default function PromotionsView() {
 
             {/* Modal Placeholder */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setIsModalOpen(false)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
