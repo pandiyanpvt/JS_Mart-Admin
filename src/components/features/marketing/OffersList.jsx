@@ -256,7 +256,7 @@ export default function OffersList() {
                         >
                             <div className="relative h-48 bg-slate-100 overflow-hidden">
                                 {offer.bannerImg ? (
-                                    <Image src={offer.bannerImg} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    <Image src={offer.bannerImg} alt="" fill sizes="(max-width: 768px) 100vw, 280px" className="object-cover group-hover:scale-110 transition-transform duration-700" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-slate-200">
                                         <ImageIcon size={64} />
@@ -332,7 +332,7 @@ export default function OffersList() {
             {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
                         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-4xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                             <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-white z-10 shrink-0">
@@ -496,7 +496,7 @@ export default function OffersList() {
                                                     <input type="file" onChange={handleFileChange} className="hidden" id="banner-media" accept="image/jpeg,image/png,image/webp,image/jpg" />
                                                     <label htmlFor="banner-media" className="cursor-pointer w-full h-full flex flex-col items-center justify-center gap-2">
                                                         {formData.preview ? (
-                                                            <Image src={formData.preview} alt="" fill className="object-cover" />
+                                                            <Image src={formData.preview} alt="" fill sizes="280px" className="object-cover" />
                                                         ) : (
                                                             <>
                                                                 <Upload className="text-slate-400" size={24} />

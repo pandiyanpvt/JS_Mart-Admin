@@ -244,7 +244,7 @@ export default function BannersView() {
 
             {/* View Modal */}
             {viewBanner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewBanner(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -289,7 +289,7 @@ export default function BannersView() {
 
             {/* Add/Edit Modal */}
             {editingBanner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingBanner(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -384,7 +384,7 @@ export default function BannersView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

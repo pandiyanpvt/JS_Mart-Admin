@@ -291,7 +291,7 @@ export default function PartnersView() {
 
             {/* View Modal */}
             {viewPartner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewPartner(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -370,7 +370,7 @@ export default function PartnersView() {
 
             {/* Add/Edit Modal */}
             {editingPartner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingPartner(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -439,7 +439,7 @@ export default function PartnersView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"

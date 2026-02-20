@@ -33,14 +33,13 @@ export const navigationItems = [
         title: 'Stock Management',
         icon: ClipboardList,
         items: [
+            { title: 'Stock Overview', href: '/stocks' },
             { title: 'Stock Logs', href: '/stocks/logs' },
             { title: 'Add Stock', href: '/stocks/add' },
             { title: 'Remove Stock', href: '/stocks/remove' },
             { title: 'Removal Approvals', href: '/stocks/approvals' },
             { title: 'Suppliers', href: '/inventory/suppliers' },
         ],
-
-
     },
     {
         title: 'Order Management',

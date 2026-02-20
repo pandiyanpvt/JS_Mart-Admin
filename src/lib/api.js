@@ -191,6 +191,26 @@ export const authService = {
         localStorage.removeItem('jsmart_token');
         localStorage.removeItem('jsmart_user');
     },
+    forgotPassword: async (emailAddress) => {
+        const res = await fetch(`${API_BASE_URL}/users/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emailAddress }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || 'Failed to send reset email');
+        return data;
+    },
+    resetPassword: async (emailAddress, otp, newPassword) => {
+        const res = await fetch(`${API_BASE_URL}/users/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emailAddress, otp, newPassword }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.message || 'Failed to reset password');
+        return data;
+    },
     isAuthenticated: () => {
         return !!getAuthToken();
     },
@@ -297,6 +317,7 @@ export const membershipService = {
         method: 'PUT',
         body: JSON.stringify(data)
     }),
+    deletePlan: (id) => fetchAPI(`/membership/plans/${id}`, { method: 'DELETE' }),
     subscribe: (data) => fetchAPI('/membership/subscribe', {
         method: 'POST',
         body: JSON.stringify(data)

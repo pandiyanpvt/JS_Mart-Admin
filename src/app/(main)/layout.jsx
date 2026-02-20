@@ -5,10 +5,13 @@ import { Header } from "@/components/layout/Header";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/api";
+import { useBodyScrollLockObserver } from "@/hooks/useBodyScrollLock";
 
 export default function MainLayout({ children }) {
     const router = useRouter();
     const [isAuthorized, setIsAuthorized] = useState(false);
+
+    useBodyScrollLockObserver();
 
     useEffect(() => {
         if (!authService.isAuthenticated()) {

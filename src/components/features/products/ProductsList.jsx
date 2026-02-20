@@ -429,7 +429,7 @@ export default function ProductsList() {
 
             {/* View Product Modal */}
             {selectedProduct && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8" data-lock-body-scroll>
                     <div
                         onClick={() => setSelectedProduct(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -463,6 +463,7 @@ export default function ProductsList() {
                                                 src={selectedProduct.image}
                                                 alt={selectedProduct.name}
                                                 fill
+                                                sizes="(max-width: 768px) 100vw, 50vw"
                                                 className="object-cover"
                                                 unoptimized={typeof selectedProduct.image === 'string' && selectedProduct.image.startsWith('data:')}
                                             />
@@ -489,6 +490,7 @@ export default function ProductsList() {
                                                         src={img.productImg}
                                                         alt={`Preview ${idx}`}
                                                         fill
+                                                        sizes="120px"
                                                         className="object-cover"
                                                     />
                                                 </div>
@@ -604,7 +606,7 @@ export default function ProductsList() {
             {/* Image Preview Modal */}
             {previewImage && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md cursor-zoom-out"
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md cursor-zoom-out" data-lock-body-scroll
                     onClick={() => setPreviewImage(null)}
                 >
                     <div className="relative max-w-4xl w-full aspect-square md:aspect-video rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
@@ -612,6 +614,7 @@ export default function ProductsList() {
                             src={previewImage}
                             alt="Preview"
                             fill
+                            sizes="(max-width: 768px) 100vw, 896px"
                             className="object-contain"
                         />
                         <button

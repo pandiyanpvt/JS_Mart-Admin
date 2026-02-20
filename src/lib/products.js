@@ -1,7 +1,14 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+function getAuthToken() {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('jsmart_token');
+    }
+    return null;
+}
+
 async function fetchAPI(endpoint, options = {}) {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = getAuthToken();
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
@@ -13,6 +20,15 @@ async function fetchAPI(endpoint, options = {}) {
     });
 
     if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('jsmart_token');
+                localStorage.removeItem('jsmart_user');
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+            }
+        }
         const error = await response.json().catch(() => ({ message: 'An error occurred' }));
         throw new Error(error.message || 'Something went wrong');
     }

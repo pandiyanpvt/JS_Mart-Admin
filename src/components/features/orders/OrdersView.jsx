@@ -505,7 +505,7 @@ export default function OrdersView() {
 
             {/* Order Details Modal */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto" data-lock-body-scroll>
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

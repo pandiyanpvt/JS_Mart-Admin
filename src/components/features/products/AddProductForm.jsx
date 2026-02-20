@@ -293,7 +293,7 @@ function FormContent() {
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                             {images.map((img, index) => (
                                 <div key={index} className="relative aspect-square rounded-[1.5rem] overflow-hidden border border-slate-200 group ring-4 ring-transparent hover:ring-emerald-500/10 transition-all">
-                                    <Image src={img.preview} alt="" fill className="object-cover" />
+                                    <Image src={img.preview} alt="" fill sizes="120px" className="object-cover" />
                                     <button
                                         type="button"
                                         onClick={() => removeImage(index)}

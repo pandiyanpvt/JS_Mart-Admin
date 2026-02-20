@@ -65,6 +65,7 @@ export default function LoginPage() {
                             src="/logo.png"
                             alt="JS Mart Logo"
                             fill
+                            sizes="288px"
                             className="object-contain relative z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)]"
                             priority
                         />

@@ -392,7 +392,7 @@ export default function InventoryView() {
 
             {/* Adjustment Modal */}
             {showAdjustModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => !isUpdating && setShowAdjustModal(false)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -457,7 +457,7 @@ export default function InventoryView() {
                                             >
                                                 <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-100 bg-white">
                                                     {item.image ? (
-                                                        <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                                        <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                                                             <PackageCheck size={18} />

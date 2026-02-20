@@ -175,7 +175,7 @@ export default function RemoveStockForm() {
                                                 )}
                                             >
                                                 <div className="w-12 h-12 rounded-xl bg-slate-200 overflow-hidden relative shrink-0">
-                                                    {p.images?.[0] ? <Image src={p.images[0].productImg} alt="" fill className="object-cover" /> : <Box size={20} className="absolute inset-0 m-auto text-slate-400" />}
+                                                    {p.images?.[0] ? <Image src={p.images[0].productImg} alt="" fill sizes="48px" className="object-cover" /> : <Box size={20} className="absolute inset-0 m-auto text-slate-400" />}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-black text-slate-900 truncate">{p.productName}</p>

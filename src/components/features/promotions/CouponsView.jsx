@@ -282,7 +282,7 @@ export default function CouponsView() {
 
             {/* View Modal */}
             {viewCoupon && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setViewCoupon(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -352,7 +352,7 @@ export default function CouponsView() {
 
             {/* Add/Edit Modal */}
             {editingCoupon && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setEditingCoupon(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
@@ -430,7 +430,7 @@ export default function CouponsView() {
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
                     <div
                         onClick={() => setDeleteId(null)}
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
