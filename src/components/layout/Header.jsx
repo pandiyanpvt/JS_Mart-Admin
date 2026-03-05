@@ -29,6 +29,11 @@ export function Header() {
 
     useEffect(() => {
         const loadNotifications = async () => {
+            if (!user || user.role === 'DELIVERY_AGENT') {
+                setNotifications([]);
+                setUnreadCount(0);
+                return;
+            }
             try {
                 const data = await notificationService.getMy(1, 10);
                 const items = data?.items || [];

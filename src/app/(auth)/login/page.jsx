@@ -20,7 +20,11 @@ export default function LoginPage() {
 
     React.useEffect(() => {
         if (user) {
-            router.push('/dashboard');
+            if (user.role === 'DELIVERY_AGENT') {
+                router.push('/delivery/agent');
+            } else {
+                router.push('/dashboard');
+            }
         }
     }, [user, router]);
 
@@ -31,8 +35,12 @@ export default function LoginPage() {
         setError("");
 
         try {
-            await login(email, password);
-            router.push("/dashboard");
+            const res = await login(email, password);
+            if (res.user?.role === 'DELIVERY_AGENT') {
+                router.push("/delivery/agent");
+            } else {
+                router.push("/dashboard");
+            }
 
         } catch (err) {
             setError(err.message || "Invalid credentials. Please try again.");

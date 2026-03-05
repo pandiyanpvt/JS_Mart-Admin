@@ -27,7 +27,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useModal } from '@/components/providers/ModalProvider';
 import { motion, AnimatePresence } from 'framer-motion';
-import { orderService, orderTrackingService } from '@/lib/api';
+import { orderService, orderTrackingService, userService } from '@/lib/api';
 import Image from 'next/image';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
@@ -37,7 +37,7 @@ import OrderReceipt from '@/components/features/orders/OrderReceipt';
 const STATUS_FLOW = {
     'PENDING': ['PROCESSING', 'CANCELLED'],
     'PROCESSING': ['SHIPPED', 'CANCELLED'],
-    'SHIPPED': ['DELIVERED'],
+    'SHIPPED': ['CANCELLED'], // Delivery handled via OTP by agent
     'DELIVERED': ['COMPLETED'],
     'COMPLETED': [],
     'CANCELLED': []
@@ -53,8 +53,12 @@ export default function OrdersView() {
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const receiptRef = useRef(null);
 
+    const [deliveryAgents, setDeliveryAgents] = useState([]);
+    const [assigningAgent, setAssigningAgent] = useState(null);
+
     useEffect(() => {
         loadOrders();
+        loadDeliveryAgents();
     }, []);
 
     const loadOrders = async () => {
@@ -72,6 +76,38 @@ export default function OrdersView() {
             });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadDeliveryAgents = async () => {
+        try {
+            const data = await userService.getAll();
+            const agents = data.filter(u => u.userRole?.role === 'DELIVERY_AGENT');
+            setDeliveryAgents(agents || []);
+        } catch (error) {
+            console.error('Failed to load agents:', error);
+        }
+    };
+
+    const handleAssignAgent = async (orderId, agentId) => {
+        try {
+            setUpdatingStatus(true);
+            await orderService.assignAgent(orderId, agentId);
+            await loadOrders();
+            if (selectedOrder && selectedOrder.id === orderId) {
+                const updated = await orderService.getById(orderId);
+                setSelectedOrder(updated);
+            }
+        } catch (error) {
+            console.error('Failed to assign agent:', error);
+            showModal({
+                title: "Error",
+                message: error.message || "Failed to assign delivery agent",
+                type: "error"
+            });
+        } finally {
+            setUpdatingStatus(false);
+            setAssigningAgent(null);
         }
     };
 
@@ -119,7 +155,8 @@ export default function OrdersView() {
 
                     if (selectedOrder && selectedOrder.id === orderId) {
                         await loadTrackingHistory(orderId);
-                        setSelectedOrder({ ...selectedOrder, status: newStatus });
+                        const updated = await orderService.getById(orderId);
+                        setSelectedOrder(updated);
                     }
                 } catch (error) {
                     console.error('Failed to update status:', error);
@@ -600,6 +637,67 @@ export default function OrdersView() {
                                                 Update to {nextStatus}
                                             </button>
                                         ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Delivery Agent Assignment */}
+                            <div className="bg-gradient-to-br from-indigo-50/50 to-white rounded-3xl border border-indigo-100 p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Truck className="text-indigo-600" size={20} />
+                                        <h3 className="text-lg font-bold text-slate-900">Delivery Assignment</h3>
+                                    </div>
+                                    {selectedOrder.deliveryAgent ? (
+                                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                            Assigned
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
+                                            Unassigned
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                    <div className="flex-1 min-w-0">
+                                        {selectedOrder.deliveryAgent ? (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold uppercase">
+                                                    {selectedOrder.deliveryAgent.fullName?.charAt(0) || 'A'}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-900">{selectedOrder.deliveryAgent.fullName}</p>
+                                                    <p className="text-xs text-slate-500">{selectedOrder.deliveryAgent.emailAddress}</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-slate-500 italic">No delivery agent assigned yet.</p>
+                                        )}
+                                    </div>
+
+                                    <div className="w-full sm:w-64">
+                                        <select
+                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                                            value={selectedOrder.deliveryAgentId || ''}
+                                            onChange={(e) => handleAssignAgent(selectedOrder.id, e.target.value)}
+                                            disabled={updatingStatus}
+                                        >
+                                            <option value="">Select Agent...</option>
+                                            {deliveryAgents.map(agent => (
+                                                <option key={agent.id} value={agent.id}>
+                                                    {agent.fullName} ({agent.emailAddress})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                {selectedOrder.status?.toUpperCase() === 'SHIPPED' && selectedOrder.deliveryOtp && (
+                                    <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-center gap-3">
+                                        <AlertCircle className="text-amber-600" size={16} />
+                                        <p className="text-xs font-medium text-amber-700">
+                                            Delivery OTP has been successfully generated and sent to the customer.
+                                        </p>
                                     </div>
                                 )}
                             </div>
