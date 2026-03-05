@@ -274,9 +274,15 @@ export default function AdminsView() {
                             className="bg-slate-50 border border-slate-100 text-sm font-medium rounded-xl px-4 py-2 focus:ring-0 text-slate-600 outline-none"
                         >
                             <option>All Roles</option>
-                            {availableRoles.filter(r => r.id !== 1).map(role => (
-                                <option key={role.id} value={role.role}>{role.role}</option>
-                            ))}
+                            {availableRoles
+                                .filter(r => {
+                                    if (r.id === 1) return false;
+                                    if (r.role === 'DEVELOPER' && currentUser?.role !== 'DEVELOPER') return false;
+                                    return true;
+                                })
+                                .map(role => (
+                                    <option key={role.id} value={role.role}>{role.role}</option>
+                                ))}
                         </select>
                     </div>
                 </div>
@@ -505,9 +511,15 @@ export default function AdminsView() {
                                             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500"
                                         >
                                             <option value="">Select Role</option>
-                                            {availableRoles.filter(r => r.id !== 1).map(role => (
-                                                <option key={role.id} value={role.id}>{role.role}</option>
-                                            ))}
+                                            {availableRoles
+                                                .filter(r => {
+                                                    if (r.id === 1) return false; // Exclude customer role
+                                                    if (r.role === 'DEVELOPER' && currentUser?.role !== 'DEVELOPER') return false;
+                                                    return true;
+                                                })
+                                                .map(role => (
+                                                    <option key={role.id} value={role.id}>{role.role}</option>
+                                                ))}
                                         </select>
                                     </div>
                                     <div>

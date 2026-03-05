@@ -8,7 +8,7 @@ const getAuthToken = () => {
 };
 
 
-async function fetchAPI(endpoint, options = {}) {
+export async function fetchAPI(endpoint, options = {}) {
     const token = getAuthToken();
     const isFormData = options.body instanceof FormData;
 
@@ -228,6 +228,9 @@ export const orderService = {
     getById: (id) => fetchAPI(`/orders/${id}`),
     update: (id, data) => fetchAPI(`/orders/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     getByStatus: (status) => fetchAPI(`/orders/status/${status}`),
+    assignAgent: (orderId, deliveryAgentId) => fetchAPI(`/orders/${orderId}/assign-agent`, { method: 'PUT', body: JSON.stringify({ deliveryAgentId }) }),
+    verifyOtp: (id, otp) => fetchAPI(`/orders/${id}/verify-otp`, { method: 'POST', body: JSON.stringify({ otp }) }),
+    getAssignedOrders: () => fetchAPI('/orders/delivery-agent/assigned'),
 };
 
 export const userService = {

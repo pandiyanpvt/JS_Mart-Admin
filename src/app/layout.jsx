@@ -14,6 +14,8 @@ export const metadata = {
 
 import { ModalProvider } from "@/components/providers/ModalProvider";
 
+import { Toaster } from "react-hot-toast";
+
 export default function RootLayout({ children }) {
     return (
         <html lang="en" suppressHydrationWarning>
@@ -21,6 +23,7 @@ export default function RootLayout({ children }) {
                 <AuthProvider>
                     <ModalProvider>
                         {children}
+                        <Toaster position="top-center" />
                     </ModalProvider>
                 </AuthProvider>
             </body>

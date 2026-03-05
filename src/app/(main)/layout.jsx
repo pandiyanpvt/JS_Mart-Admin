@@ -17,6 +17,10 @@ export default function MainLayout({ children }) {
         if (!authService.isAuthenticated()) {
             router.push('/login');
         } else {
+            const user = authService.getCurrentUser();
+            if (user?.role === 'DELIVERY_AGENT' && window.location.pathname !== '/delivery/agent') {
+                router.push('/delivery/agent');
+            }
             setIsAuthorized(true);
         }
     }, [router]);
@@ -25,6 +29,19 @@ export default function MainLayout({ children }) {
         return <div className="min-h-screen bg-slate-900 flex items-center justify-center">
             <div className="h-10 w-10 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
         </div>;
+    }
+
+    const user = authService.getCurrentUser();
+    const isDeliveryAgent = user?.role === 'DELIVERY_AGENT';
+
+    if (isDeliveryAgent) {
+        return (
+            <div className="min-h-screen bg-slate-50">
+                <main className="w-full max-w-full overflow-x-hidden">
+                    {children}
+                </main>
+            </div>
+        );
     }
 
     return (
