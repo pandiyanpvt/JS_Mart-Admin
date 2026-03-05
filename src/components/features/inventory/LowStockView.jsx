@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, AlertTriangle, Eye, ArrowUpRight, BarChart2, AlertOctagon, ArrowLeft } from 'lucide-react';
+import { Search, Filter, AlertTriangle, Eye, ArrowUpRight, BarChart2, AlertOctagon, ArrowLeft, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { topProducts } from '@/data/mock';
 import { getProducts } from '@/lib/products';
 import Image from 'next/image';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 
 export default function LowStockView() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -53,6 +54,26 @@ export default function LowStockView() {
         return { label: 'Low Stock', color: 'text-amber-600 bg-amber-50 border-amber-100' };
     };
 
+    const handleExport = () => {
+        if (!allProducts || allProducts.length === 0) return;
+
+        const dataToExport = allProducts.map(p => ({
+            'Product Name': p.name,
+            'SKU': p.sku || `PROD-${1000 + (p.id || 0)}`,
+            'Category': p.category || '',
+            'Current Stock': p.stock || 0,
+            'Unit': p.unit || 'pcs',
+            'Status': (p.stock || 0) === 0 ? 'Out of Stock'
+                : (p.stock || 0) <= 5 ? 'Critical'
+                : 'Low Stock'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Low Stock');
+        XLSX.writeFile(wb, `Low_Stock_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -69,6 +90,14 @@ export default function LowStockView() {
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={handleExport}
+                        disabled={allProducts.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm disabled:opacity-50"
+                    >
+                        <Download size={16} />
+                        Export
+                    </button>
                     <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-xl border border-rose-100">
                         <AlertTriangle size={18} className="text-rose-500" />
                         <span className="text-sm font-bold text-rose-700">{allProducts.filter(p => p.stock === 0).length} Out of Stock</span>

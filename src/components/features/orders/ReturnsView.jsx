@@ -16,12 +16,14 @@ import {
     FileText,
     DollarSign,
     PackageX,
-    Loader2
+    Loader2,
+    Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as XLSX from 'xlsx';
 
 const initialReturns = [
     {
@@ -155,6 +157,28 @@ export default function ReturnsView() {
         }
     };
 
+    const handleExport = () => {
+        if (!returns || returns.length === 0) return;
+
+        const dataToExport = returns.map(r => ({
+            'Return ID': r.id,
+            'Order ID': r.orderId,
+            'Customer': r.customer,
+            'Product': r.product,
+            'SKU': r.sku,
+            'Amount': r.amount,
+            'Reason': r.reason,
+            'Status': r.status,
+            'Date': r.date,
+            'Refund Method': r.refundMethod || ''
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Returns');
+        XLSX.writeFile(wb, `Returns_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
         <div className="max-w-[1600px] mx-auto space-y-8 pb-12 font-sans">
             {/* Header Section */}
@@ -169,6 +193,14 @@ export default function ReturnsView() {
                     <p className="text-slate-500 ml-1 font-medium">Monitor, approve, and process customer return requests.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleExport}
+                        disabled={returns.length === 0}
+                        className="px-5 py-2.5 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-600 hover:border-emerald-200 disabled:opacity-50"
+                    >
+                        <Download size={16} />
+                        Export
+                    </button>
                     <div className="bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
                         <div className="relative">
                             <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
