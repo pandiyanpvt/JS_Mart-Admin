@@ -293,7 +293,7 @@ export default function OrdersView() {
             await new Promise((r) => setTimeout(r, 0));
         }
         if (!receiptRef.current) {
-            alert('Receipt is still loading. Please try again in a moment.');
+            showAlert('Loading Receipt', 'The receipt is still being prepared. Please try again in a moment.', 'info');
             return;
         }
         handlePrint();
@@ -356,7 +356,7 @@ export default function OrdersView() {
             pdf.save(`Order_Receipt_${selectedOrder.id}.pdf`);
         } catch (error) {
             console.error('Error generating PDF:', error);
-            alert('Failed to generate PDF. Please try again or use the Print button instead.');
+            showAlert('PDF Generation Error', 'Failed to generate the PDF document. Please try again or use the system print feature.', 'error');
         }
     };
 
@@ -616,7 +616,7 @@ export default function OrdersView() {
                                         if (receiptRef.current) {
                                             handleDownloadPDF();
                                         } else {
-                                            alert('Receipt is loading. Please try again in a moment.');
+                                            showAlert('Loading Receipt', 'The receipt is still preparing for export. Please wait a moment.', 'info');
                                         }
                                     }}
                                     className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-all shadow-sm"

@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { categoryService } from '@/lib/api';
 import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import * as XLSX from 'xlsx';
+import { useModal } from '@/components/providers/ModalProvider';
 
 const CATEGORY_LEVELS = [
     { value: 1, label: 'Level 1 (Root)' },
@@ -32,6 +33,7 @@ const CATEGORY_LEVELS = [
 ];
 
 export default function CategoriesView() {
+    const { showConfirm } = useModal();
     const [allCategories, setAllCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -189,15 +191,20 @@ export default function CategoriesView() {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this category and all its sub-categories?')) {
-            try {
-                await categoryService.delete(id);
-                showNotification('Category deleted successfully');
-                loadCategories();
-            } catch (error) {
-                showNotification(error.message, 'error');
+        showConfirm({
+            title: "Delete Category",
+            message: "Are you sure you want to delete this category and all its nested sub-categories? This action is permanent and will affect product categorization.",
+            type: "danger",
+            onConfirm: async () => {
+                try {
+                    await categoryService.delete(id);
+                    showNotification('Category deleted successfully');
+                    loadCategories();
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
             }
-        }
+        });
     };
 
     const handleExport = () => {

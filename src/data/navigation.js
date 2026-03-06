@@ -9,7 +9,8 @@ import {
     BadgePercent,
     ClipboardList,
     ShieldCheck,
-    Layers
+    Layers,
+    Wallet
 } from 'lucide-react';
 
 export const navigationItems = [
@@ -57,6 +58,7 @@ export const navigationItems = [
         items: [
             { title: 'Orders List', href: '/orders' },
             { title: 'Returns', href: '/orders/returns' },
+            { title: 'Expenses', href: '/accounting/expenses' },
         ],
     },
     {

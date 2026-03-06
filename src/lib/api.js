@@ -76,9 +76,20 @@ export const stockService = {
 export const supplierService = {
     getAll: () => fetchAPI('/suppliers'),
     getById: (id) => fetchAPI(`/suppliers/${id}`),
-    create: (data) => fetchAPI('/suppliers', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id, data) => fetchAPI(`/suppliers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    create: (data) => fetchAPI('/suppliers', { method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) }),
+    update: (id, data) => fetchAPI(`/suppliers/${id}`, { method: 'PUT', body: data instanceof FormData ? data : JSON.stringify(data) }),
     delete: (id) => fetchAPI(`/suppliers/${id}`, { method: 'DELETE' }),
+};
+
+export const expenseService = {
+    getAll: (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        return fetchAPI(`/expenses?${query}`);
+    },
+    getById: (id) => fetchAPI(`/expenses/${id}`),
+    create: (data) => fetchAPI('/expenses', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id, data) => fetchAPI(`/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id) => fetchAPI(`/expenses/${id}`, { method: 'DELETE' }),
 };
 
 export const stockLogService = {
@@ -253,6 +264,15 @@ export const refundService = {
         method: 'PUT',
         body: JSON.stringify({ status, adminComment })
     }),
+    assignPickupAgent: (id, deliveryAgentId) => fetchAPI(`/refunds/${id}/assign-agent`, {
+        method: 'PUT',
+        body: JSON.stringify({ deliveryAgentId })
+    }),
+    verifyPickupOtp: (id, otp) => fetchAPI(`/refunds/${id}/verify-pickup`, {
+        method: 'POST',
+        body: JSON.stringify({ otp })
+    }),
+    getAssignedPickups: () => fetchAPI('/refunds/assigned-pickups'),
 };
 
 export const refundTrackingService = {

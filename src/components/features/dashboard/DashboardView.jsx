@@ -63,9 +63,11 @@ export default function DashboardView() {
         if (!s) return [];
         return [
             { title: 'Total Revenue', value: formatCurrency(s.totalRevenue), change: '—', type: 'up' },
+            { title: 'Total Expenses', value: formatCurrency(s.totalExpenses), change: '—', type: 'down' },
+            { title: 'Net Profit', value: formatCurrency(s.netProfit), change: '—', type: Number(s.netProfit) >= 0 ? 'up' : 'down' },
+            { title: 'Customers', value: String(s.totalCustomers || 0), change: '—', type: 'up' },
             { title: 'Pending Orders', value: String(s.ordersByStatus?.PENDING || 0), change: '—', type: 'up' },
             { title: 'Orders (YTD)', value: String(s.totalOrders || 0), change: '—', type: 'up' },
-            { title: 'Customers', value: String(s.totalCustomers || 0), change: '—', type: 'up' },
         ];
     }, [summary]);
 
@@ -86,7 +88,7 @@ export default function DashboardView() {
             </div>
 
             {/* Summary Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 {loading ? (
                     Array.from({ length: 4 }).map((_, i) => (
                         <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">

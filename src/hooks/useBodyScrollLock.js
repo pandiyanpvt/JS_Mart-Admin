@@ -11,7 +11,10 @@ const LOCK_ATTR = 'data-lock-body-scroll';
 export function useBodyScrollLockObserver() {
     useEffect(() => {
         let scrollY = 0;
+        let isCurrentlyLocked = false;
+
         const lock = () => {
+            if (isCurrentlyLocked) return;
             scrollY = window.scrollY;
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
@@ -19,8 +22,11 @@ export function useBodyScrollLockObserver() {
             document.body.style.right = '0';
             document.body.style.top = `-${scrollY}px`;
             document.body.style.width = '100%';
+            isCurrentlyLocked = true;
         };
+
         const unlock = () => {
+            if (!isCurrentlyLocked) return;
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.left = '';
@@ -28,17 +34,22 @@ export function useBodyScrollLockObserver() {
             document.body.style.top = '';
             document.body.style.width = '';
             window.scrollTo(0, scrollY);
+            isCurrentlyLocked = false;
         };
+
         const check = () => {
             const hasModal = document.querySelector(`[${LOCK_ATTR}]`);
             if (hasModal) lock();
             else unlock();
         };
+
         const observer = new MutationObserver(() => {
             check();
         });
+
         observer.observe(document.body, { childList: true, subtree: true });
         check();
+
         return () => {
             observer.disconnect();
             unlock();
