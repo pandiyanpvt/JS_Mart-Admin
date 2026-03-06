@@ -17,13 +17,15 @@ import {
     ShoppingBag,
     Gift,
     Box,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { offerService, offerTypeService, productService } from '@/lib/api';
 import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import Image from 'next/image';
+import * as XLSX from 'xlsx';
 
 export default function OffersList() {
     const [offers, setOffers] = useState([]);
@@ -193,6 +195,34 @@ export default function OffersList() {
         }
     };
 
+    const handleExport = () => {
+        if (!offers || offers.length === 0) return;
+
+        const dataToExport = offers.map(o => ({
+            'ID': o.id,
+            'Name': o.name,
+            'Type': o.offer_type?.name || 'N/A',
+            'Target Product': o.product?.productName || (o.offerTypeId === 3 ? 'Cart / Storewide' : 'N/A'),
+            'Discount %': o.discountPercentage || '',
+            'Discount Amount': o.discountAmount || '',
+            'Buy Qty': o.buyQuantity || '',
+            'Get Qty': o.getQuantity || '',
+            'Min Order Amount': o.minOrderAmount || '',
+            'Audience': o.targetMembershipLevel === 2 ? 'JS Plus Exclusive'
+                : o.targetMembershipLevel === 1 ? 'JS Pro & Plus'
+                : 'Everyone',
+            'Start Date': o.startDate ? new Date(o.startDate).toLocaleString() : '',
+            'End Date': o.endDate ? new Date(o.endDate).toLocaleString() : '',
+            'Active': o.isActive ? 'Active' : 'Archived'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Offers');
+        XLSX.writeFile(wb, `Offers_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showNotification('Offers exported successfully');
+    };
+
     return (
         <div className="space-y-10 min-h-screen pb-20">
             {/* Header Area */}
@@ -206,13 +236,22 @@ export default function OffersList() {
                     <p className="text-slate-500 mt-2 font-medium">Engineer and deploy promotional strategies across your catalog.</p>
                 </motion.div>
 
-                <button
-                    onClick={() => { resetForm(); setIsModalOpen(true); }}
-                    className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest"
-                >
-                    <Plus size={18} />
-                    Create New Campaign
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 bg-white text-slate-700 px-6 py-3 rounded-2xl font-black text-sm border border-slate-200 hover:bg-slate-50 transition-all shadow-sm uppercase tracking-widest"
+                    >
+                        <Download size={18} />
+                        Export Data
+                    </button>
+                    <button
+                        onClick={() => { resetForm(); setIsModalOpen(true); }}
+                        className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest"
+                    >
+                        <Plus size={18} />
+                        Create New Campaign
+                    </button>
+                </div>
             </div>
 
             {/* Search Bar */}

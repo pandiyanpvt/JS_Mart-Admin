@@ -33,6 +33,7 @@ import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import OrderReceipt from '@/components/features/orders/OrderReceipt';
+import * as XLSX from 'xlsx';
 
 const STATUS_FLOW = {
     'PENDING': ['PROCESSING', 'CANCELLED'],
@@ -239,6 +240,29 @@ export default function OrdersView() {
         }).format(parseFloat(amount || 0));
     };
 
+    const handleExport = () => {
+        if (!orders || orders.length === 0) return;
+
+        const dataToExport = orders.map(o => ({
+            'Order ID': o.id,
+            'Customer Name': o.user?.fullName || '',
+            'Customer Email': o.user?.emailAddress || '',
+            'Items Count': o.details?.length || 0,
+            'Status': o.status,
+            'Total Amount (AUD)': parseFloat(o.totalAmount || 0),
+            'Payment Type': o.paymentType?.type || '',
+            'Is Paid': o.isPaid ? 'Yes' : 'No',
+            'Order Date': o.dateTime ? new Date(o.dateTime).toLocaleString() : '',
+            'City': o.shippingAddress?.city || '',
+            'Post Code': o.shippingAddress?.postalCode || ''
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Orders');
+        XLSX.writeFile(wb, `Orders_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     const handlePrint = useReactToPrint({
         contentRef: receiptRef,
         documentTitle: `Order_Receipt_${selectedOrder?.id || 'Order'}`,
@@ -353,6 +377,14 @@ export default function OrdersView() {
                         className="p-2.5 bg-white rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-all shadow-sm disabled:opacity-50"
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                    </button>
+                    <button
+                        onClick={handleExport}
+                        disabled={orders.length === 0}
+                        className="px-4 py-2.5 bg-white rounded-xl border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm font-medium text-sm flex items-center gap-2 disabled:opacity-50"
+                    >
+                        <Download size={16} />
+                        Export
                     </button>
                     <Link
                         href="/orders/returns"

@@ -20,13 +20,57 @@ import {
     Truck,
     MapPin,
     Smartphone,
-    ChevronRight
+    ChevronRight,
+    Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useModal } from '@/components/providers/ModalProvider';
+import * as XLSX from 'xlsx';
+
+const initialReturns = [
+    {
+        id: 'RET-2024-001',
+        orderId: '#12341',
+        customer: 'John Doe',
+        product: 'Wireless Headphones',
+        sku: 'AUD-001',
+        image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=200',
+        amount: 145.00,
+        reason: 'Defective Item',
+        status: 'Pending',
+        date: '2026-01-20',
+        comment: 'Left ear cup is not working properly.'
+    },
+    {
+        id: 'RET-2024-002',
+        orderId: '#12344',
+        customer: 'Maria Garcia',
+        product: 'Smart Watch Series 5',
+        sku: 'WTC-005',
+        image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=200',
+        amount: 89.00,
+        reason: 'Wrong Item Sent',
+        status: 'Approved',
+        date: '2026-01-19',
+        comment: 'I received the black version instead of silver.'
+    },
+    {
+        id: 'RET-2024-003',
+        orderId: '#12342',
+        customer: 'Jane Smith',
+        product: 'Mechanical Keyboard',
+        sku: 'GAM-102',
+        image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=200',
+        amount: 45.00,
+        reason: 'Changed Mind',
+        status: 'Rejected',
+        date: '2026-01-18',
+        comment: 'Product is fine, I just dont need it anymore.'
+    },
+];
 
 export default function ReturnsView() {
     const { showConfirm, showAlert } = useModal();
@@ -184,6 +228,28 @@ export default function ReturnsView() {
         }
     };
 
+    const handleExport = () => {
+        if (!returns || returns.length === 0) return;
+
+        const dataToExport = returns.map(r => ({
+            'Return ID': r.id,
+            'Order ID': r.orderId,
+            'Customer': r.customer,
+            'Product': r.product,
+            'SKU': r.sku,
+            'Amount': r.amount,
+            'Reason': r.reason,
+            'Status': r.status,
+            'Date': r.date,
+            'Refund Method': r.refundMethod || ''
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Returns');
+        XLSX.writeFile(wb, `Returns_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
         <div className="max-w-[1600px] mx-auto space-y-8 pb-12 font-sans">
             {/* Header Section */}
@@ -198,6 +264,14 @@ export default function ReturnsView() {
                     <p className="text-slate-500 ml-1 font-medium">Monitor, approve, and process customer return requests.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleExport}
+                        disabled={returns.length === 0}
+                        className="px-5 py-2.5 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-600 hover:border-emerald-200 disabled:opacity-50"
+                    >
+                        <Download size={16} />
+                        Export
+                    </button>
                     <div className="bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
                         <div className="relative">
                             <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
