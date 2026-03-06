@@ -9,15 +9,16 @@ import * as XLSX from 'xlsx';
 const initialSuppliers = [
     {
         id: 1,
-        name: 'Fresh Farm Co.',
-        contactPerson: 'Robert Fields',
-        email: 'robert@freshfarm.co',
-        phone: '+1 (555) 123-4567',
-        address: '123 Meadow Lane, Countryside, CA',
-        status: 'Active',
-        rating: 4.8,
-        suppliedCategories: ['Vegetables'],
-        lastDelivery: '2026-01-15'
+        companyName: 'Fresh Farm Co.',
+        companyContactNo: '+1 (555) 123-4567',
+        companyEmail: 'contact@freshfarm.co',
+        companyAddress: '123 Meadow Lane, Countryside, CA',
+        companyLogo: null,
+        socialMediaLink: 'https://facebook.com/freshfarm',
+        contactPersonName: 'Robert Fields',
+        contactPersonPhone: '+1 (555) 987-6543',
+        contactPersonEmail: 'robert@freshfarm.co',
+        isActive: true
     },
 ];
 
@@ -48,9 +49,9 @@ export default function SuppliersView() {
     const [isSaving, setIsSaving] = useState(false);
 
     const filteredSuppliers = suppliers.filter(supplier =>
-        supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        supplier.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        supplier.email.toLowerCase().includes(searchQuery.toLowerCase())
+        (supplier.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (supplier.contactPersonName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (supplier.companyEmail || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     useEffect(() => {
@@ -78,11 +79,15 @@ export default function SuppliersView() {
 
     const handleOpenAdd = () => {
         setEditingSupplier({
-            name: '',
-            contactPerson: '',
-            email: '',
-            phone: '',
-            address: '',
+            companyName: '',
+            companyContactNo: '',
+            companyEmail: '',
+            companyAddress: '',
+            companyLogo: null,
+            socialMediaLink: '',
+            contactPersonName: '',
+            contactPersonPhone: '',
+            contactPersonEmail: '',
             isActive: true
         });
         setIsNewSupplier(true);
@@ -98,10 +103,19 @@ export default function SuppliersView() {
         setIsSaving(true);
 
         try {
+            const formData = new FormData();
+            Object.keys(editingSupplier).forEach(key => {
+                if (key === 'companyLogo' && typeof editingSupplier[key] === 'string') {
+                    // Don't append existing URL as a file
+                } else if (editingSupplier[key] !== null && editingSupplier[key] !== undefined) {
+                    formData.append(key, editingSupplier[key]);
+                }
+            });
+
             if (isNewSupplier) {
-                await supplierService.create(editingSupplier);
+                await supplierService.create(formData);
             } else {
-                await supplierService.update(editingSupplier.id, editingSupplier);
+                await supplierService.update(editingSupplier.id, formData);
             }
             await loadSuppliers();
             setEditingSupplier(null);
@@ -129,12 +143,14 @@ export default function SuppliersView() {
     const handleExport = () => {
         const dataToExport = suppliers.map(s => ({
             'ID': s.id,
-            'Company Name': s.name,
-            'Contact Person': s.contactPerson,
-            'Email': s.email,
-            'Phone': s.phone,
-            'Address': s.address,
-            'Status': s.isActive ? 'Active' : 'Inactive'
+            'Company Name': s.companyName,
+            'Company Phone': s.companyContactNo,
+            'Company Email': s.companyEmail,
+            'Company Address': s.companyAddress,
+            'Contact Person': s.contactPersonName,
+            'Contact Phone': s.contactPersonPhone,
+            'Contact Email': s.contactPersonEmail,
+            'Social Media': s.socialMediaLink
         }));
 
         const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -186,10 +202,10 @@ export default function SuppliersView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Supplier Name</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Info</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Company</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Person</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Company Contact</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
@@ -205,43 +221,43 @@ export default function SuppliersView() {
                                     <tr key={supplier.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
-                                                    <Building2 size={20} />
+                                                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100 overflow-hidden">
+                                                    {supplier.companyLogo ? (
+                                                        <img src={supplier.companyLogo} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Building2 size={20} />
+                                                    )}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-slate-900 truncate">{supplier.name}</p>
+                                                    <p className="text-sm font-semibold text-slate-900 truncate">{supplier.companyName}</p>
+                                                    <p className="text-[10px] text-slate-400 truncate">{supplier.socialMediaLink}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
+                                            <div className="flex flex-col gap-0.5">
+                                                <p className="text-sm font-semibold text-slate-800">{supplier.contactPersonName}</p>
+                                                <p className="text-[10px] text-slate-500">{supplier.contactPersonEmail}</p>
+                                                <p className="text-[10px] text-slate-500">{supplier.contactPersonPhone}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
-                                                <p className="text-sm font-semibold text-slate-800">{supplier.contactPerson}</p>
                                                 <div className="flex items-center gap-2 text-xs text-slate-500">
                                                     <Mail size={12} />
-                                                    {supplier.email}
+                                                    {supplier.companyEmail}
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-slate-500">
                                                     <Phone size={12} />
-                                                    {supplier.phone}
+                                                    {supplier.companyContactNo}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 max-w-[200px]">
                                             <div className="flex items-start gap-2 text-slate-600">
                                                 <MapPin size={14} className="text-slate-400 mt-0.5 shrink-0" />
-                                                <p className="text-xs line-clamp-2">{supplier.address || 'No address'}</p>
+                                                <p className="text-xs line-clamp-2">{supplier.companyAddress || 'No address'}</p>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                supplier.isActive
-                                                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                                    : "bg-slate-50 text-slate-500 border-slate-100"
-                                            )}>
-                                                {supplier.isActive ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                                                {supplier.isActive ? 'Active' : 'Inactive'}
-                                            </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -307,46 +323,39 @@ export default function SuppliersView() {
                         </div>
                         <div className="p-6 space-y-6">
                             <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
-                                    <Building2 size={32} />
+                                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100 overflow-hidden">
+                                    {viewSupplier.companyLogo ? (
+                                        <img src={viewSupplier.companyLogo} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Building2 size={32} />
+                                    )}
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-bold text-slate-900">{viewSupplier.name}</h4>
-                                    <span className={cn(
-                                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border mt-1",
-                                        viewSupplier.isActive ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
-                                    )}>
-                                        {viewSupplier.isActive ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
-                                        {viewSupplier.isActive ? 'Active' : 'Inactive'}
-                                    </span>
+                                    <h4 className="text-xl font-bold text-slate-900">{viewSupplier.companyName}</h4>
+                                    <p className="text-sm text-slate-500">{viewSupplier.socialMediaLink || 'No social link'}</p>
                                 </div>
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Contact Person</span>
-                                    <p className="font-semibold text-slate-900">{viewSupplier.contactPerson}</p>
+                                <div className="p-4 rounded-2xl bg-emerald-50/30 border border-emerald-100 space-y-1">
+                                    <span className="text-xs font-bold text-emerald-600 uppercase">Contact Person</span>
+                                    <p className="font-bold text-slate-900">{viewSupplier.contactPersonName}</p>
+                                    <p className="text-[10px] text-slate-500">{viewSupplier.contactPersonEmail}</p>
+                                    <p className="text-[10px] text-slate-500">{viewSupplier.contactPersonPhone}</p>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-blue-50/30 border border-blue-100 space-y-1">
+                                    <span className="text-xs font-bold text-blue-600 uppercase">Company Contact</span>
+                                    <p className="font-bold text-slate-900">{viewSupplier.companyContactNo}</p>
+                                    <p className="text-[10px] text-slate-500">{viewSupplier.companyEmail}</p>
                                 </div>
                             </div>
+
                             <div className="space-y-4">
-                                <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                                    <Mail className="text-emerald-600 mt-0.5" size={18} />
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Email Address</p>
-                                        <p className="text-sm font-medium text-slate-900">{viewSupplier.email}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                                    <Phone className="text-blue-600 mt-0.5" size={18} />
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Phone Number</p>
-                                        <p className="text-sm font-medium text-slate-900">{viewSupplier.phone}</p>
-                                    </div>
-                                </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <MapPin className="text-rose-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Address</p>
-                                        <p className="text-sm font-medium text-slate-900">{viewSupplier.address}</p>
+                                        <p className="text-xs font-bold text-slate-500 uppercase">Registered Address</p>
+                                        <p className="text-sm font-medium text-slate-900">{viewSupplier.companyAddress}</p>
                                     </div>
                                 </div>
                             </div>
@@ -382,53 +391,91 @@ export default function SuppliersView() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                            <form id="supplier-form" onSubmit={handleSave} className="space-y-6">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="sm:col-span-2">
-                                        <FormInput
-                                            label="Company Name"
-                                            name="name"
-                                            required
-                                            placeholder="e.g. Fresh Foods Ltd"
-                                            value={editingSupplier.name}
-                                            onChange={e => setEditingSupplier({ ...editingSupplier, name: e.target.value })}
-                                        />
+                            <form id="supplier-form" onSubmit={handleSave} className="space-y-8">
+                                {/* Section: Company Details */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                                        <Building2 size={18} className="text-emerald-600" />
+                                        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Company Information</h4>
                                     </div>
-                                    <FormInput
-                                        label="Contact Person"
-                                        name="contactPerson"
-                                        required
-                                        placeholder="e.g. John Doe"
-                                        value={editingSupplier.contactPerson}
-                                        onChange={e => setEditingSupplier({ ...editingSupplier, contactPerson: e.target.value })}
-                                    />
-                                    <FormInput
-                                        label="Phone Number"
-                                        name="phone"
-                                        required
-                                        placeholder="+1 (555) 000-0000"
-                                        value={editingSupplier.phone}
-                                        onChange={e => setEditingSupplier({ ...editingSupplier, phone: e.target.value })}
-                                    />
-                                    <div className="sm:col-span-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="sm:col-span-2">
+                                            <FormInput
+                                                label="Company Name"
+                                                required
+                                                placeholder="e.g. Fresh Foods Ltd"
+                                                value={editingSupplier.companyName}
+                                                onChange={e => setEditingSupplier({ ...editingSupplier, companyName: e.target.value })}
+                                            />
+                                        </div>
                                         <FormInput
-                                            label="Email Address"
-                                            name="email"
+                                            label="Company Contact No"
+                                            placeholder="e.g. +1 234 567 890"
+                                            value={editingSupplier.companyContactNo}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, companyContactNo: e.target.value })}
+                                        />
+                                        <FormInput
+                                            label="Company Email"
                                             type="email"
-                                            required
                                             placeholder="contact@company.com"
-                                            value={editingSupplier.email}
-                                            onChange={e => setEditingSupplier({ ...editingSupplier, email: e.target.value })}
+                                            value={editingSupplier.companyEmail}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, companyEmail: e.target.value })}
                                         />
+                                        <FormInput
+                                            label="Social Media Link"
+                                            placeholder="e.g. https://fb.com/company"
+                                            value={editingSupplier.socialMediaLink}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, socialMediaLink: e.target.value })}
+                                        />
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-slate-700 uppercase">Company Logo</label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={e => setEditingSupplier({ ...editingSupplier, companyLogo: e.target.files[0] })}
+                                                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all"
+                                            />
+                                        </div>
+                                        <div className="sm:col-span-2">
+                                            <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Company Address</label>
+                                            <textarea
+                                                value={editingSupplier.companyAddress || ''}
+                                                onChange={e => setEditingSupplier({ ...editingSupplier, companyAddress: e.target.value })}
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none resize-none"
+                                                rows="2"
+                                                placeholder="Full business address..."
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="sm:col-span-2">
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Address</label>
-                                        <textarea
-                                            value={editingSupplier.address}
-                                            onChange={e => setEditingSupplier({ ...editingSupplier, address: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none resize-none"
-                                            rows="3"
-                                            placeholder="Full business address..."
+                                </div>
+
+                                {/* Section: Contact Person Details */}
+                                <div className="space-y-4 pt-4">
+                                    <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                                        <Plus size={18} className="text-blue-600" />
+                                        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Contact Person Information</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="sm:col-span-2">
+                                            <FormInput
+                                                label="Contact Person Name"
+                                                placeholder="e.g. John Doe"
+                                                value={editingSupplier.contactPersonName}
+                                                onChange={e => setEditingSupplier({ ...editingSupplier, contactPersonName: e.target.value })}
+                                            />
+                                        </div>
+                                        <FormInput
+                                            label="Contact Phone"
+                                            placeholder="+1 (555) 000-0000"
+                                            value={editingSupplier.contactPersonPhone}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, contactPersonPhone: e.target.value })}
+                                        />
+                                        <FormInput
+                                            label="Contact Email"
+                                            type="email"
+                                            placeholder="john@company.com"
+                                            value={editingSupplier.contactPersonEmail}
+                                            onChange={e => setEditingSupplier({ ...editingSupplier, contactPersonEmail: e.target.value })}
                                         />
                                     </div>
                                 </div>

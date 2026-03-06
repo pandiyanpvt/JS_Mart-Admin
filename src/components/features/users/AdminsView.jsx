@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { userService, userRoleService, authService } from '@/lib/api';
 import * as XLSX from 'xlsx';
+import { useModal } from '@/components/providers/ModalProvider';
 
 const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
     <div className="space-y-1.5">
@@ -22,6 +23,7 @@ const FormInput = ({ label, name, type = "text", required = false, placeholder =
 );
 
 export default function AdminsView() {
+    const { showConfirm, showAlert } = useModal();
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('All Roles');
     const [admins, setAdmins] = useState([]);
@@ -33,7 +35,6 @@ export default function AdminsView() {
     const [viewAdmin, setViewAdmin] = useState(null);
     const [editingAdmin, setEditingAdmin] = useState(null); // Contains form data for Add/Edit
     const [isNewAdmin, setIsNewAdmin] = useState(false);
-    const [deleteId, setDeleteId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -193,24 +194,27 @@ export default function AdminsView() {
             setEditingAdmin(null);
         } catch (error) {
             console.error('Failed to save admin:', error);
-            alert('Failed to save: ' + error.message);
+            showAlert('Save Failed', 'Failed to save administrator: ' + error.message, 'error');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleDeleteClick = (id) => {
-        setDeleteId(id);
-    };
-
-    const confirmDelete = async () => {
-        try {
-            await userService.delete(deleteId);
-            await loadAdmins();
-            setDeleteId(null);
-        } catch (error) {
-            console.error('Failed to delete admin:', error);
-        }
+        showConfirm({
+            title: "Revoke Administrator Access?",
+            message: "Are you sure you want to delete this admin user? They will lose all access to the dashboard immediately.",
+            type: "danger",
+            onConfirm: async () => {
+                try {
+                    await userService.delete(id);
+                    await loadAdmins();
+                } catch (error) {
+                    console.error('Failed to delete admin:', error);
+                    showAlert('Deletion Failed', 'Failed to delete administrator. They might have active sessions or dependencies.', 'error');
+                }
+            }
+        });
     };
 
     const handleExport = () => {
@@ -590,38 +594,6 @@ export default function AdminsView() {
                 </div>
             )}
 
-            {/* Delete Modal */}
-            {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
-                        onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                    />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
-                        <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
-                            <Shield size={32} />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">Revoke Access?</h3>
-                        <p className="text-sm text-slate-500 mb-6">
-                            Are you sure you want to delete this admin user? They will lose access immediately.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeleteId(null)}
-                                className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold transition-all text-sm hover:bg-slate-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-all text-sm shadow-lg shadow-rose-200"
-                            >
-                                Revoke Access
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

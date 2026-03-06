@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { refundService, refundTrackingService } from '@/lib/api';
+import { refundService, refundTrackingService, userService } from '@/lib/api';
 import {
     ArrowLeft,
     Search,
@@ -16,66 +16,43 @@ import {
     FileText,
     DollarSign,
     PackageX,
-    Loader2
+    Loader2,
+    Truck,
+    MapPin,
+    Smartphone,
+    ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const initialReturns = [
-    {
-        id: 'RET-2024-001',
-        orderId: '#12341',
-        customer: 'John Doe',
-        product: 'Wireless Headphones',
-        sku: 'AUD-001',
-        image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=200',
-        amount: 145.00,
-        reason: 'Defective Item',
-        status: 'Pending',
-        date: '2026-01-20',
-        comment: 'Left ear cup is not working properly.'
-    },
-    {
-        id: 'RET-2024-002',
-        orderId: '#12344',
-        customer: 'Maria Garcia',
-        product: 'Smart Watch Series 5',
-        sku: 'WTC-005',
-        image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=200',
-        amount: 89.00,
-        reason: 'Wrong Item Sent',
-        status: 'Approved',
-        date: '2026-01-19',
-        comment: 'I received the black version instead of silver.'
-    },
-    {
-        id: 'RET-2024-003',
-        orderId: '#12342',
-        customer: 'Jane Smith',
-        product: 'Mechanical Keyboard',
-        sku: 'GAM-102',
-        image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=200',
-        amount: 45.00,
-        reason: 'Changed Mind',
-        status: 'Rejected',
-        date: '2026-01-18',
-        comment: 'Product is fine, I just dont need it anymore.'
-    },
-];
+import { useModal } from '@/components/providers/ModalProvider';
 
 export default function ReturnsView() {
+    const { showConfirm, showAlert } = useModal();
     const [returns, setReturns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [selectedReturn, setSelectedReturn] = useState(null);
     const [refundTracking, setRefundTracking] = useState([]);
+    const [deliveryAgents, setDeliveryAgents] = useState([]);
+    const [assigningAgent, setAssigningAgent] = useState(null);
 
     useEffect(() => {
         loadRefunds();
+        loadDeliveryAgents();
     }, []);
+
+    const loadDeliveryAgents = async () => {
+        try {
+            const data = await userService.getAll();
+            const agents = data.filter(u => u.userRole?.role === 'DELIVERY_AGENT');
+            setDeliveryAgents(agents || []);
+        } catch (error) {
+            console.error('Failed to load agents:', error);
+        }
+    };
 
     const loadRefunds = async () => {
         try {
@@ -97,6 +74,7 @@ export default function ReturnsView() {
                 date: new Date(r.createdAt).toLocaleDateString(),
                 comment: r.adminComment || '',
                 refundMethod: r.refundMethod,
+                evidenceImageUrl: r.evidenceImageUrl,
                 original: r
             }));
             setReturns(mappedReturns);
@@ -123,24 +101,75 @@ export default function ReturnsView() {
             case 'Rejected': return "bg-rose-100 text-rose-700 border-rose-200";
             case 'Completed': return "bg-blue-100 text-blue-700 border-blue-200";
             case 'Collected': return "bg-indigo-100 text-indigo-700 border-indigo-200";
+            case 'Pickup_assigned': return "bg-purple-100 text-purple-700 border-purple-200";
+            case 'Picked_up': return "bg-blue-50 text-blue-600 border-blue-200";
             default: return "bg-slate-100 text-slate-700 border-slate-200";
         }
     };
 
     const handleUpdateStatus = async (id, newStatus) => {
-        if (window.confirm(`Are you sure you want to mark this return as ${newStatus}?`)) {
-            try {
-                // Determine API status value (UPPERCASE)
-                const apiStatus = newStatus.toUpperCase();
-                const comment = selectedReturn?.comment || selectedReturn?.original?.adminComment || '';
-                await refundService.updateStatus(id, apiStatus, comment);
-                await loadRefunds();
-                setSelectedReturn(null);
-                setRefundTracking([]);
-            } catch (error) {
-                console.error("Failed to update status:", error);
-                alert("Failed to update status");
+        showConfirm({
+            title: "Update Return Status",
+            message: `Are you sure you want to mark this return as ${newStatus}?`,
+            type: newStatus === 'Rejected' ? 'danger' : 'confirm',
+            onConfirm: async () => {
+                try {
+                    const apiStatus = newStatus.toUpperCase();
+                    const comment = selectedReturn?.comment || selectedReturn?.original?.adminComment || '';
+                    await refundService.updateStatus(id, apiStatus, comment);
+                    await loadRefunds();
+
+                    if (apiStatus === 'APPROVED') {
+                        // Automatically trigger agent assignment modal
+                        setAssigningAgent(id);
+                        // Update detail modal state to reflect Approved status
+                        const updated = await refundService.getById(id);
+                        openReturnDetails({
+                            ...selectedReturn,
+                            status: 'Approved',
+                            original: updated
+                        });
+                        return; // Keep modal state managed by openReturnDetails
+                    }
+
+                    // Don't close modal if updating to non-terminal status
+                    if (!['COMPLETED', 'REJECTED'].includes(apiStatus)) {
+                        const updated = await refundService.getById(id);
+                        openReturnDetails({
+                            ...selectedReturn,
+                            status: updated.status.charAt(0) + updated.status.slice(1).toLowerCase(),
+                            original: updated
+                        });
+                    } else {
+                        setSelectedReturn(null);
+                    }
+                } catch (error) {
+                    console.error("Failed to update status:", error);
+                    showAlert("Update Failed", "Failed to update return status: " + error.message, "error");
+                }
             }
+        });
+    };
+
+    const handleAssignAgent = async (refundId, agentId) => {
+        if (!agentId) return;
+        try {
+            setLoading(true);
+            await refundService.assignPickupAgent(refundId, agentId);
+            await loadRefunds();
+            const updated = await refundService.getById(refundId);
+            openReturnDetails({
+                ...selectedReturn,
+                status: updated.status.charAt(0) + updated.status.slice(1).toLowerCase(),
+                original: updated
+            });
+            showAlert("Agent Assigned", "Delivery agent has been assigned for pickup and customer notified.", "success");
+        } catch (error) {
+            console.error('Failed to assign agent:', error);
+            showAlert("Assignment Failed", error.message || "Failed to assign agent", "error");
+        } finally {
+            setLoading(false);
+            setAssigningAgent(null);
         }
     };
 
@@ -198,8 +227,8 @@ export default function ReturnsView() {
                         />
                     </div>
 
-                    <div className="flex p-1.5 bg-slate-100/80 rounded-2xl gap-1 overflow-x-auto">
-                        {['All', 'Pending', 'Approved', 'Collected', 'Completed', 'Rejected'].map((status) => (
+                    <div className="flex p-1.5 bg-slate-100/80 rounded-2xl gap-1 overflow-x-auto scrollbar-hide">
+                        {['All', 'Pending', 'Approved', 'Pickup_assigned', 'Picked_up', 'Collected', 'Completed', 'Rejected'].map((status) => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
@@ -315,7 +344,9 @@ export default function ReturnsView() {
                                                             item.status === 'Pending' ? "bg-amber-500" :
                                                                 item.status === 'Rejected' ? "bg-rose-500 animate-none" :
                                                                     item.status === 'Collected' ? "bg-indigo-500 animate-none" :
-                                                                        "bg-blue-500 animate-none"
+                                                                        item.status === 'Pickup_assigned' ? "bg-purple-500 animate-none" :
+                                                                            item.status === 'Picked_up' ? "bg-blue-500 animate-none" :
+                                                                                "bg-blue-500 animate-none"
                                                     )} />
                                                     {item.status}
                                                 </span>
@@ -353,7 +384,7 @@ export default function ReturnsView() {
 
             {/* Detail Modal */}
             {selectedReturn && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -411,6 +442,26 @@ export default function ReturnsView() {
                                 </div>
                             </div>
 
+                            {/* Evidence Image */}
+                            {selectedReturn.evidenceImageUrl && (
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                        <Eye size={12} /> Evidence Provided
+                                    </label>
+                                    <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 group">
+                                        <img
+                                            src={selectedReturn.evidenceImageUrl}
+                                            alt="Return Evidence"
+                                            className="w-full h-full object-contain cursor-zoom-in group-hover:scale-[1.02] transition-transform duration-500"
+                                            onClick={() => window.open(selectedReturn.evidenceImageUrl, '_blank')}
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                            <span className="text-white text-xs font-bold px-4 py-2 bg-black/50 rounded-full backdrop-blur-sm">Click to view full size</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Details Grid */}
                             <div className="grid grid-cols-2 gap-8 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
                                 <div>
@@ -444,10 +495,66 @@ export default function ReturnsView() {
                                         {selectedReturn.reason}
                                     </p>
                                     <p className="text-sm text-slate-600 leading-relaxed pl-2 border-l-2 border-slate-100">
-                                        "{selectedReturn.comment}"
+                                        "{selectedReturn.comment || 'No additional comment provided'}"
                                     </p>
                                 </div>
                             </div>
+
+                            {/* Delivery Assignment View */}
+                            {(selectedReturn.status.toUpperCase() === 'APPROVED' || selectedReturn.status.toUpperCase() === 'PICKUP_ASSIGNED' || selectedReturn.status.toUpperCase() === 'PICKED_UP') && (
+                                <div className="bg-gradient-to-br from-indigo-50 to-white rounded-3xl border border-indigo-100 p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <Truck className="text-indigo-600" size={20} />
+                                            <h3 className="text-sm font-bold text-slate-900">Pickup Assignment</h3>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-4">
+                                        {selectedReturn.original?.deliveryAgent ? (
+                                            <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-indigo-100 shadow-sm">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold uppercase">
+                                                    {selectedReturn.original.deliveryAgent.fullName?.charAt(0) || 'A'}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-bold text-slate-900">{selectedReturn.original.deliveryAgent.fullName}</p>
+                                                    <p className="text-xs text-slate-500">{selectedReturn.original.deliveryAgent.emailAddress}</p>
+                                                </div>
+                                                <div className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[10px] font-bold">
+                                                    ASSIGNED
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="w-full">
+                                                <select
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none shadow-sm"
+                                                    value={selectedReturn.original?.deliveryAgentId || ''}
+                                                    onChange={(e) => handleAssignAgent(selectedReturn.id, e.target.value)}
+                                                >
+                                                    <option value="">Select Pickup Agent...</option>
+                                                    {deliveryAgents.map(agent => (
+                                                        <option key={agent.id} value={agent.id}>
+                                                            {agent.fullName} ({agent.emailAddress})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        {selectedReturn.status.toUpperCase() === 'PICKUP_ASSIGNED' && (
+                                            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4">
+                                                <div className="p-2.5 bg-white rounded-xl text-emerald-600 shadow-sm">
+                                                    <CheckCircle2 size={18} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black text-emerald-800/60 uppercase tracking-widest">OTP Sent to Customer</p>
+                                                    <p className="text-sm font-bold text-emerald-900">Verification required at pickup</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Refund Tracking Timeline */}
                             {refundTracking.length > 0 && (
@@ -477,7 +584,7 @@ export default function ReturnsView() {
 
                         <div className="p-6 border-t border-slate-100 bg-slate-50 block shrink-0">
                             <div className="flex gap-3">
-                                {selectedReturn.status === 'Pending' && (
+                                {selectedReturn.status.toUpperCase() === 'PENDING' && (
                                     <>
                                         <button
                                             onClick={() => handleUpdateStatus(selectedReturn.id, 'Rejected')}
@@ -493,16 +600,16 @@ export default function ReturnsView() {
                                         </button>
                                     </>
                                 )}
-                                {selectedReturn.status === 'Approved' && (
+                                {selectedReturn.status.toUpperCase() === 'PICKED_UP' && (
                                     <button
                                         onClick={() => handleUpdateStatus(selectedReturn.id, 'Collected')}
                                         className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
                                     >
                                         <RefreshCw size={16} />
-                                        Mark as Collected
+                                        Received at Warehouse
                                     </button>
                                 )}
-                                {selectedReturn.status === 'Collected' && (
+                                {selectedReturn.status.toUpperCase() === 'COLLECTED' && (
                                     <button
                                         onClick={() => handleUpdateStatus(selectedReturn.id, 'Completed')}
                                         className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
@@ -511,7 +618,7 @@ export default function ReturnsView() {
                                         Process Refund
                                     </button>
                                 )}
-                                {(selectedReturn.status === 'Rejected' || selectedReturn.status === 'Completed') && (
+                                {(selectedReturn.status.toUpperCase() === 'REJECTED' || selectedReturn.status.toUpperCase() === 'COMPLETED') && (
                                     <button
                                         onClick={() => setSelectedReturn(null)}
                                         className="flex-1 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md"
@@ -524,6 +631,83 @@ export default function ReturnsView() {
                     </motion.div>
                 </div>
             )}
+            {/* Agent Assignment Modal */}
+            <AnimatePresence>
+                {assigningAgent && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setAssigningAgent(null)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden"
+                        >
+                            <div className="p-8 space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-3 bg-indigo-100 text-indigo-600 rounded-2xl shadow-sm">
+                                            <Truck size={24} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Assign Pickup Agent</h2>
+                                            <p className="text-xs text-slate-500 font-medium mt-0.5">Choose an agent to pick up return #{assigningAgent}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setAssigningAgent(null)}
+                                        className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                                    >
+                                        <XCircle size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Available Delivery Agents</label>
+                                    <div className="grid gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {deliveryAgents.length === 0 ? (
+                                            <div className="p-8 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                                                <p className="text-sm text-slate-500 font-medium">No active delivery agents found.</p>
+                                            </div>
+                                        ) : (
+                                            deliveryAgents.map((agent) => (
+                                                <button
+                                                    key={agent.id}
+                                                    onClick={() => handleAssignAgent(assigningAgent, agent.id)}
+                                                    className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group text-left"
+                                                >
+                                                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-indigo-600 font-bold text-lg shadow-sm group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all duration-300">
+                                                        {agent.fullName?.charAt(0) || 'A'}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-bold text-slate-900 truncate tracking-tight">{agent.fullName}</p>
+                                                        <p className="text-xs text-slate-500 truncate">{agent.emailAddress}</p>
+                                                    </div>
+                                                    <div className="p-2 bg-white rounded-lg text-slate-300 group-hover:text-indigo-600 transition-colors shadow-sm">
+                                                        <ChevronRight size={18} />
+                                                    </div>
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setAssigningAgent(null)}
+                                    className="w-full py-4 text-xs font-bold text-slate-400 hover:text-slate-600 border border-transparent hover:bg-slate-50 rounded-2xl transition-all"
+                                >
+                                    Assign Later
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

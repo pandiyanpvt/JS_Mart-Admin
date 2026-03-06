@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export function SalesChart({ data = [] }) {
 
@@ -16,6 +16,10 @@ export function SalesChart({ data = [] }) {
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
                             <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
+                            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -39,7 +43,9 @@ export function SalesChart({ data = [] }) {
                             boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
                         }}
                     />
+                    <Legend verticalAlign="top" height={36} iconType="circle" />
                     <Area
+                        name="Revenue"
                         type="monotone"
                         dataKey="revenue"
                         stroke="#10b981"
@@ -47,11 +53,17 @@ export function SalesChart({ data = [] }) {
                         fillOpacity={1}
                         fill="url(#colorRevenue)"
                     />
+                    <Area
+                        name="Expenses"
+                        type="monotone"
+                        dataKey="expense"
+                        stroke="#ef4444"
+                        strokeWidth={3}
+                        fillOpacity={1}
+                        fill="url(#colorExpense)"
+                    />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
     );
 }
-
-
-
