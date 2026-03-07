@@ -85,8 +85,8 @@ export default function LowStockView() {
                         <ArrowLeft size={18} />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Low Stock Alerts</h1>
-                        <p className="text-slate-500 text-sm">Monitor products that need restocking immediately.</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Low Stock</h1>
+                        <p className="text-slate-500 text-sm">Products that need restocking.</p>
                     </div>
                 </div>
                 <div className="flex gap-2">

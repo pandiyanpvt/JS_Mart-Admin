@@ -20,17 +20,17 @@ export const navigationItems = [
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN']
     },
     {
-        title: 'Delivery Panel',
+        title: 'My Deliveries',
         icon: ShoppingCart,
         href: '/delivery/agent',
         allowedRoles: ['DELIVERY_AGENT']
     },
     {
-        title: 'Product Management',
+        title: 'Products',
         icon: Package,
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN'],
         items: [
-            { title: 'Products List', href: '/products' },
+            { title: 'All Products', href: '/products' },
             { title: 'Add Product', href: '/products/add' },
             { title: 'Low Stock', href: '/products/low-stock' },
             { title: 'Categories', href: '/categories' },
@@ -38,12 +38,12 @@ export const navigationItems = [
         ],
     },
     {
-        title: 'Stock Management',
+        title: 'Stock',
         icon: ClipboardList,
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN'],
         items: [
             { title: 'Stock Overview', href: '/stocks' },
-            { title: 'Stock Logs', href: '/stocks/logs' },
+            { title: 'Stock History', href: '/stocks/logs' },
             { title: 'Add Stock', href: '/stocks/add' },
             { title: 'Remove Stock', href: '/stocks/remove' },
             { title: 'Removal Approvals', href: '/stocks/approvals' },
@@ -51,25 +51,25 @@ export const navigationItems = [
         ],
     },
     {
-        title: 'Order Management',
+        title: 'Orders',
         icon: ShoppingCart,
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN'],
         items: [
-            { title: 'Orders List', href: '/orders' },
+            { title: 'All Orders', href: '/orders' },
             { title: 'Returns', href: '/orders/returns' },
         ],
     },
     {
-        title: 'User Management',
+        title: 'Users',
         icon: Users,
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN'],
         items: [
             { title: 'Customers', href: '/users/customers' },
-            { title: 'User Subscriptions', href: '/users/subscriptions' },
-            { title: 'User Reviews', href: '/reviews' },
-            { title: 'Contact Messages', href: '/messages' },
+            { title: 'Subscriptions', href: '/users/subscriptions' },
+            { title: 'Reviews', href: '/reviews' },
+            { title: 'Messages', href: '/messages' },
             { title: 'Admin Users', href: '/users/admins' },
-            { title: 'Roles & Permissions', href: '/users/roles' },
+            { title: 'Roles', href: '/users/roles' },
         ],
     },
     {
@@ -77,20 +77,20 @@ export const navigationItems = [
         icon: BadgePercent,
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN'],
         items: [
-            { title: 'Web Banners', href: '/promotions/banners' },
+            { title: 'Banners', href: '/promotions/banners' },
             { title: 'Membership Plans', href: '/marketing/membership-plans' },
-            { title: 'Active Offers', href: '/marketing/offers' },
+            { title: 'Offers', href: '/marketing/offers' },
             { title: 'Coupons', href: '/promotions/coupons' },
         ],
     },
     {
-        title: 'Analysis',
+        title: 'Reports',
         icon: BarChart3,
         allowedRoles: ['ADMIN', 'MANAGER', 'DEVELOPER', 'SUPER_ADMIN'],
         items: [
-            { title: 'Business Intelligence', href: '/analytics/business' },
-            { title: 'Product Analysis', href: '/analytics/products' },
-            { title: 'Customer Analysis', href: '/analytics/customers' },
+            { title: 'Sales Report', href: '/analytics/business' },
+            { title: 'Product Report', href: '/analytics/products' },
+            { title: 'Customer Report', href: '/analytics/customers' },
         ],
     },
     {

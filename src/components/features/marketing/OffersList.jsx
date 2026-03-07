@@ -110,7 +110,7 @@ export default function OffersList() {
 
             if (editingOffer) {
                 await offerService.update(editingOffer.id, data);
-                showNotification('Promotion strategy updated!');
+                showNotification('Offer updated!');
             } else {
                 await offerService.create(data);
                 showNotification('New offer live and active!');
@@ -170,7 +170,7 @@ export default function OffersList() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Archive this promotion? This will stop it immediately.')) return;
+        if (!confirm('Remove this offer? It will stop showing to customers.')) return;
         try {
             await offerService.delete(id);
             showNotification('Promotion deactivated');
@@ -230,10 +230,10 @@ export default function OffersList() {
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-[0.2em] mb-3">
                         <div className="w-8 h-[2px] bg-indigo-600 rounded-full" />
-                        Campaign Management
+                        Offers
                     </div>
                     <h1 className="text-4xl font-black text-slate-900 tracking-tight">Active Offers</h1>
-                    <p className="text-slate-500 mt-2 font-medium">Engineer and deploy promotional strategies across your catalog.</p>
+                    <p className="text-slate-500 mt-2 font-medium">Create and manage offers for your products.</p>
                 </motion.div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -249,7 +249,7 @@ export default function OffersList() {
                         className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest"
                     >
                         <Plus size={18} />
-                        Create New Campaign
+                        New Offer
                     </button>
                 </div>
             </div>
@@ -259,7 +259,7 @@ export default function OffersList() {
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                 <input
                     type="text"
-                    placeholder="Search campaigns by name or type..."
+                    placeholder="Search offers by name or type..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-16 pr-6 py-5 bg-white border border-slate-100 rounded-3xl text-sm font-bold shadow-sm focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all"
@@ -270,15 +270,15 @@ export default function OffersList() {
             {loading ? (
                 <div className="flex flex-col items-center justify-center p-32 gap-4 bg-white rounded-[3rem] border border-slate-50">
                     <Loader2 className="animate-spin text-indigo-600" size={40} />
-                    <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Synchronizing Marketing Engine...</p>
+                    <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Loading...</p>
                 </div>
             ) : filteredOffers.length === 0 ? (
                 <div className="p-32 text-center bg-white rounded-[3rem] border border-dashed border-slate-200">
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-6">
                         <Tag size={32} />
                     </div>
-                    <h3 className="text-xl font-black text-slate-900">Catalogue is quiet</h3>
-                    <p className="text-slate-500 mt-2 font-medium max-w-xs mx-auto">No campaigns are currently active. Start one by clicking the create button.</p>
+                    <h3 className="text-xl font-black text-slate-900">No offers yet</h3>
+                    <p className="text-slate-500 mt-2 font-medium max-w-xs mx-auto">No offers right now. Click the button above to create one.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -319,11 +319,11 @@ export default function OffersList() {
 
                                 <div className="space-y-4 mb-8">
                                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tighter">
-                                        <span className="text-slate-400">Target</span>
+                                        <span className="text-slate-400">Product</span>
                                         <span className="text-slate-900 truncate max-w-[150px]">{offer.product?.productName || 'All Cart Orders'}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tighter">
-                                        <span className="text-slate-400">Yield</span>
+                                        <span className="text-slate-400">Discount</span>
                                         <span className="text-emerald-600">
                                             {offer.discountPercentage ? `${offer.discountPercentage}% OFF` :
                                                 offer.getQuantity ? `GET ${offer.getQuantity} FREE` :
@@ -331,7 +331,7 @@ export default function OffersList() {
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tighter">
-                                        <span className="text-slate-400">Audience</span>
+                                        <span className="text-slate-400">For</span>
                                         <span className={cn(
                                             "px-2 py-0.5 rounded-lg border",
                                             offer.targetMembershipLevel === 2 ? "bg-amber-50 text-amber-600 border-amber-100" :
@@ -343,10 +343,10 @@ export default function OffersList() {
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tighter">
-                                        <span className="text-slate-400">Horizon</span>
+                                        <span className="text-slate-400">End date</span>
                                         <span className="text-slate-900 flex items-center gap-1">
                                             <Calendar size={12} />
-                                            {offer.endDate ? new Date(offer.endDate).toLocaleDateString() : 'Permanent / Ongoing'}
+                                            {offer.endDate ? new Date(offer.endDate).toLocaleDateString() : 'No end date'}
                                         </span>
                                     </div>
                                 </div>
@@ -377,9 +377,9 @@ export default function OffersList() {
                             <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-white z-10 shrink-0">
                                 <div>
                                     <h2 className="text-3xl font-black text-slate-900 leading-tight">
-                                        {editingOffer ? 'Modify Campaign' : 'Initialize Promotion'}
+                                        {editingOffer ? 'Edit Offer' : 'New Offer'}
                                     </h2>
-                                    <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest leading-loose opacity-60">Campaign Architecture & Logic</p>
+                                    <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest leading-loose opacity-60">Offer details</p>
                                 </div>
                                 <button onClick={() => setIsModalOpen(false)} className="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all"><X size={24} /></button>
                             </div>
@@ -390,23 +390,23 @@ export default function OffersList() {
                                         {/* Left Side: General Info */}
                                         <div className="space-y-8">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Strategy Type</label>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Offer Type</label>
                                                 <select
                                                     required
                                                     value={formData.offerTypeId}
                                                     onChange={(e) => setFormData({ ...formData, offerTypeId: e.target.value })}
                                                     className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all appearance-none"
                                                 >
-                                                    <option value="">Select Offer Architecture</option>
+                                                    <option value="">Select offer type</option>
                                                     {offerTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                                 </select>
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Campaign Name</label>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Offer Name</label>
                                                 <input
                                                     required
-                                                    placeholder="e.g., Summer Slash 2026"
+                                                    placeholder="e.g. Summer Sale 2026"
                                                     value={formData.name}
                                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                                     className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm"
@@ -414,10 +414,10 @@ export default function OffersList() {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Description (Internal/External)</label>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Description</label>
                                                 <textarea
                                                     rows="3"
-                                                    placeholder="Detailed campaign rules..."
+                                                    placeholder="Offer details..."
                                                     value={formData.description}
                                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                                     className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm resize-none"
@@ -426,17 +426,17 @@ export default function OffersList() {
 
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Activation Date</label>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Start Date</label>
                                                     <input type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Termination Date</label>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date</label>
                                                     <input type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
                                                 </div>
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Target Audience</label>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">For Members</label>
                                                 <select
                                                     value={formData.targetMembershipLevel}
                                                     onChange={(e) => setFormData({ ...formData, targetMembershipLevel: parseInt(e.target.value) })}
@@ -456,7 +456,7 @@ export default function OffersList() {
                                             <AnimatePresence mode="wait">
                                                 {formData.offerTypeId ? (
                                                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100">
-                                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2">Strategy Variables</p>
+                                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2">Offer options</p>
 
                                                         {/* Product Selection for Product-Specific offers */}
                                                         {[1, 2, 4].includes(parseInt(formData.offerTypeId)) && (
@@ -519,14 +519,14 @@ export default function OffersList() {
                                                 ) : (
                                                     <div className="p-12 border-2 border-dashed border-slate-100 rounded-[2rem] text-center space-y-3">
                                                         <ShoppingBag className="mx-auto text-slate-200" size={32} />
-                                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Select architecture to configure logic</p>
+                                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Select offer type to set options</p>
                                                     </div>
                                                 )}
                                             </AnimatePresence>
 
                                             {/* Media Upload */}
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Campaign Visual (Banner)</label>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Banner image</label>
                                                 <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-2">
                                                     <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
                                                     <p className="text-xs font-semibold text-amber-900">{IMAGE_SPECS.offerBanner.width}×{IMAGE_SPECS.offerBanner.height} px, max {IMAGE_SPECS.offerBanner.maxFileSizeLabel}. {IMAGE_SPECS.offerBanner.formats}.</p>
@@ -539,7 +539,7 @@ export default function OffersList() {
                                                         ) : (
                                                             <>
                                                                 <Upload className="text-slate-400" size={24} />
-                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Upload Campaign Banner</span>
+                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Upload banner</span>
                                                             </>
                                                         )}
                                                     </label>
@@ -555,7 +555,7 @@ export default function OffersList() {
                                             className="flex-1 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
                                         >
                                             {isSubmitting ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={20} />}
-                                            {isSubmitting ? 'Syncing System...' : (editingOffer ? 'Finalize Modification' : 'Deploy Campaign')}
+                                            {isSubmitting ? 'Saving...' : (editingOffer ? 'Save changes' : 'Create offer')}
                                         </button>
                                         <button
                                             type="button"

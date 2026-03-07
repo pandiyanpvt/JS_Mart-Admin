@@ -87,7 +87,7 @@ export default function LoginPage() {
                         <h1 className="text-6xl font-extrabold text-slate-900 mb-4 tracking-tight">JS Mart</h1>
                         <div className="h-1.5 w-32 bg-indigo-600 mx-auto mb-8 rounded-full shadow-sm" />
                         <p className="text-2xl text-slate-500 font-medium tracking-[0.2em] uppercase">
-                            Inventory Management
+                            Admin
                         </p>
                     </motion.div>
                 </div>
@@ -103,7 +103,7 @@ export default function LoginPage() {
                     >
                         <div className="mb-12 text-center lg:text-left">
                             <h2 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Welcome Back</h2>
-                            <p className="text-slate-500 text-lg mb-6">Sign in to manage your empire.</p>
+                            <p className="text-slate-500 text-lg mb-6">Sign in to manage your store.</p>
 
                             {error && (
                                 <motion.div

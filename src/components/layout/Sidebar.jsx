@@ -109,12 +109,12 @@ export function Sidebar() {
                             const user = authService.getCurrentUser();
                             const userRole = user?.role;
 
-                            if (item.title === 'User Management') {
+                            if (item.title === 'Users') {
                                 filteredItems = item.items.filter(subItem => {
                                     if (subItem.title === 'Admin Users') {
                                         return userRole !== 'MANAGER';
                                     }
-                                    if (subItem.title === 'Roles & Permissions') {
+                                    if (subItem.title === 'Roles') {
                                         return userRole === 'DEVELOPER';
                                     }
                                     return true;
