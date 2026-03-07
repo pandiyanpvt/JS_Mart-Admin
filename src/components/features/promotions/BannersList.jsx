@@ -10,7 +10,8 @@ import {
     ChevronRight,
     Loader2,
     AlertCircle,
-    Layout
+    Layout,
+    HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -42,10 +43,12 @@ export default function BannersList() {
     const [editingBanner, setEditingBanner] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState(null);
+    const [showLinkHelp, setShowLinkHelp] = useState(false);
 
     const [formData, setFormData] = useState({
         level: 1,
         order: 1,
+        redirectLink: '',
         image: null,
         preview: ''
     });
@@ -95,6 +98,7 @@ export default function BannersList() {
             const data = new FormData();
             data.append('level', formData.level);
             data.append('order', formData.order);
+            data.append('redirectLink', formData.redirectLink || '');
             if (formData.image) {
                 data.append('promotionImg', formData.image);
             }
@@ -109,7 +113,7 @@ export default function BannersList() {
 
             setIsModalOpen(false);
             setEditingBanner(null);
-            setFormData({ level: 1, order: 1, image: null, preview: '' });
+            setFormData({ level: 1, order: 1, redirectLink: '', image: null, preview: '' });
             loadPromotions();
         } catch (error) {
             showNotification(error.message, 'error');
@@ -134,6 +138,7 @@ export default function BannersList() {
         setFormData({
             level: banner.level,
             order: banner.order,
+            redirectLink: banner.redirectLink || '',
             image: null,
             preview: banner.promotionImg
         });
@@ -156,7 +161,7 @@ export default function BannersList() {
                 <button
                     onClick={() => {
                         setEditingBanner(null);
-                        setFormData({ level: 1, order: 1, image: null, preview: '' });
+                        setFormData({ level: 1, order: 1, redirectLink: '', image: null, preview: '' });
                         setIsModalOpen(true);
                     }}
                     className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest"
@@ -282,8 +287,53 @@ export default function BannersList() {
                                             type="number"
                                             value={formData.order}
                                             onChange={(e) => setFormData({ ...formData, order: e.target.value })}
+                                            className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between pl-1">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Redirect Link</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowLinkHelp(!showLinkHelp)}
+                                                className="text-slate-400 hover:text-indigo-600 transition-colors"
+                                            >
+                                                <HelpCircle size={14} />
+                                            </button>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. /shop?category=1 or https://brand.com"
+                                            value={formData.redirectLink || ''}
+                                            onChange={(e) => setFormData({ ...formData, redirectLink: e.target.value })}
                                             className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all"
                                         />
+
+                                        <AnimatePresence>
+                                            {showLinkHelp && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="mt-2 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl space-y-2">
+                                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">How links work:</p>
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <p className="text-[11px] font-bold text-slate-700 mb-0.5">Internal Redirection</p>
+                                                                <p className="text-[10px] text-slate-500 leading-relaxed">Use relative paths like <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">/shop</code> or <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">/shop?category=5</code> to link to pages inside your store.</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[11px] font-bold text-slate-700 mb-0.5">External Promotion</p>
+                                                                <p className="text-[10px] text-slate-500 leading-relaxed">Use full URLs starting with <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">https://</code> to link to partner sites. These will automatically open in a new tab.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
                                     <div className="space-y-4">
