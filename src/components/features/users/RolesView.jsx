@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, Shield, Lock, CheckCircle2, XCircle, Users, Loader2, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { userRoleService, authService } from '@/lib/api';
+import { useModal } from '@/components/providers/ModalProvider';
 
 const MODULES = ['dashboard', 'products', 'orders', 'users', 'content', 'settings', 'inventory'];
 const ACTIONS = ['read', 'write', 'delete'];
@@ -24,6 +25,7 @@ const FormInput = ({ label, name, required = false, placeholder = '', value, onC
 );
 
 export default function RolesView() {
+    const { showConfirm, showAlert } = useModal();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [roles, setRoles] = useState([]);
@@ -65,7 +67,6 @@ export default function RolesView() {
     const [viewRole, setViewRole] = useState(null);
     const [editingRole, setEditingRole] = useState(null);
     const [isNewRole, setIsNewRole] = useState(false);
-    const [deleteId, setDeleteId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const filteredRoles = roles.filter(role =>
@@ -137,26 +138,27 @@ export default function RolesView() {
             setEditingRole(null);
         } catch (error) {
             console.error('Failed to save role:', error);
-            alert('Failed to save role');
+            showAlert('Save Failed', 'Failed to save role. Please check your inputs and try again.', 'error');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleDeleteClick = (id) => {
-        setDeleteId(id);
-    };
-
-    const confirmDelete = async () => {
-        try {
-            await userRoleService.delete(deleteId);
-            await loadRoles();
-        } catch (error) {
-            console.error('Failed to delete role:', error);
-            alert('Failed to delete role');
-        } finally {
-            setDeleteId(null);
-        }
+        showConfirm({
+            title: "Delete Role?",
+            message: "Are you sure you want to delete this role? Users assigned to this role may lose access to critical systems.",
+            type: "danger",
+            onConfirm: async () => {
+                try {
+                    await userRoleService.delete(id);
+                    await loadRoles();
+                } catch (error) {
+                    console.error('Failed to delete role:', error);
+                    showAlert('Deletion Failed', 'Failed to delete role. It might be in use or protected.', 'error');
+                }
+            }
+        });
     };
 
     return (
@@ -440,38 +442,6 @@ export default function RolesView() {
                 </div>
             )}
 
-            {/* Delete Modal */}
-            {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
-                        onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                    />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
-                        <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
-                            <Shield size={32} />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Role?</h3>
-                        <p className="text-sm text-slate-500 mb-6">
-                            Are you sure you want to delete this role? Users assigned to this role may lose access.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeleteId(null)}
-                                className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold transition-all text-sm hover:bg-slate-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDelete}
-                                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-all text-sm shadow-lg shadow-rose-200"
-                            >
-                                Confirm Delete
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

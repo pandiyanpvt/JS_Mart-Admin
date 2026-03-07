@@ -21,8 +21,10 @@ import { cn } from '@/lib/utils';
 import { brandService } from '@/lib/api';
 import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import * as XLSX from 'xlsx';
+import { useModal } from '@/components/providers/ModalProvider';
 
 export default function BrandsView() {
+    const { showConfirm } = useModal();
     const [allBrands, setAllBrands] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -127,15 +129,20 @@ export default function BrandsView() {
 
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this brand?')) {
-            try {
-                await brandService.delete(id);
-                showNotification('Brand deleted successfully');
-                loadBrands();
-            } catch (error) {
-                showNotification(error.message, 'error');
+        showConfirm({
+            title: "Delete Brand",
+            message: "Are you sure you want to delete this brand? This action cannot be undone and may affect associated products.",
+            type: "danger",
+            onConfirm: async () => {
+                try {
+                    await brandService.delete(id);
+                    showNotification('Brand deleted successfully');
+                    loadBrands();
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
             }
-        }
+        });
     };
 
     const handleExport = () => {

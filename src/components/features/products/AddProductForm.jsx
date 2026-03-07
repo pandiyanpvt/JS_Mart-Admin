@@ -9,9 +9,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { productService, categoryService, brandService } from '@/lib/api';
 import { IMAGE_SPECS, validateImageFileSize } from '@/lib/imageSpecs';
+import { useModal } from '@/components/providers/ModalProvider';
 
 
 function FormContent() {
+    const { showAlert } = useModal();
     const router = useRouter();
     const searchParams = useSearchParams();
     const productId = searchParams.get('id');
@@ -99,7 +101,7 @@ function FormContent() {
         for (const file of files) {
             const { valid, message } = validateImageFileSize(file, 'productImages');
             if (!valid) {
-                alert(message);
+                showAlert('Upload Error', message, 'error');
                 continue;
             }
             validFiles.push(file);
@@ -190,7 +192,7 @@ function FormContent() {
                 router.refresh();
             } catch (error) {
                 console.error('Submission failed:', error);
-                alert(error.message || 'Synchronization failed. Check network logs.');
+                showAlert('Submission Failed', error.message || 'Product synchronization failed. Check your network and try again.', 'error');
             } finally {
                 setIsSubmitting(false);
             }

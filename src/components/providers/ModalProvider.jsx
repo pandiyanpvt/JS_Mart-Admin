@@ -10,16 +10,38 @@ export function ModalProvider({ children }) {
     const [isLoading, setIsLoading] = useState(false);
     const [options, setOptions] = useState(null);
 
-    const showModal = useCallback((newOptions) => {
-        setOptions(newOptions);
-        setIsOpen(true);
-    }, []);
-
     const hideModal = useCallback(() => {
         setIsOpen(false);
         setOptions(null);
         setIsLoading(false);
     }, []);
+
+    const showModal = useCallback((newOptions) => {
+        setOptions(newOptions);
+        setIsOpen(true);
+    }, []);
+
+    const showAlert = useCallback((title, message, type = "info") => {
+        showModal({
+            title,
+            message,
+            type,
+            confirmLabel: "OK",
+            cancelLabel: null,
+            onConfirm: () => Promise.resolve()
+        });
+    }, [showModal]);
+
+    const showConfirm = useCallback(({ title, message, type = "confirm", confirmLabel, cancelLabel, onConfirm }) => {
+        showModal({
+            title,
+            message,
+            type,
+            confirmLabel: confirmLabel || "Confirm",
+            cancelLabel: cancelLabel || "Cancel",
+            onConfirm
+        });
+    }, [showModal]);
 
     const handleConfirm = async () => {
         if (options?.onConfirm) {
@@ -37,7 +59,7 @@ export function ModalProvider({ children }) {
     };
 
     return (
-        <ModalContext.Provider value={{ showModal, hideModal, isLoading }}>
+        <ModalContext.Provider value={{ showModal, hideModal, showAlert, showConfirm, isLoading }}>
             {children}
             {options && (
                 <ConfirmationModal
