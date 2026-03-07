@@ -16,24 +16,24 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { promotionService } from '@/lib/api';
-import { IMAGE_SPECS, validateImageFileSize } from '@/lib/imageSpecs';
+import { IMAGE_SPECS, validateImageFileSize, getBannerSpecForLevel, BANNER_SPEC_BY_LEVEL } from '@/lib/imageSpecs';
 import Image from 'next/image';
 
 const LEVELS = [
-    { id: 1, name: 'Level 1: Header Banners', description: 'Top carousel on homepage' },
-    { id: 2, name: 'Level 2: Category Hero', description: 'Featured category section' },
-    { id: 3, name: 'Level 3: Mid-Page Banners', description: 'Full-width banners below products' },
-    { id: 4, name: 'Level 4: Seasonal Highlights', description: 'Small banners for events' },
-    { id: 5, name: 'Level 5: Footer Promotional', description: 'Final call-to-action blocks' },
+    { id: 1, name: 'Level 1: Header Banners', description: 'JS Mart: Hero carousel on homepage (1920×600, 16:5)' },
+    { id: 2, name: 'Level 2: Category Hero', description: 'JS Mart: Featured category hero (1920×600, 16:5)' },
+    { id: 3, name: 'Level 3: Curated picks / Mid-Page', description: 'JS Mart: Scrolling strip cards — 3:2 (e.g. 600×400)' },
+    { id: 4, name: 'Level 4: Seasonal Highlights', description: 'JS Mart: Same as Level 3 — 3:2 strip cards' },
+    { id: 5, name: 'Level 5: Footer Promotional', description: 'JS Mart: Footer wide strip (1920×420, 32:7)' },
 ];
 
-/** Preview aspect ratio matches js mart storefront display per level */
+/** Preview aspect ratio matches JS Mart storefront display per level */
 const PREVIEW_ASPECT_BY_LEVEL = {
-    1: 'aspect-[16/5]',   // Hero: same as 1920×600 on js mart
-    2: 'aspect-[16/5]',   // Category hero: same as hero
-    3: 'aspect-[4/5]',    // Middle: js mart middle-banner-section uses aspect-[4/5]
-    4: 'aspect-[4/5]',    // Seasonal: same as middle
-    5: 'aspect-[16/3]',   // Footer: js mart footer uses wide short strip (h-[180px]–[300px])
+    1: 'aspect-[16/5]',   // Hero: 1920×600 — hero-section.tsx
+    2: 'aspect-[16/5]',   // Category hero: 1920×600
+    3: 'aspect-[3/2]',   // Curated picks: middle-banner-section.tsx — horizontal strip cards
+    4: 'aspect-[3/2]',   // Seasonal: same as Level 3 on storefront
+    5: 'aspect-[32/7]',   // Footer: footer-banner-section.tsx — 1920×420
 };
 
 export default function BannersList() {
@@ -78,7 +78,8 @@ export default function BannersList() {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const { valid, message } = validateImageFileSize(file, 'banners');
+        const specKey = BANNER_SPEC_BY_LEVEL[formData.level] || 'banners';
+        const { valid, message } = validateImageFileSize(file, specKey);
         if (!valid) {
             showNotification(message, 'error');
             e.target.value = '';
@@ -204,7 +205,7 @@ export default function BannersList() {
                                             key={banner.id}
                                             whileHover={{ y: -5 }}
                                             className={cn(
-                                                'group relative w-full rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm',
+                                                'group relative w-full overflow-hidden border border-slate-100 shadow-sm',
                                                 PREVIEW_ASPECT_BY_LEVEL[level.id] || 'aspect-[16/5]'
                                             )}
                                         >
@@ -341,7 +342,10 @@ export default function BannersList() {
                                         <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-2">
                                             <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
                                             <p className="text-xs font-semibold text-amber-900">
-                                                {IMAGE_SPECS.banners.width}×{IMAGE_SPECS.banners.height} px recommended, max {IMAGE_SPECS.banners.maxFileSizeLabel}. {IMAGE_SPECS.banners.formats}.
+                                                {(() => {
+                                                    const spec = getBannerSpecForLevel(formData.level);
+                                                    return `${spec.width}×${spec.height} px recommended (${spec.aspectRatio}), max ${spec.maxFileSizeLabel}. ${spec.formats}.`;
+                                                })()}
                                             </p>
                                         </div>
                                         <div className="relative group">
@@ -358,7 +362,7 @@ export default function BannersList() {
                                             >
                                                 {formData.preview ? (
                                                     <>
-                                                        <div className={cn('relative w-full max-w-md mx-auto rounded-xl overflow-hidden', PREVIEW_ASPECT_BY_LEVEL[formData.level] || 'aspect-[16/5]')}>
+                                                        <div className={cn('relative w-full max-w-md mx-auto overflow-hidden', PREVIEW_ASPECT_BY_LEVEL[formData.level] || 'aspect-[16/5]')}>
                                                             <Image src={formData.preview} alt="" fill className="object-cover object-center" sizes="(max-width: 768px) 100vw, 28rem" />
                                                         </div>
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Preview: same ratio as storefront</span>

@@ -259,7 +259,7 @@ export default function ReturnsView() {
                         <Link href="/orders" className="p-2.5 bg-white rounded-xl border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-all shadow-sm">
                             <ArrowLeft size={18} />
                         </Link>
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Returns Management</h1>
+                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Returns</h1>
                     </div>
                     <p className="text-slate-500 ml-1 font-medium">Monitor, approve, and process customer return requests.</p>
                 </div>

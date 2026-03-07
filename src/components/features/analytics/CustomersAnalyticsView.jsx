@@ -55,7 +55,7 @@ export default function CustomersAnalyticsView() {
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Customer Analysis</h1>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight">Customer Report</h1>
                     <p className="text-slate-500 text-sm font-medium">Understand retention, repeat purchases, and top customers.</p>
                 </div>
                 <div className="flex items-center gap-3 p-1.5 bg-white border border-slate-200 rounded-[1.5rem] shadow-sm">

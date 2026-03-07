@@ -366,9 +366,9 @@ export default function OrdersView() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 w-full">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Order Management</h1>
+                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Orders</h1>
                     </div>
-                    <p className="text-slate-500 ml-1 font-medium">Monitor and manage customer orders, update delivery status.</p>
+                    <p className="text-slate-500 ml-1 font-medium">View and update customer orders and delivery status.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
