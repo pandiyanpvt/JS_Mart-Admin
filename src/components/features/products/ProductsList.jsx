@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, Eye, X, Info, Calendar, Hash, PackageSearch, Tag, DollarSign, Archive, Upload, Loader2, CheckCircle2, ShieldCheck, Star } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Eye, X, Info, Calendar, Hash, PackageSearch, Tag, DollarSign, Archive, Upload, Loader2, CheckCircle2, ShieldCheck, Star, RotateCcw } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useModal } from '@/components/providers/ModalProvider';
@@ -100,6 +100,7 @@ export default function ProductsList() {
             Stock: p.stock,
             Weight: p.weight || 'N/A',
             Featured: p.isFeatured ? 'Yes' : 'No',
+            Returnable: (p.isReturnable == 1 || p.isReturnable === true) ? 'Yes' : 'No',
             Description: p.description
         }));
 
@@ -260,7 +261,8 @@ export default function ProductsList() {
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Brand</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stock</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Featured</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Featured</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Returnable</th>
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
 
                                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
@@ -336,13 +338,23 @@ export default function ProductsList() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex justify-start">
+                                                <div className="flex justify-center">
                                                     <Star
                                                         size={18}
                                                         className={cn(
                                                             product.isFeatured ? "fill-amber-400 text-amber-400" : "text-slate-200"
                                                         )}
                                                     />
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center">
+                                                    <span className={cn(
+                                                        "text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider",
+                                                        (product.isReturnable == 1 || product.isReturnable === true) ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                                    )}>
+                                                        {(product.isReturnable == 1 || product.isReturnable === true) ? 'Yes' : 'No'}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
@@ -554,6 +566,16 @@ export default function ProductsList() {
                                             <span className="text-slate-900 font-semibold">{selectedProduct.brand}</span>
                                         </div>
 
+                                        <div className="flex items-center gap-3 text-sm text-slate-600">
+                                            <RotateCcw size={16} className="text-slate-400" />
+                                            <span className="font-medium">Returnable:</span>
+                                            <span className={cn(
+                                                "font-bold uppercase tracking-wide text-[10px] px-2 py-0.5 rounded-full",
+                                                (selectedProduct.isReturnable == 1 || selectedProduct.isReturnable === true) ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                                            )}>
+                                                {(selectedProduct.isReturnable == 1 || selectedProduct.isReturnable === true) ? 'Yes' : 'No'}
+                                            </span>
+                                        </div>
                                         <div className="flex items-center gap-3 text-sm text-slate-600">
                                             <Calendar size={16} className="text-slate-400" />
                                             <span className="font-medium">Created:</span>

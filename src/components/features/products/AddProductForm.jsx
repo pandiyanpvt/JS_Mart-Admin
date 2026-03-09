@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { ArrowLeft, Upload, X, Save, Loader2, Star, Image as ImageIcon, Info, Box, DollarSign, Tag, Archive, Scale } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, Loader2, Star, Image as ImageIcon, Info, Box, DollarSign, Tag, Archive, Scale, RotateCcw } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -30,6 +30,7 @@ function FormContent() {
         unit: 'kg',
         status: 'active',
         isFeatured: false,
+        isReturnable: true,
     });
     const [images, setImages] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -63,6 +64,7 @@ function FormContent() {
                         unit: 'kg', // Backend doesn't have individual units yet
                         status: product.isActive ? 'active' : 'archived',
                         isFeatured: product.isFeatured || false,
+                        isReturnable: product.isReturnable === true || product.isReturnable === 1,
                     });
 
                     if (product.images && product.images.length > 0) {
@@ -151,7 +153,8 @@ function FormContent() {
                         description: formData.description,
                         weight: parseFloat(formData.weight) || null,
                         isActive: formData.status === 'active',
-                        isFeatured: formData.isFeatured
+                        isFeatured: formData.isFeatured,
+                        isReturnable: formData.isReturnable
                     });
                 } else {
 
@@ -164,6 +167,7 @@ function FormContent() {
                     productFormData.append('quantity', '0'); // Default to 0, managed via batches
                     productFormData.append('description', formData.description);
                     productFormData.append('isFeatured', formData.isFeatured ? '1' : '0');
+                    productFormData.append('isReturnable', formData.isReturnable ? '1' : '0');
 
                     // Add weight if provided
                     if (formData.weight) {
@@ -408,6 +412,20 @@ function FormContent() {
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleInputChange} className="sr-only peer" />
+                            <div className="w-12 h-6 bg-slate-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all shadow-inner"></div>
+                        </label>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-black text-slate-900 flex items-center gap-2">
+                                <RotateCcw size={16} className={formData.isReturnable ? 'text-emerald-600' : 'text-slate-400'} />
+                                Returnable
+                            </p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Allowed to return</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="isReturnable" checked={formData.isReturnable} onChange={handleInputChange} className="sr-only peer" />
                             <div className="w-12 h-6 bg-slate-100 rounded-full peer peer-checked:bg-emerald-600 peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all shadow-inner"></div>
                         </label>
                     </div>
