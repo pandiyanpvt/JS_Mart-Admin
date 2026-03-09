@@ -79,7 +79,9 @@ export async function saveProduct(productData) {
         description: productData.description || productData.shortDescription,
         quantity: 0, // Stocks managed via batches
         weight: parseFloat(productData.weight) || null,
-        price: parseFloat(productData.price)
+        price: parseFloat(productData.price),
+        isFeatured: productData.isFeatured,
+        isReturnable: productData.isReturnable
     };
 
     return await fetchAPI('/products', {
@@ -94,7 +96,9 @@ export async function updateProduct(productId, productData) {
         productCategoryId: parseInt(productData.categoryId),
         brandId: parseInt(productData.brandId),
         description: productData.description || productData.shortDescription,
-        price: parseFloat(productData.price)
+        price: parseFloat(productData.price),
+        isFeatured: productData.isFeatured,
+        isReturnable: productData.isReturnable
     };
     return await fetchAPI(`/products/${productId}`, {
         method: 'PUT',
@@ -174,7 +178,8 @@ function mapProduct(p) {
         unit: 'pcs',
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
-        isFeatured: p.isFeatured
+        isFeatured: p.isFeatured,
+        isReturnable: p.isReturnable
     };
 }
 
