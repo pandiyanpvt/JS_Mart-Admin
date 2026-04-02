@@ -192,7 +192,7 @@ export default function AnalyticsView() {
                     </div>
 
                     <div className="h-[400px] w-full min-w-0" style={{ minWidth: 0, minHeight: 400 }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <AreaChart data={data?.series || []}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
@@ -244,7 +244,7 @@ export default function AnalyticsView() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Sales by Product Type</p>
 
                     <div className="h-[280px] w-full relative">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <PieChart>
                                 <Pie
                                     data={categoryData}
