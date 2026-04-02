@@ -90,7 +90,7 @@ export default function ProductsAnalyticsView() {
                     <h2 className="text-lg font-bold text-slate-900">Top Products by Revenue</h2>
                     <p className="text-xs text-slate-500 mb-6">Revenue (after discounts) in selected range</p>
                     <div className="h-[320px] w-full min-w-0">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
@@ -109,7 +109,7 @@ export default function ProductsAnalyticsView() {
                     <h2 className="text-lg font-bold text-slate-900">Units Sold</h2>
                     <p className="text-xs text-slate-500 mb-6">Top products by quantity sold</p>
                     <div className="h-[320px] w-full min-w-0">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} />
