@@ -24,6 +24,7 @@ import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import Image from 'next/image';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
+import NumberInputNoScroll from '@/components/ui/NumberInputNoScroll';
 
 
 export default function StocksList() {
@@ -392,7 +393,7 @@ export default function StocksList() {
                                 <form onSubmit={handleAdjustmentSubmit} className="p-10 pb-20 space-y-8">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Volume to Remove</label>
-                                        <input required type="number" placeholder="Qty" value={adjustment.quantity} onChange={(e) => setAdjustment({ ...adjustment, quantity: e.target.value })} className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all" />
+                                        <NumberInputNoScroll required placeholder="Qty" value={adjustment.quantity} onChange={(e) => setAdjustment({ ...adjustment, quantity: e.target.value })} className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all" />
                                     </div>
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest pl-1 flex items-center gap-2">
