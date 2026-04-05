@@ -19,6 +19,7 @@ import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import { productService, stockService, stockLogService } from '@/lib/api';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import NumberInputNoScroll from '@/components/ui/NumberInputNoScroll';
 
 export default function RemoveStockForm() {
     const router = useRouter();
@@ -275,7 +276,7 @@ export default function RemoveStockForm() {
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Volume to Remove</label>
-                                                <input required type="number" max={selectedBatch.quantity} placeholder="Qty" value={adjustment.quantity} onChange={(e) => setAdjustment({ ...adjustment, quantity: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
+                                                <NumberInputNoScroll required max={selectedBatch.quantity} placeholder="Qty" value={adjustment.quantity} onChange={(e) => setAdjustment({ ...adjustment, quantity: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Reason Code</label>

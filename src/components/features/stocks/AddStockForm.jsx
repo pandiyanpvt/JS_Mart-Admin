@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { productService, stockService, supplierService } from '@/lib/api';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import NumberInputNoScroll from '@/components/ui/NumberInputNoScroll';
 
 export default function AddStockForm() {
     const router = useRouter();
@@ -25,6 +26,19 @@ export default function AddStockForm() {
     const [notification, setNotification] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [productSearchQuery, setProductSearchQuery] = useState('');
+    const [supplierModalOpen, setSupplierModalOpen] = useState(false);
+    const [isSavingSupplier, setIsSavingSupplier] = useState(false);
+    const [newSupplier, setNewSupplier] = useState({
+        companyName: '',
+        companyContactNo: '',
+        companyEmail: '',
+        companyAddress: '',
+        socialMediaLink: '',
+        contactPersonName: '',
+        contactPersonPhone: '',
+        contactPersonEmail: '',
+        companyLogo: null,
+    });
 
     // Form state for new batch
     const [newBatch, setNewBatch] = useState({
@@ -69,6 +83,65 @@ export default function AddStockForm() {
         const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '');
         const randomPart = Math.random().toString(36).substring(2, 5).toUpperCase();
         return `BN-${prefix}-${datePart}-${randomPart}`;
+    };
+
+    const openSupplierModal = () => {
+        setNewSupplier({
+            companyName: '',
+            companyContactNo: '',
+            companyEmail: '',
+            companyAddress: '',
+            socialMediaLink: '',
+            contactPersonName: '',
+            contactPersonPhone: '',
+            contactPersonEmail: '',
+            companyLogo: null,
+        });
+        setSupplierModalOpen(true);
+    };
+
+    const closeSupplierModal = () => {
+        if (!isSavingSupplier) setSupplierModalOpen(false);
+    };
+
+    const handleCreateSupplier = async (e) => {
+        e.preventDefault();
+        const name = newSupplier.companyName.trim();
+        if (!name) {
+            showNotification('Company name is required', 'error');
+            return;
+        }
+        setIsSavingSupplier(true);
+        try {
+            const formData = new FormData();
+            formData.append('companyName', name);
+            ['companyContactNo', 'companyEmail', 'companyAddress', 'socialMediaLink', 'contactPersonName', 'contactPersonPhone', 'contactPersonEmail'].forEach((key) => {
+                const v = newSupplier[key];
+                if (v !== null && v !== undefined && String(v).trim() !== '') {
+                    formData.append(key, typeof v === 'string' ? v.trim() : v);
+                }
+            });
+            if (newSupplier.companyLogo instanceof File) {
+                formData.append('companyLogo', newSupplier.companyLogo);
+            }
+
+            const created = await supplierService.create(formData);
+            const suppliersList = await supplierService.getAll();
+            setSuppliers(suppliersList);
+            setNewBatch((prev) => ({ ...prev, supplierId: String(created.id) }));
+            setSupplierModalOpen(false);
+            showNotification('Supplier added');
+        } catch (error) {
+            showNotification(error.message || 'Could not create supplier', 'error');
+        } finally {
+            setIsSavingSupplier(false);
+        }
+    };
+
+    const supplierLabel = (s) => {
+        const company = s.companyName || s.name || 'Supplier';
+        const contact = s.contactPersonName || s.contactPerson;
+        return contact ? `${company} (${contact})` : company;
     };
 
     const handleBatchSubmit = async (e) => {
@@ -213,11 +286,11 @@ export default function AddStockForm() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Quantity (Units)</label>
-                                                <input required type="number" placeholder="Enter amount" value={newBatch.quantity} onChange={(e) => setNewBatch({ ...newBatch, quantity: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm" />
+                                                <NumberInputNoScroll required placeholder="Enter amount" value={newBatch.quantity} onChange={(e) => setNewBatch({ ...newBatch, quantity: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Procurement Cost ($)</label>
-                                                <input required type="number" step="0.01" placeholder="Per unit" value={newBatch.purchasePrice} onChange={(e) => setNewBatch({ ...newBatch, purchasePrice: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm" />
+                                                <NumberInputNoScroll required step="0.01" placeholder="Per unit" value={newBatch.purchasePrice} onChange={(e) => setNewBatch({ ...newBatch, purchasePrice: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm" />
                                             </div>
                                         </div>
 
@@ -233,16 +306,27 @@ export default function AddStockForm() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Supplier Source</label>
+                                            <div className="flex items-center justify-between gap-3 pl-1 pr-1">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                    Supplier Source <span className="font-semibold text-slate-300 normal-case tracking-normal">(optional)</span>
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={openSupplierModal}
+                                                    className="inline-flex items-center justify-center w-9 h-9 rounded-xl border border-slate-200 bg-white text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm"
+                                                    title="Add new supplier"
+                                                >
+                                                    <Plus size={18} strokeWidth={2.5} />
+                                                </button>
+                                            </div>
                                             <select
-                                                required
                                                 value={newBatch.supplierId}
                                                 onChange={(e) => setNewBatch({ ...newBatch, supplierId: e.target.value })}
                                                 className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all"
                                             >
-                                                <option value="">Select Supplier</option>
+                                                <option value="">No supplier</option>
                                                 {suppliers.map(s => (
-                                                    <option key={s.id} value={s.id}>{s.name} ({s.contactPerson})</option>
+                                                    <option key={s.id} value={s.id}>{supplierLabel(s)}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -274,6 +358,156 @@ export default function AddStockForm() {
                     </div>
                 </form>
             </div>
+
+            {/* Add supplier modal */}
+            <AnimatePresence>
+                {supplierModalOpen && (
+                    <motion.div
+                        key="supplier-modal"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[280] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-supplier-title"
+                        onClick={closeSupplierModal}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                            onClick={(ev) => ev.stopPropagation()}
+                            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-300/40"
+                        >
+                            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 p-6 pb-4 bg-white border-b border-slate-100 rounded-t-[2rem]">
+                                <div>
+                                    <h2 id="add-supplier-title" className="text-lg font-black text-slate-900 tracking-tight">New supplier</h2>
+                                    <p className="text-xs font-semibold text-slate-500 mt-1">Saved suppliers appear in the dropdown.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeSupplierModal}
+                                    disabled={isSavingSupplier}
+                                    className="p-2 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors disabled:opacity-50"
+                                    aria-label="Close"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleCreateSupplier} className="p-6 pt-4 space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Company name *</label>
+                                    <input
+                                        type="text"
+                                        value={newSupplier.companyName}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, companyName: e.target.value })}
+                                        placeholder="e.g. Fresh foods LTD"
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Company phone</label>
+                                        <input
+                                            type="text"
+                                            value={newSupplier.companyContactNo}
+                                            onChange={(e) => setNewSupplier({ ...newSupplier, companyContactNo: e.target.value })}
+                                            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Company email</label>
+                                        <input
+                                            type="email"
+                                            value={newSupplier.companyEmail}
+                                            onChange={(e) => setNewSupplier({ ...newSupplier, companyEmail: e.target.value })}
+                                            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Address</label>
+                                    <textarea
+                                        value={newSupplier.companyAddress}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, companyAddress: e.target.value })}
+                                        rows={2}
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10 resize-none"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Social / web</label>
+                                    <input
+                                        type="url"
+                                        value={newSupplier.socialMediaLink}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, socialMediaLink: e.target.value })}
+                                        placeholder="https://"
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                    />
+                                </div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-2">Contact person</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Name</label>
+                                        <input
+                                            type="text"
+                                            value={newSupplier.contactPersonName}
+                                            onChange={(e) => setNewSupplier({ ...newSupplier, contactPersonName: e.target.value })}
+                                            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Phone</label>
+                                        <input
+                                            type="text"
+                                            value={newSupplier.contactPersonPhone}
+                                            onChange={(e) => setNewSupplier({ ...newSupplier, contactPersonPhone: e.target.value })}
+                                            className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Contact email</label>
+                                    <input
+                                        type="email"
+                                        value={newSupplier.contactPersonEmail}
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, contactPersonEmail: e.target.value })}
+                                        className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Logo (optional)</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setNewSupplier({ ...newSupplier, companyLogo: e.target.files?.[0] || null })}
+                                        className="w-full text-xs font-bold text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-100 file:font-bold"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={closeSupplierModal}
+                                        disabled={isSavingSupplier}
+                                        className="flex-1 py-3.5 rounded-2xl border border-slate-200 text-sm font-black text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSavingSupplier}
+                                        className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white text-sm font-black uppercase tracking-wider hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        {isSavingSupplier ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
+                                        {isSavingSupplier ? 'Saving…' : 'Create supplier'}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Notification */}
             <AnimatePresence>
