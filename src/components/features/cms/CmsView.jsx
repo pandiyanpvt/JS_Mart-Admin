@@ -122,7 +122,7 @@ export default function CmsView() {
                                             <p className="text-white font-black text-lg drop-shadow-md">{banner.title}</p>
                                             <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest">{banner.site}</p>
                                         </div>
-                                        {/* Mock Image */}
+                                        {/* Placeholder when no banner image */}
                                         <div className="w-full h-full bg-slate-200 flex items-center justify-center">
                                             <ImageIcon size={48} className="text-slate-300" />
                                         </div>

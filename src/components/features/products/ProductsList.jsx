@@ -5,8 +5,7 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, X, Info, Calendar, Hash, Packa
 
 import { cn } from '@/lib/utils';
 import { useModal } from '@/components/providers/ModalProvider';
-import { topProducts } from '@/data/mock';
-import { getProducts, getProductsPaginated, deleteProduct, updateProduct, saveProduct, getCategories, getBrands, getProductsByBrand, getProductsByCategory, getProductsByPriceRange, searchProducts } from '@/lib/products';
+import { getProductsPaginated, deleteProduct, updateProduct, saveProduct, getCategories, getBrands, getProductsByBrand, getProductsByCategory, getProductsByPriceRange, searchProducts } from '@/lib/products';
 import Image from 'next/image';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
@@ -579,7 +578,7 @@ export default function ProductsList() {
                                         <div className="flex items-center gap-3 text-sm text-slate-600">
                                             <Calendar size={16} className="text-slate-400" />
                                             <span className="font-medium">Created:</span>
-                                            <span className="text-slate-900 font-semibold">{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString() : 'Original Mock'}</span>
+                                            <span className="text-slate-900 font-semibold">{selectedProduct.createdAt ? new Date(selectedProduct.createdAt).toLocaleDateString() : '—'}</span>
                                         </div>
                                         <div className="flex items-center gap-3 text-sm text-slate-600">
                                             <Info size={16} className="text-slate-400" />

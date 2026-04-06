@@ -5,62 +5,10 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, X, Zap, Calendar, Clock, Tag, 
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
-// Mock Data for Flash Sales
-const mockSales = [
-    {
-        id: 1,
-        name: 'Super Weekend Sale',
-        discount: 30,
-        startDate: '2026-01-25',
-        startTime: '09:00',
-        endDate: '2026-01-27',
-        endTime: '23:59',
-        productsCount: 15,
-        status: 'Scheduled',
-        banner: null
-    },
-    {
-        id: 2,
-        name: 'Cyber Monday Deals',
-        discount: 50,
-        startDate: '2025-12-02',
-        startTime: '00:00',
-        endDate: '2025-12-02',
-        endTime: '23:59',
-        productsCount: 42,
-        status: 'Expired',
-        banner: null
-    },
-    {
-        id: 3,
-        name: 'Flash Hour Special',
-        discount: 25,
-        startDate: '2026-01-22',
-        startTime: '14:00',
-        endDate: '2026-01-22',
-        endTime: '16:00',
-        productsCount: 8,
-        status: 'Scheduled',
-        banner: null
-    },
-    {
-        id: 4,
-        name: 'Clearance Blowout',
-        discount: 70,
-        startDate: '2026-01-18',
-        startTime: '10:00',
-        endDate: '2026-01-31',
-        endTime: '18:00',
-        productsCount: 120,
-        status: 'Active',
-        banner: null
-    }
-];
-
 export default function FlashSalesView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
-    const [sales, setSales] = useState(mockSales);
+    const [sales, setSales] = useState([]);
 
     // Modal States
     const [viewSale, setViewSale] = useState(null);

@@ -22,63 +22,6 @@ const FormInput = ({ label, name, type = "text", required = false, placeholder =
     </div>
 );
 
-// Mock Data for Customers
-const mockCustomers = [
-    {
-        id: 1,
-        name: 'Alice Johnson',
-        email: 'alice.j@example.com',
-        phone: '+1 (555) 123-4567',
-        status: 'Active',
-        joinDate: '2025-11-15',
-        totalOrders: 12,
-        totalSpent: 1250.50,
-        address: '123 Maple Ave, Springfield, IL',
-        role: 'Customer',
-        avatar: null
-
-    },
-    {
-        id: 2,
-        name: 'Bob Smith',
-        email: 'bob.smith@testmail.com',
-        phone: '+1 (555) 987-6543',
-        status: 'Active',
-        joinDate: '2025-12-01',
-        totalOrders: 5,
-        totalSpent: 450.75,
-        address: '456 Oak Dr, Metropolis, NY',
-        role: 'Customer',
-        avatar: null
-    },
-    {
-        id: 3,
-        name: 'Charlie Brown',
-        email: 'charlie.b@peanuts.com',
-        phone: '+1 (555) 555-5555',
-        status: 'Inactive',
-        joinDate: '2026-01-10',
-        totalOrders: 0,
-        totalSpent: 0.00,
-        address: '789 Pine Ln, Smallville, KS',
-        role: 'Customer',
-        avatar: null
-    },
-    {
-        id: 4,
-        name: 'Diana Prince',
-        email: 'diana.wd@themyscira.net',
-        phone: '+1 (555) 777-7777',
-        status: 'Active',
-        joinDate: '2025-10-20',
-        totalOrders: 25,
-        totalSpent: 3500.00,
-        address: '101 Island Way, Paradise, CA',
-        role: 'VIP',
-        avatar: null
-    },
-];
-
 export default function CustomersView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');

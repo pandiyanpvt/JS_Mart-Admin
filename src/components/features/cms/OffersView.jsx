@@ -5,50 +5,10 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, X, Image as ImageIcon, LayoutT
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
-// Mock Data for Offers Sections
-const mockOffers = [
-    {
-        id: 1,
-        title: 'Deal of the Day',
-        description: 'Daily rotating special offer on select electronics',
-        layout: 'Single Featured',
-        position: 'Top',
-        status: 'Active',
-        schedule: 'Daily'
-    },
-    {
-        id: 2,
-        title: 'Trending Categories',
-        description: 'Showcase of top 4 performing product categories',
-        layout: 'Grid (2x2)',
-        position: 'Middle',
-        status: 'Active',
-        schedule: 'Always On'
-    },
-    {
-        id: 3,
-        title: 'Clearance Corner',
-        description: 'Link for end-of-season sale items',
-        layout: 'Banner Strip',
-        position: 'Bottom',
-        status: 'Inactive',
-        schedule: 'Seasonal'
-    },
-    {
-        id: 4,
-        title: 'Editor\'s Choice',
-        description: 'Curated list of premium products',
-        layout: 'Carousel',
-        position: 'Middle',
-        status: 'Active',
-        schedule: 'Weekly'
-    }
-];
-
 export default function OffersView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
-    const [offers, setOffers] = useState(mockOffers);
+    const [offers, setOffers] = useState([]);
 
     // Modal States
     const [viewOffer, setViewOffer] = useState(null);

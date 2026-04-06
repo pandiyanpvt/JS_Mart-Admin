@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, ArrowRightLeft, PackageCheck, Truck, Plus, Download, Search, Filter, X, TrendingUp, TrendingDown, Clock, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { inventoryItems, stockMovements as mockMovements } from '@/data/mock';
 import { getProducts, updateProduct } from '@/lib/products';
 import Image from 'next/image';
 import * as XLSX from 'xlsx';
@@ -23,11 +22,8 @@ export default function InventoryView() {
     const [modalCategory, setModalCategory] = useState('all');
     const [modalSearchQuery, setModalSearchQuery] = useState('');
 
-    // Load products and merge with inventory mock data
-    const loadInventory = () => {
-        const savedProducts = getProducts();
-
-        // Map saved products to inventory structure
+    const loadInventory = async () => {
+        const savedProducts = await getProducts();
         const mappedSaved = savedProducts.map(p => ({
             id: p.id,
             name: p.name,
@@ -43,9 +39,7 @@ export default function InventoryView() {
             value: `$${((parseFloat(p.price) || 0) * (parseInt(p.stock) || 0)).toFixed(2)}`,
             image: p.image
         }));
-
-        // Merge keeping mock data as base
-        setAllInventory([...inventoryItems, ...mappedSaved]);
+        setAllInventory(mappedSaved);
     };
 
     useEffect(() => {
@@ -97,12 +91,10 @@ export default function InventoryView() {
                 ? selectedProduct.currentStock + qty
                 : Math.max(0, selectedProduct.currentStock - qty);
 
-            // Try to update in localStorage if it exists there
             try {
-                updateProduct(selectedProduct.id, { stock: newStock });
+                await updateProduct(selectedProduct.id, { stock: newStock });
             } catch (e) {
-                // If it's a mock product not in localStorage, we just update local state
-                console.info('Mock product updated locally only');
+                console.error('Failed to persist stock update:', e);
             }
 
             // Update local state for immediate reflected change

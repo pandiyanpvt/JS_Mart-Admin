@@ -4,54 +4,10 @@ import React, { useState } from 'react';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, MapPin, Truck, DollarSign, Clock, CheckCircle2, XCircle, Loader2, Navigation } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Mock Data for Delivery Areas
-const mockAreas = [
-    {
-        id: 1,
-        name: 'Downtown Metro',
-        region: 'City Center',
-        postalCodes: ['10001', '10002', '10003', '10004'],
-        fee: 5.00,
-        minOrder: 0,
-        estimatedTime: '24-48 hours',
-        status: 'Active'
-    },
-    {
-        id: 2,
-        name: 'North Suburbs',
-        region: 'North Zone',
-        postalCodes: ['10020', '10021', '10022'],
-        fee: 10.00,
-        minOrder: 50.00,
-        estimatedTime: '2-3 days',
-        status: 'Active'
-    },
-    {
-        id: 3,
-        name: 'West Industrial Park',
-        region: 'West Zone',
-        postalCodes: ['10050', '10051'],
-        fee: 15.00,
-        minOrder: 100.00,
-        estimatedTime: '3-4 days',
-        status: 'Inactive'
-    },
-    {
-        id: 4,
-        name: 'Nationwide Express',
-        region: 'National',
-        postalCodes: ['All Others'],
-        fee: 25.00,
-        minOrder: 0,
-        estimatedTime: '5-7 days',
-        status: 'Active'
-    }
-];
-
 export default function DeliveryAreasView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
-    const [areas, setAreas] = useState(mockAreas);
+    const [areas, setAreas] = useState([]);
 
     // Modal States
     const [viewArea, setViewArea] = useState(null);

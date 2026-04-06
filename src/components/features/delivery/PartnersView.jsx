@@ -5,62 +5,10 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, X, Truck, Phone, Mail, Globe, 
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
-// Mock Data for Delivery Partners
-const mockPartners = [
-    {
-        id: 1,
-        name: 'Speedy Express',
-        contactPerson: 'John Doe',
-        phone: '+1 (555) 123-4567',
-        email: 'support@speedy.com',
-        website: 'www.speedy-express.com',
-        rating: 4.8,
-        activeOrders: 154,
-        status: 'Active',
-        logo: null
-    },
-    {
-        id: 2,
-        name: 'Global Logistics',
-        contactPerson: 'Jane Smith',
-        phone: '+1 (555) 987-6543',
-        email: 'ops@global-logistics.net',
-        website: 'www.globallogistics.net',
-        rating: 4.5,
-        activeOrders: 89,
-        status: 'Active',
-        logo: null
-    },
-    {
-        id: 3,
-        name: 'City Courier',
-        contactPerson: 'Mike Brown',
-        phone: '+1 (555) 456-7890',
-        email: 'dispatch@citycourier.io',
-        website: 'www.citycourier.io',
-        rating: 4.2,
-        activeOrders: 42,
-        status: 'Inactive',
-        logo: null
-    },
-    {
-        id: 4,
-        name: 'Eagle Eye Shipping',
-        contactPerson: 'Sarah Wilson',
-        phone: '+1 (555) 222-3333',
-        email: 'info@eagleshipping.com',
-        website: 'www.eagleshipping.com',
-        rating: 4.9,
-        activeOrders: 210,
-        status: 'Active',
-        logo: null
-    }
-];
-
 export default function PartnersView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
-    const [partners, setPartners] = useState(mockPartners);
+    const [partners, setPartners] = useState([]);
 
     // Modal States
     const [viewPartner, setViewPartner] = useState(null);

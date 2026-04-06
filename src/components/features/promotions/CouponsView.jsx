@@ -4,58 +4,10 @@ import React, { useState } from 'react';
 import { Plus, Search, Filter, Edit, Trash2, Eye, X, Ticket, Calendar, DollarSign, Percent, Copy, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Mock Data for Coupons
-const mockCoupons = [
-    {
-        id: 1,
-        code: 'WELCOME20',
-        type: 'Percentage',
-        value: 20,
-        minPurchase: 50,
-        usageLimit: 100,
-        usedCount: 45,
-        expiryDate: '2026-12-31',
-        status: 'Active'
-    },
-    {
-        id: 2,
-        code: 'SUMMERSALE',
-        type: 'Fixed Amount',
-        value: 15,
-        minPurchase: 100,
-        usageLimit: 500,
-        usedCount: 120,
-        expiryDate: '2026-08-31',
-        status: 'Active'
-    },
-    {
-        id: 3,
-        code: 'FREESHIP',
-        type: 'Free Shipping',
-        value: 0,
-        minPurchase: 30,
-        usageLimit: 1000,
-        usedCount: 850,
-        expiryDate: '2025-12-31',
-        status: 'Expired'
-    },
-    {
-        id: 4,
-        code: 'VIPACCESS',
-        type: 'Percentage',
-        value: 25,
-        minPurchase: 200,
-        usageLimit: 50,
-        usedCount: 10,
-        expiryDate: '2026-06-30',
-        status: 'Inactive'
-    }
-];
-
 export default function CouponsView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All Status');
-    const [coupons, setCoupons] = useState(mockCoupons);
+    const [coupons, setCoupons] = useState([]);
 
     // Modal States
     const [viewCoupon, setViewCoupon] = useState(null);
