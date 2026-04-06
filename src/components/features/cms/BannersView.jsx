@@ -6,54 +6,10 @@ import { cn } from '@/lib/utils';
 import { IMAGE_SPECS } from '@/lib/imageSpecs';
 import Image from 'next/image';
 
-// Mock Data for Banners
-const mockBanners = [
-    {
-        id: 1,
-        title: 'Summer Collection Launch',
-        subtitle: 'Up to 50% off on new arrivals',
-        imageUrl: '/api/placeholder/800/400',
-        link: '/collections/summer',
-        type: 'Hero Slider',
-        order: 1,
-        status: 'Active'
-    },
-    {
-        id: 2,
-        title: 'Tech Gadgets Sale',
-        subtitle: 'Latest electronics at unbeatable prices',
-        imageUrl: '/api/placeholder/800/400',
-        link: '/electronics/deals',
-        type: 'Hero Slider',
-        order: 2,
-        status: 'Active'
-    },
-    {
-        id: 3,
-        title: 'Free Shipping Offer',
-        subtitle: 'On all orders above $50',
-        imageUrl: '/api/placeholder/800/200',
-        link: '/shipping-policy',
-        type: 'Promo Strip',
-        order: 1,
-        status: 'Inactive'
-    },
-    {
-        id: 4,
-        title: 'New User Discount',
-        subtitle: 'Get 10% off your first purchase',
-        imageUrl: '/api/placeholder/400/400',
-        link: '/signup',
-        type: 'Sidebar AD',
-        order: 1,
-        status: 'Active'
-    }
-];
-
 export default function BannersView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('All Types');
-    const [banners, setBanners] = useState(mockBanners);
+    const [banners, setBanners] = useState([]);
 
     // Modal States
     const [viewBanner, setViewBanner] = useState(null);

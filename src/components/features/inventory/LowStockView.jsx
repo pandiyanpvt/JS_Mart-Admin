@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, AlertTriangle, Eye, ArrowUpRight, BarChart2, AlertOctagon, ArrowLeft, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { topProducts } from '@/data/mock';
 import { getProducts } from '@/lib/products';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,22 +14,15 @@ export default function LowStockView() {
     const [allProducts, setAllProducts] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
-    // Load products from localStorage and merge with mock data
-    const loadProducts = () => {
-        const savedProducts = getProducts();
-        // Merge saved products with mock data (mock data as fallback)
-        const merged = [...topProducts, ...savedProducts];
-        // Filter only low stock products (stock <= 10)
-        const lowStock = merged.filter(p => (p.stock || 0) <= 10);
+    const loadProducts = async () => {
+        const products = await getProducts();
+        const lowStock = products.filter(p => (p.stock || 0) <= 10);
         setAllProducts(lowStock);
     };
 
     useEffect(() => {
         loadProducts();
-
-        // Refresh when window gains focus (user returns from add/edit page)
         window.addEventListener('focus', loadProducts);
-
         return () => {
             window.removeEventListener('focus', loadProducts);
         };
