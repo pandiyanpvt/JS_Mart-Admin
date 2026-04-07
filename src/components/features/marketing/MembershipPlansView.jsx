@@ -113,7 +113,7 @@ export default function MembershipPlansView() {
         return (
             <div className="flex flex-col items-center justify-center p-32 gap-4">
                 <Loader2 className="animate-spin text-indigo-600" size={40} />
-                <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Configuring Membership Tiers...</p>
+                <p className="text-slate-400 font-black tracking-widest text-xs">Configuring Membership Tiers...</p>
             </div>
         );
     }
@@ -122,7 +122,7 @@ export default function MembershipPlansView() {
         <div className="space-y-10 pb-20">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    <div className="flex items-center gap-2 text-amber-600 font-black text-[10px] uppercase tracking-[0.2em] mb-3">
+                    <div className="flex items-center gap-2 text-amber-600 font-black text-xs tracking-[0.2em] mb-3">
                         <div className="w-8 h-[2px] bg-amber-600 rounded-full" />
                         Premium Tier Management
                     </div>
@@ -138,7 +138,7 @@ export default function MembershipPlansView() {
                         featuresList: ['Benefit 1'],
                         isActive: true
                     })}
-                    className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200"
+                    className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200"
                 >
                     <Plus size={18} />
                     New Plan
@@ -192,7 +192,7 @@ export default function MembershipPlansView() {
                                 <h3 className="text-2xl font-black text-slate-900 mb-2">{plan.name}</h3>
                                 <div className="flex items-baseline gap-1 mb-6">
                                     <span className="text-4xl font-black text-slate-900">AUD {plan.priceMonth}</span>
-                                    <span className="text-slate-400 font-bold text-sm uppercase tracking-widest">/ Month</span>
+                                    <span className="text-slate-400 font-bold text-sm tracking-widest">/ Month</span>
                                 </div>
 
                                 <p className="text-slate-500 font-medium mb-8 leading-relaxed">
@@ -200,7 +200,7 @@ export default function MembershipPlansView() {
                                 </p>
 
                                 <div className="space-y-4 mb-10">
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Included Benefits</p>
+                                    <p className="text-xs font-black text-slate-300 tracking-widest">Included Benefits</p>
                                     {features.map((feature, i) => (
                                         <div key={i} className="flex items-center gap-3 text-slate-700 font-bold text-sm">
                                             <CheckCircle2 size={18} className={plan.level === 2 ? "text-amber-500" : "text-indigo-500"} />
@@ -210,12 +210,12 @@ export default function MembershipPlansView() {
                                 </div>
 
                                 <div className="pt-8 border-t border-slate-50 flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <div className="flex items-center gap-2 text-xs font-black tracking-widest text-slate-400">
                                         <Users size={14} />
                                         Exclusivity Level: {plan.level}
                                     </div>
                                     <div className={cn(
-                                        "px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                        "px-4 py-1 rounded-full text-xs font-black  tracking-widest",
                                         plan.isActive ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
                                     )}>
                                         {plan.isActive ? 'Active' : 'Disabled'}
@@ -230,12 +230,13 @@ export default function MembershipPlansView() {
             {/* Edit Modal */}
             <AnimatePresence>
                 {editingPlan && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
+                    <div className="admin-modal-scroll z-[100]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                            className="admin-modal-backdrop"
                             onClick={() => setEditingPlan(null)}
                         />
                         <motion.div
@@ -243,12 +244,12 @@ export default function MembershipPlansView() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="relative w-full max-w-2xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                            className="admin-modal-panel-host relative w-full max-w-2xl overflow-hidden rounded-[2rem] bg-white shadow-2xl sm:rounded-[3rem] flex flex-col"
                         >
                             <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-white shrink-0">
                                 <div>
                                     <h2 className="text-3xl font-black text-slate-900 tracking-tight">{editingPlan.id ? `Edit ${editingPlan.name}` : 'New Plan Strategy'}</h2>
-                                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.25em] mt-1">Tier Configuration Architecture</p>
+                                    <p className="text-slate-400 text-xs font-black tracking-[0.25em] mt-1">Tier Configuration Architecture</p>
                                 </div>
                                 <button onClick={() => setEditingPlan(null)} className="p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-all">
                                     <X size={24} />
@@ -258,7 +259,7 @@ export default function MembershipPlansView() {
                             <div className="p-10 hide-scrollbar overflow-y-auto">
                                 <form onSubmit={handleSave} className="space-y-8">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Plan Name</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Plan Name</label>
                                         <input
                                             type="text"
                                             value={editingPlan.name}
@@ -269,7 +270,7 @@ export default function MembershipPlansView() {
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Price Month (AUD)</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Price Month (AUD)</label>
                                             <input
                                                 type="number"
                                                 step="0.01"
@@ -279,7 +280,7 @@ export default function MembershipPlansView() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Tier Level</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Tier Level</label>
                                             <input
                                                 type="number"
                                                 value={editingPlan.level}
@@ -290,7 +291,7 @@ export default function MembershipPlansView() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Description</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Description</label>
                                         <textarea
                                             rows="3"
                                             value={editingPlan.description}
@@ -301,11 +302,11 @@ export default function MembershipPlansView() {
 
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between pl-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plan Features & Benefits</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest">Plan Features & Benefits</label>
                                             <button
                                                 type="button"
                                                 onClick={addFeature}
-                                                className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                                                className="text-xs font-black text-indigo-600 tracking-widest hover:underline"
                                             >
                                                 + Add Benefit
                                             </button>
@@ -343,7 +344,7 @@ export default function MembershipPlansView() {
                                         <button
                                             type="submit"
                                             disabled={isSaving}
-                                            className="flex-1 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
+                                            className="flex-1 py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
                                         >
                                             {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
                                             {isSaving ? 'Updating...' : 'Save Configuration'}
@@ -351,7 +352,7 @@ export default function MembershipPlansView() {
                                         <button
                                             type="button"
                                             onClick={() => setEditingPlan(null)}
-                                            className="px-10 py-5 bg-white text-slate-400 border border-slate-100 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:text-rose-600 transition-all"
+                                            className="px-10 py-5 bg-white text-slate-400 border border-slate-100 rounded-[2rem] font-black text-sm tracking-widest hover:text-rose-600 transition-all"
                                         >
                                             Discard
                                         </button>
@@ -359,6 +360,7 @@ export default function MembershipPlansView() {
                                 </form>
                             </div>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>
@@ -366,12 +368,13 @@ export default function MembershipPlansView() {
             {/* Delete confirmation modal */}
             <AnimatePresence>
                 {deletePlanId && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
+                    <div className="admin-modal-scroll z-[100]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                            className="admin-modal-backdrop"
                             onClick={() => setDeletePlanId(null)}
                         />
                         <motion.div
@@ -379,8 +382,16 @@ export default function MembershipPlansView() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="relative w-full max-w-md bg-white rounded-[2rem] shadow-2xl p-10 text-center"
+                            className="admin-modal-panel-host relative w-full max-w-md rounded-[1.5rem] bg-white p-8 text-center shadow-2xl sm:rounded-[2rem] sm:p-10"
                         >
+                            <button
+                                type="button"
+                                onClick={() => setDeletePlanId(null)}
+                                className="absolute right-4 top-4 rounded-xl bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-800"
+                                aria-label="Close"
+                            >
+                                <X size={20} />
+                            </button>
                             <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-6">
                                 <Trash2 size={32} />
                             </div>
@@ -407,6 +418,7 @@ export default function MembershipPlansView() {
                                 </button>
                             </div>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

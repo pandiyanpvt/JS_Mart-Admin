@@ -1,10 +1,15 @@
-import { Outfit } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
-const outfit = Outfit({
+const geistSans = Geist({
     subsets: ["latin"],
-    variable: "--font-outfit",
+    variable: "--font-geist-sans",
+});
+
+const geistMono = Geist_Mono({
+    subsets: ["latin"],
+    variable: "--font-geist-mono",
 });
 
 export const metadata = {
@@ -19,7 +24,7 @@ import { Toaster } from "react-hot-toast";
 export default function RootLayout({ children }) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${outfit.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
+            <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-slate-50 text-slate-900`}>
                 <AuthProvider>
                     <ModalProvider>
                         {children}

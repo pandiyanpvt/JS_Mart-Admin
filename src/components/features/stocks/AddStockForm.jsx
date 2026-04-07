@@ -12,13 +12,19 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveProductImageUrl } from '@/lib/productImage';
 import { cn } from '@/lib/utils';
 import { productService, stockService, supplierService } from '@/lib/api';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import NumberInputNoScroll from '@/components/ui/NumberInputNoScroll';
+import { validateImageFileSize, getCropAspectForSpec } from '@/lib/imageSpecs';
+import { pickOutputMime } from '@/lib/cropImage';
+import ImageCropModal from '@/components/ui/ImageCropModal';
+import { useSingleImageCrop } from '@/hooks/useSingleImageCrop';
 
 export default function AddStockForm() {
+    const supplierLogoCrop = useSingleImageCrop();
     const router = useRouter();
     const [allProducts, setAllProducts] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
@@ -186,7 +192,7 @@ export default function AddStockForm() {
                         {/* Product Selection Column */}
                         <div className="space-y-6">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">Target Product</label>
+                                <label className="text-xs font-black text-slate-400 tracking-[0.2em] pl-1">Target Product</label>
 
                                 <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" size={18} />
@@ -204,7 +210,7 @@ export default function AddStockForm() {
                                         {loading ? (
                                             <div className="p-8 text-center text-slate-400 flex flex-col items-center gap-3">
                                                 <Loader2 className="animate-spin" size={24} />
-                                                <p className="text-xs font-bold uppercase">Syncing Catalog...</p>
+                                                <p className="text-xs font-bold">Syncing Catalog...</p>
                                             </div>
                                         ) : allProducts.filter(p => !productSearchQuery || p.productName.toLowerCase().includes(productSearchQuery.toLowerCase()) || p.id.toString().includes(productSearchQuery)).length === 0 ? (
                                             <div className="p-8 text-center text-slate-400">
@@ -227,14 +233,14 @@ export default function AddStockForm() {
                                                         )}
                                                     >
                                                         <div className="w-14 h-14 rounded-xl bg-slate-200 overflow-hidden relative border border-slate-100 shrink-0 group-hover:scale-105 transition-transform">
-                                                            {p.images?.[0] ? <Image src={p.images[0].productImg} alt="" fill sizes="80px" className="object-cover" /> : <Box size={24} className="absolute inset-0 m-auto text-slate-400" />}
+                                                            <Image src={resolveProductImageUrl(p.images?.[0]?.productImg)} alt="" fill sizes="80px" className="object-cover" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2">
                                                                 <p className="text-sm font-black text-slate-900 truncate">{p.productName}</p>
                                                                 {newBatch.productId === p.id && <CheckCircle2 size={16} className="text-indigo-600 shrink-0" />}
                                                             </div>
-                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">ID: PROD-{p.id} • ${parseFloat(p.price || 0).toFixed(2)}</p>
+                                                            <p className="text-xs text-slate-400 font-bold tracking-tighter">ID: PROD-{p.id} • ${parseFloat(p.price || 0).toFixed(2)}</p>
                                                         </div>
                                                     </button>
                                                 ))
@@ -261,21 +267,25 @@ export default function AddStockForm() {
                                             </div>
                                             <div className="relative z-10 flex items-center gap-6">
                                                 <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-md border border-white/20 relative overflow-hidden shrink-0">
-                                                    {allProducts.find(p => p.id === newBatch.productId)?.images?.[0] ? (
-                                                        <Image src={allProducts.find(p => p.id === newBatch.productId).images[0].productImg} alt="" fill sizes="80px" className="object-cover" />
-                                                    ) : <Box size={40} className="absolute inset-0 m-auto opacity-30" />}
+                                                    <Image
+                                                        src={resolveProductImageUrl(allProducts.find(p => p.id === newBatch.productId)?.images?.[0]?.productImg)}
+                                                        alt=""
+                                                        fill
+                                                        sizes="80px"
+                                                        className="object-cover"
+                                                    />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Selected Entity</p>
+                                                    <p className="text-xs font-black tracking-widest opacity-60 mb-1">Selected Entity</p>
                                                     <h3 className="text-2xl font-black truncate">{allProducts.find(p => p.id === newBatch.productId)?.productName}</h3>
                                                     <div className="flex items-center gap-4 mt-4">
                                                         <div>
-                                                            <p className="text-[9px] font-black uppercase opacity-60 tracking-widest">Target Batch</p>
+                                                            <p className="text-xs font-black opacity-60 tracking-widest">Target Batch</p>
                                                             <p className="text-sm font-bold font-mono tracking-tight">{newBatch.batchNumber}</p>
                                                         </div>
                                                         <div className="w-[1px] h-8 bg-white/10" />
                                                         <div>
-                                                            <p className="text-[9px] font-black uppercase opacity-60 tracking-widest">Catalog Value</p>
+                                                            <p className="text-xs font-black opacity-60 tracking-widest">Catalog Value</p>
                                                             <p className="text-sm font-bold">${parseFloat(allProducts.find(p => p.id === newBatch.productId)?.price || 0).toFixed(2)}</p>
                                                         </div>
                                                     </div>
@@ -285,29 +295,29 @@ export default function AddStockForm() {
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Quantity (Units)</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Quantity (Units)</label>
                                                 <NumberInputNoScroll required placeholder="Enter amount" value={newBatch.quantity} onChange={(e) => setNewBatch({ ...newBatch, quantity: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Procurement Cost ($)</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Procurement Cost ($)</label>
                                                 <NumberInputNoScroll required step="0.01" placeholder="Per unit" value={newBatch.purchasePrice} onChange={(e) => setNewBatch({ ...newBatch, purchasePrice: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all shadow-sm" />
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Manufacture Date</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Manufacture Date</label>
                                                 <input type="date" value={newBatch.manufactureDate} onChange={(e) => setNewBatch({ ...newBatch, manufactureDate: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Expiry Horizon</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Expiry Horizon</label>
                                                 <input type="date" value={newBatch.expiryDate} onChange={(e) => setNewBatch({ ...newBatch, expiryDate: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all" />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between gap-3 pl-1 pr-1">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                <label className="text-xs font-black text-slate-400 tracking-widest">
                                                     Supplier Source <span className="font-semibold text-slate-300 normal-case tracking-normal">(optional)</span>
                                                 </label>
                                                 <button
@@ -333,7 +343,7 @@ export default function AddStockForm() {
 
                                         <button
                                             disabled={isSubmitting}
-                                            className="w-full py-5 bg-emerald-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 disabled:opacity-50 flex items-center justify-center gap-3"
+                                            className="w-full py-5 bg-emerald-600 text-white rounded-3xl font-black text-sm tracking-widest hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 disabled:opacity-50 flex items-center justify-center gap-3"
                                         >
                                             {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
                                             <span>{isSubmitting ? 'Syncing...' : 'Confirm Stock Inbound'}</span>
@@ -350,7 +360,7 @@ export default function AddStockForm() {
                                             <Hash size={32} />
                                         </div>
                                         <h3 className="text-xl font-black text-slate-900">Select a Product</h3>
-                                        <p className="text-sm font-medium text-slate-500 mt-2 max-w-xs uppercase tracking-widest opacity-60">Complete the selection on the left to activate procurement fields</p>
+                                        <p className="text-sm font-medium text-slate-500 mt-2 max-w-xs tracking-widest opacity-60">Complete the selection on the left to activate procurement fields</p>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -367,18 +377,25 @@ export default function AddStockForm() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[280] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+                        className="admin-modal-scroll z-[280]"
+                        data-lock-body-scroll
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="add-supplier-title"
-                        onClick={closeSupplierModal}
                     >
+                        <div className="admin-modal-center">
+                        <button
+                            type="button"
+                            className="admin-modal-backdrop"
+                            onClick={closeSupplierModal}
+                            aria-label="Close dialog"
+                        />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.96, y: 12 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.96, y: 12 }}
                             onClick={(ev) => ev.stopPropagation()}
-                            className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-[2rem] border border-slate-100 shadow-2xl shadow-slate-300/40"
+                            className="admin-modal-panel-host w-full max-w-lg overflow-y-auto rounded-[1.5rem] border border-slate-100 bg-white shadow-2xl shadow-slate-300/40 sm:rounded-[2rem]"
                         >
                             <div className="sticky top-0 z-10 flex items-start justify-between gap-4 p-6 pb-4 bg-white border-b border-slate-100 rounded-t-[2rem]">
                                 <div>
@@ -397,7 +414,7 @@ export default function AddStockForm() {
                             </div>
                             <form onSubmit={handleCreateSupplier} className="p-6 pt-4 space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Company name *</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Company name *</label>
                                     <input
                                         type="text"
                                         value={newSupplier.companyName}
@@ -409,7 +426,7 @@ export default function AddStockForm() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Company phone</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Company phone</label>
                                         <input
                                             type="text"
                                             value={newSupplier.companyContactNo}
@@ -418,7 +435,7 @@ export default function AddStockForm() {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Company email</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Company email</label>
                                         <input
                                             type="email"
                                             value={newSupplier.companyEmail}
@@ -428,7 +445,7 @@ export default function AddStockForm() {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Address</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Address</label>
                                     <textarea
                                         value={newSupplier.companyAddress}
                                         onChange={(e) => setNewSupplier({ ...newSupplier, companyAddress: e.target.value })}
@@ -437,7 +454,7 @@ export default function AddStockForm() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Social / web</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Social / web</label>
                                     <input
                                         type="url"
                                         value={newSupplier.socialMediaLink}
@@ -446,10 +463,10 @@ export default function AddStockForm() {
                                         className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                                     />
                                 </div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pt-2">Contact person</p>
+                                <p className="text-xs font-black text-slate-400 tracking-widest pt-2">Contact person</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Name</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Name</label>
                                         <input
                                             type="text"
                                             value={newSupplier.contactPersonName}
@@ -458,7 +475,7 @@ export default function AddStockForm() {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Phone</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Phone</label>
                                         <input
                                             type="text"
                                             value={newSupplier.contactPersonPhone}
@@ -468,7 +485,7 @@ export default function AddStockForm() {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Contact email</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Contact email</label>
                                     <input
                                         type="email"
                                         value={newSupplier.contactPersonEmail}
@@ -477,11 +494,38 @@ export default function AddStockForm() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Logo (optional)</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest pl-0.5">Logo (optional)</label>
+                                    {newSupplier.companyLogo instanceof File && (
+                                        <div className="relative mb-2 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-10">
+                                            <span className="text-xs font-bold text-slate-700 truncate max-w-[200px]">{newSupplier.companyLogo.name}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewSupplier({ ...newSupplier, companyLogo: null })}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600 text-white hover:bg-rose-700"
+                                                title="Remove logo"
+                                                aria-label="Remove logo"
+                                            >
+                                                <X size={14} strokeWidth={2.5} />
+                                            </button>
+                                        </div>
+                                    )}
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={(e) => setNewSupplier({ ...newSupplier, companyLogo: e.target.files?.[0] || null })}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            e.target.value = '';
+                                            if (!file) {
+                                                setNewSupplier({ ...newSupplier, companyLogo: null });
+                                                return;
+                                            }
+                                            const { valid, message } = validateImageFileSize(file, 'brandImages');
+                                            if (!valid) {
+                                                showNotification(message, 'error');
+                                                return;
+                                            }
+                                            supplierLogoCrop.open(file, 'supplierLogo');
+                                        }}
                                         className="w-full text-xs font-bold text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-100 file:font-bold"
                                     />
                                 </div>
@@ -497,7 +541,7 @@ export default function AddStockForm() {
                                     <button
                                         type="submit"
                                         disabled={isSavingSupplier}
-                                        className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white text-sm font-black uppercase tracking-wider hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white text-sm font-black tracking-wider hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         {isSavingSupplier ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
                                         {isSavingSupplier ? 'Saving…' : 'Create supplier'}
@@ -505,9 +549,33 @@ export default function AddStockForm() {
                                 </div>
                             </form>
                         </motion.div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {supplierLogoCrop.isOpen && supplierLogoCrop.target && (
+                <ImageCropModal
+                    key={supplierLogoCrop.target.src}
+                    open
+                    imageSrc={supplierLogoCrop.target.src}
+                    title="Crop company logo"
+                    aspect={getCropAspectForSpec('supplierLogo')}
+                    mimeType={pickOutputMime(supplierLogoCrop.target.mime)}
+                    originalFileName={supplierLogoCrop.target.fileName}
+                    onClose={() => supplierLogoCrop.close()}
+                    onComplete={(file) => {
+                        const check = validateImageFileSize(file, 'brandImages');
+                        if (!check.valid) {
+                            showNotification(check.message, 'error');
+                            supplierLogoCrop.close();
+                            return;
+                        }
+                        setNewSupplier((prev) => ({ ...prev, companyLogo: file }));
+                        supplierLogoCrop.close();
+                    }}
+                />
+            )}
 
             {/* Notification */}
             <AnimatePresence>

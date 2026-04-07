@@ -137,7 +137,7 @@ export default function PromotionsView() {
                         <TrendingUp size={28} />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Sales Driven</p>
+                        <p className="text-sm font-bold text-slate-500 tracking-wider">Total Sales Driven</p>
                         <h3 className="text-2xl font-black text-slate-900">$24,540</h3>
                     </div>
                 </div>
@@ -146,7 +146,7 @@ export default function PromotionsView() {
                         <Ticket size={28} />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Active Coupons</p>
+                        <p className="text-sm font-bold text-slate-500 tracking-wider">Active Coupons</p>
                         <h3 className="text-2xl font-black text-slate-900">{promotions.filter(p => p.status === 'Active').length}</h3>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ export default function PromotionsView() {
                         <Gift size={28} />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Redemptions</p>
+                        <p className="text-sm font-bold text-slate-500 tracking-wider">Redemptions</p>
                         <h3 className="text-2xl font-black text-slate-900">8.2k</h3>
                     </div>
                 </div>
@@ -185,12 +185,12 @@ export default function PromotionsView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Campaign Info</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Type & Value</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Expiry</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Redemptions</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Campaign Info</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Type & Value</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Expiry</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Redemptions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -214,7 +214,7 @@ export default function PromotionsView() {
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{promo.name}</p>
                                                     <div className="flex items-center gap-2">
-                                                        <code className="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-mono font-bold text-slate-600 select-all tracking-wider">{promo.code}</code>
+                                                        <code className="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono font-bold text-slate-600 select-all tracking-wider">{promo.code}</code>
                                                         <button
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(promo.code);
@@ -231,13 +231,13 @@ export default function PromotionsView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <p className="text-sm font-semibold text-slate-900">{promo.type}</p>
-                                            <p className="text-[10px] text-slate-500 font-medium">
+                                            <p className="text-xs text-slate-500 font-medium">
                                                 {promo.type === 'Percentage' ? `${promo.value}% OFF` : promo.type === 'Fixed Amount' ? `$${promo.value} OFF` : 'Special Offer'}
                                             </p>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 promo.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
                                                     promo.status === 'Expired' ? "bg-rose-50 text-rose-700 border-rose-100" : "bg-slate-50 text-slate-700 border-slate-100"
                                             )}>
@@ -300,12 +300,15 @@ export default function PromotionsView() {
 
             {/* Modal Placeholder */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setIsModalOpen(false)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-8 border-b border-slate-100 bg-slate-50/50">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
@@ -314,7 +317,7 @@ export default function PromotionsView() {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black text-slate-900">New Campaign</h2>
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Setup a discount</p>
+                                        <p className="text-xs font-bold text-slate-500 tracking-widest">Setup a discount</p>
                                     </div>
                                 </div>
                                 <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-all">
@@ -325,21 +328,21 @@ export default function PromotionsView() {
 
                         <div className="p-8 space-y-6">
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-700 uppercase tracking-widest">Campaign Name</label>
+                                <label className="text-xs font-black text-slate-700 tracking-widest">Campaign Name</label>
                                 <input type="text" placeholder="e.g. Winter Sale 2026" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all" />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">Coupon Code</label>
-                                    <input type="text" placeholder="WINTER50" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all uppercase" />
+                                    <label className="text-xs font-black text-slate-700 tracking-widest">Coupon Code</label>
+                                    <input type="text" placeholder="WINTER50" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all" />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black text-slate-700 uppercase tracking-widest">Discount Type</label>
+                                    <label className="text-xs font-black text-slate-700 tracking-widest">Discount Type</label>
                                     <select className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/10 outline-none transition-all appearance-none">
                                         <option>Percentage</option>
                                         <option>Fixed Amount</option>
-                                        <option>BOGO</option>
+                                        <option>Buy one get one</option>
                                     </select>
                                 </div>
                             </div>
@@ -361,6 +364,7 @@ export default function PromotionsView() {
                                 LAUNCH CAMPAIGN
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

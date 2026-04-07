@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     CheckCircle2,
     XCircle,
+    X,
     Clock,
     User,
     Box,
@@ -68,7 +69,7 @@ export default function ApprovalsList() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                 >
-                    <div className="flex items-center gap-2 text-rose-600 font-bold text-sm uppercase tracking-widest mb-2">
+                    <div className="flex items-center gap-2 text-rose-600 font-bold text-sm tracking-widest mb-2">
                         <div className="w-8 h-[2px] bg-rose-600 rounded-full" />
                         Governance Desk
                     </div>
@@ -94,7 +95,7 @@ export default function ApprovalsList() {
                 {loading && pendingRequests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-32 gap-4 bg-white rounded-[3rem] border border-slate-100 shadow-sm">
                         <Loader2 className="animate-spin text-rose-600" size={48} />
-                        <p className="text-slate-500 font-bold animate-pulse uppercase tracking-widest text-xs">Awaiting pending requests...</p>
+                        <p className="text-slate-500 font-bold animate-pulse tracking-widest text-xs">Awaiting pending requests...</p>
                     </div>
                 ) : pendingRequests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center p-32 gap-6 bg-white rounded-[3rem] border border-slate-100 shadow-sm">
@@ -103,7 +104,7 @@ export default function ApprovalsList() {
                         </div>
                         <div className="text-center">
                             <h3 className="text-xl font-black text-slate-900">All Clear!</h3>
-                            <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest leading-loose">No removal requests currently pending your authorization.</p>
+                            <p className="text-sm font-medium text-slate-400 mt-1 tracking-widest leading-loose">No removal requests currently pending your authorization.</p>
                         </div>
                     </div>
                 ) : (
@@ -122,7 +123,7 @@ export default function ApprovalsList() {
                                         <>
                                             <img src={request.evidencePhoto} alt="Evidence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-                                                <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl text-slate-900 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                                                <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl text-slate-900 font-black text-xs tracking-widest flex items-center gap-2">
                                                     <Eye size={14} /> Full View
                                                 </div>
                                             </div>
@@ -130,7 +131,7 @@ export default function ApprovalsList() {
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-3">
                                             <ImageIcon size={40} />
-                                            <p className="text-[10px] font-black uppercase tracking-widest">No photo provided</p>
+                                            <p className="text-xs font-black tracking-widest">No photo provided</p>
                                         </div>
                                     )}
                                 </div>
@@ -140,19 +141,19 @@ export default function ApprovalsList() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-6">
                                             <div>
-                                                <div className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest mb-3">
+                                                <div className="flex items-center gap-2 text-xs font-black text-rose-500 tracking-widest mb-3">
                                                     <Clock size={12} /> Pending Approval
                                                 </div>
                                                 <h3 className="text-2xl font-black text-slate-900 leading-tight">
                                                     Removal of {request.quantity} units
                                                 </h3>
-                                                <p className="text-slate-400 text-[11px] font-bold uppercase mt-1 tracking-tighter">
+                                                <p className="text-slate-400 text-sm font-bold mt-1 tracking-tighter">
                                                     {request.Product?.productName} • ID: PROD-{request.productId}
                                                 </p>
                                             </div>
 
                                             <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Manager's Justification</p>
+                                                <p className="text-xs font-black text-slate-400 tracking-widest mb-2">Manager's Justification</p>
                                                 <p className="text-sm font-bold text-slate-700 italic leading-relaxed">"{request.reason || 'No reason specified.'}"</p>
                                             </div>
                                         </div>
@@ -164,7 +165,7 @@ export default function ApprovalsList() {
                                                         <User size={18} />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Requested By</p>
+                                                        <p className="text-xs font-black text-slate-400 tracking-widest">Requested By</p>
                                                         <p className="text-xs font-black text-slate-900">
                                                             {request.performer?.emailAddress}
                                                         </p>
@@ -176,7 +177,7 @@ export default function ApprovalsList() {
                                                         <Hash size={18} />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Batch Source</p>
+                                                        <p className="text-xs font-black text-slate-400 tracking-widest">Batch Source</p>
                                                         <p className="text-xs font-black text-slate-900">{request.StockBatch?.batchNumber || 'Direct Product Stock'}</p>
                                                     </div>
                                                 </div>
@@ -186,8 +187,8 @@ export default function ApprovalsList() {
                                                         <AlertTriangle size={18} />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Reason Code</p>
-                                                        <p className="text-xs font-black text-rose-600 uppercase tracking-widest">{request.type}</p>
+                                                        <p className="text-xs font-black text-slate-400 tracking-widest">Reason Code</p>
+                                                        <p className="text-xs font-black text-rose-600 tracking-widest">{request.type}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -198,7 +199,7 @@ export default function ApprovalsList() {
                                         <button
                                             disabled={processingId === request.id}
                                             onClick={() => handleAction(request.id, true)}
-                                            className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+                                            className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
                                         >
                                             {processingId === request.id ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
                                             Authorize Removal
@@ -206,7 +207,7 @@ export default function ApprovalsList() {
                                         <button
                                             disabled={processingId === request.id}
                                             onClick={() => handleAction(request.id, false)}
-                                            className="flex-1 py-4 bg-white border border-slate-200 text-rose-600 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-rose-50 hover:border-rose-200 transition-all flex items-center justify-center gap-3"
+                                            className="flex-1 py-4 bg-white border border-slate-200 text-rose-600 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-rose-50 hover:border-rose-200 transition-all flex items-center justify-center gap-3"
                                         >
                                             <XCircle size={16} />
                                             Reject Request
@@ -222,12 +223,16 @@ export default function ApprovalsList() {
             {/* Photo Modal */}
             <AnimatePresence>
                 {selectedPhoto && (
-                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-8 lg:p-20" data-lock-body-scroll>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl" onClick={() => setSelectedPhoto(null)} />
-                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative max-w-full max-h-full aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-slate-900">
-                            <img src={selectedPhoto} alt="Full Evidence" className="w-full h-full object-contain" />
-                            <button onClick={() => setSelectedPhoto(null)} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md text-white transition-all"><XCircle size={24} /></button>
+                    <div className="admin-modal-scroll z-[300]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="admin-modal-backdrop-heavy" onClick={() => setSelectedPhoto(null)} />
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative z-10 my-auto aspect-video w-full max-w-[min(100%,56rem)] max-h-[min(85dvh,900px)] overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl sm:rounded-3xl">
+                            <img src={selectedPhoto} alt="Full Evidence" className="h-full w-full object-contain" />
+                            <button type="button" onClick={() => setSelectedPhoto(null)} className="absolute right-4 top-4 z-10 rounded-full bg-white/15 p-3 text-white backdrop-blur-md transition-all hover:bg-white/25 sm:right-6 sm:top-6" aria-label="Close">
+                                <X size={22} />
+                            </button>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

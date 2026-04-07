@@ -11,57 +11,57 @@ export const IMAGE_SPECS = {
     height: 600,
     minWidth: 800,
     minHeight: 250,
-    maxFileSizeBytes: 2 * 1024 * 1024, // 2 MB
-    maxFileSizeLabel: "2 MB",
+    maxFileSizeBytes: 10 * 1024 * 1024, // 10 MB
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "16:5 (e.g. 1920×600)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
-  /** Level 2: Category hero (if used). Same as hero. */
+  /** Level 2: Category hero strip (full-width short banner above category section). */
   bannerLevel2: {
     width: 1920,
-    height: 600,
-    minWidth: 800,
-    minHeight: 250,
-    maxFileSizeBytes: 2 * 1024 * 1024,
-    maxFileSizeLabel: "2 MB",
-    aspectRatio: "16:5 (e.g. 1920×600)",
+    height: 300,
+    minWidth: 1200,
+    minHeight: 180,
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
+    aspectRatio: "32:5 (e.g. 1920×300)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
-  /** Level 3: Mid-page scrolling strip. js mart: middle-banner-section — 3:2 cards */
+  /** Level 3: Curated picks cards (row of short cards above category section). */
   bannerLevel3: {
-    width: 600,
-    height: 400,
-    minWidth: 360,
-    minHeight: 240,
-    maxFileSizeBytes: 1 * 1024 * 1024, // 1 MB
-    maxFileSizeLabel: "1 MB",
-    aspectRatio: "3:2 (e.g. 600×400)",
+    width: 900,
+    height: 375,
+    minWidth: 600,
+    minHeight: 160,
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
+    aspectRatio: "12:5 (e.g. 900×375)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
-  /** Level 4: Seasonal highlights. Same as Level 3 — 3:2 strip on JS Mart. */
+  /** Level 4: Seasonal highlights. Matches homepage wide strip (same style as Level 5). */
   bannerLevel4: {
-    width: 600,
-    height: 400,
-    minWidth: 360,
-    minHeight: 240,
-    maxFileSizeBytes: 1 * 1024 * 1024,
-    maxFileSizeLabel: "1 MB",
-    aspectRatio: "3:2 (e.g. 600×400)",
+    width: 1920,
+    height: 300,
+    minWidth: 1200,
+    minHeight: 180,
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
+    aspectRatio: "32:5 (e.g. 1920×300)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
-  /** Level 5: Footer promotional strip. js mart: h-[200]–[350px], max-w 1600px → wide short banner */
+  /** Level 5: Footer promotional strip. Same dimensions as Level 4 for consistent home style. */
   bannerLevel5: {
     width: 1920,
-    height: 420,
+    height: 300,
     minWidth: 1200,
-    minHeight: 260,
-    maxFileSizeBytes: 2 * 1024 * 1024,
-    maxFileSizeLabel: "2 MB",
-    aspectRatio: "~32:7 (e.g. 1920×420)",
+    minHeight: 180,
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
+    aspectRatio: "32:5 (e.g. 1920×300)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
@@ -71,8 +71,8 @@ export const IMAGE_SPECS = {
     height: 800,
     minWidth: 400,
     minHeight: 400,
-    maxFileSizeBytes: 1 * 1024 * 1024, // 1 MB
-    maxFileSizeLabel: "1 MB",
+    maxFileSizeBytes: 10 * 1024 * 1024, // 10 MB (matches backend / Cloudinary limit)
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "1:1 (square, e.g. 800×800)",
     formats: "JPG, PNG, JPEG, WebP",
   },
@@ -83,21 +83,21 @@ export const IMAGE_SPECS = {
     height: 400,
     minWidth: 200,
     minHeight: 200,
-    maxFileSizeBytes: 512 * 1024, // 500 KB
-    maxFileSizeLabel: "500 KB",
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "1:1 (e.g. 400×400)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
-  /** Category banner (homepage category strip & category banner section). js mart: aspect-[3/2], 280–320px wide */
+  /** Category banner (shop page header when category selected). Match home header hero size. */
   categoryBanner: {
-    width: 600,
-    height: 400,
-    minWidth: 360,
-    minHeight: 240,
-    maxFileSizeBytes: 512 * 1024, // 500 KB
-    maxFileSizeLabel: "500 KB",
-    aspectRatio: "3:2 (e.g. 600×400)",
+    width: 1920,
+    height: 600,
+    minWidth: 800,
+    minHeight: 250,
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
+    aspectRatio: "16:5 (e.g. 1920×600)",
     formats: "JPG, PNG, JPEG, WebP",
   },
 
@@ -107,8 +107,8 @@ export const IMAGE_SPECS = {
     height: 200,
     minWidth: 200,
     minHeight: 100,
-    maxFileSizeBytes: 512 * 1024, // 500 KB
-    maxFileSizeLabel: "500 KB",
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "2:1 (e.g. 400×200)",
     formats: "JPG, PNG, JPEG, WebP",
   },
@@ -119,8 +119,8 @@ export const IMAGE_SPECS = {
     height: 400,
     minWidth: 100,
     minHeight: 100,
-    maxFileSizeBytes: 512 * 1024, // 500 KB
-    maxFileSizeLabel: "500 KB",
+    maxFileSizeBytes: 10 * 1024 * 1024, // 10 MB
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "1:1 (e.g. 400×400)",
     formats: "JPG, PNG, JPEG, WebP",
   },
@@ -131,8 +131,8 @@ export const IMAGE_SPECS = {
     height: 150,
     minWidth: 200,
     minHeight: 80,
-    maxFileSizeBytes: 512 * 1024, // 500 KB
-    maxFileSizeLabel: "500 KB",
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "~2.6:1 (e.g. 400×150)",
     formats: "JPG, PNG, JPEG, WebP",
   },
@@ -143,8 +143,8 @@ export const IMAGE_SPECS = {
     height: 400,
     minWidth: 400,
     minHeight: 200,
-    maxFileSizeBytes: 1 * 1024 * 1024, // 1 MB
-    maxFileSizeLabel: "1 MB",
+    maxFileSizeBytes: 10 * 1024 * 1024,
+    maxFileSizeLabel: "10 MB",
     aspectRatio: "2:1 (e.g. 800×400)",
     formats: "JPG, PNG, JPEG, WebP",
   },
@@ -153,8 +153,8 @@ export const IMAGE_SPECS = {
   evidencePhoto: {
     width: 1200,
     height: 800,
-    maxFileSizeBytes: 2 * 1024 * 1024, // 2 MB
-    maxFileSizeLabel: "2 MB",
+    maxFileSizeBytes: 10 * 1024 * 1024, // 10 MB
+    maxFileSizeLabel: "10 MB",
     formats: "JPG, PNG, JPEG, WebP",
   },
 };
@@ -214,3 +214,29 @@ export function validateImageDimensions(width, height, specKey) {
   }
   return { valid: true };
 }
+
+/**
+ * Fixed aspect for crop UI (matches IMAGE_SPECS layout hints). Omit for free-form crop.
+ * @param {string} specKey
+ * @returns {number | undefined}
+ */
+export function getCropAspectForSpec(specKey) {
+  const map = {
+    banners: 16 / 5,
+    bannerLevel2: 32 / 5,
+    bannerLevel3: 12 / 5,
+    bannerLevel4: 32 / 5,
+    bannerLevel5: 32 / 5,
+    productImages: 1,
+    categoryImages: 1,
+    categoryBanner: 16 / 5,
+    brandImages: 2,
+    profileAvatar: 1,
+    logo: 400 / 150,
+    offerBanner: 2,
+    supplierLogo: 2,
+  };
+  const v = map[specKey];
+  return typeof v === 'number' ? v : undefined;
+}
+

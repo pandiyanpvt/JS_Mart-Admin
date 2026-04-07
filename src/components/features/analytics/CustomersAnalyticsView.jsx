@@ -64,7 +64,7 @@ export default function CustomersAnalyticsView() {
                             key={range}
                             onClick={() => setActiveRange(range)}
                             className={cn(
-                                "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
+                                "px-4 py-2 text-xs font-black  tracking-widest rounded-xl transition-all",
                                 activeRange === range
                                     ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
                                     : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
@@ -93,15 +93,15 @@ export default function CustomersAnalyticsView() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Customers</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">Active Customers</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">{loading ? '—' : (data?.metrics?.activeCustomers ?? 0)}</h3>
                 </div>
                 <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">New Customers</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">New Customers</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">{loading ? '—' : (data?.metrics?.newCustomers ?? 0)}</h3>
                 </div>
                 <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Repeat Rate</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">Repeat Rate</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">{loading ? '—' : `${(data?.metrics?.repeatRate ?? 0).toFixed(1)}%`}</h3>
                 </div>
             </div>
@@ -159,11 +159,11 @@ export default function CustomersAnalyticsView() {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50/50">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Customer</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Orders</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Avg Order</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Last Order</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Spend</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Customer</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Orders</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Avg Order</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Last Order</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Spend</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">

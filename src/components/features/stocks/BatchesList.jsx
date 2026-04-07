@@ -72,11 +72,11 @@ export default function BatchesList() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50">
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Batch Number</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Dates</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Stock</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Price Info</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Batch Number</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Product</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Dates</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Stock</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Price Info</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -100,16 +100,16 @@ export default function BatchesList() {
                                             <td className="px-6 py-4">
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{batch.product?.productName}</p>
-                                                    <p className="text-[10px] text-slate-500 uppercase">{batch.product?.brand?.brandName || 'No Brand'}</p>
+                                                    <p className="text-xs text-slate-500">{batch.product?.brand?.brandName || 'No Brand'}</p>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="space-y-1">
-                                                    <p className="text-[10px] flex items-center gap-2">
+                                                    <p className="text-xs flex items-center gap-2">
                                                         <span className="text-slate-400 w-12 text-right">MFG:</span>
                                                         <span className="font-medium">{batch.manufactureDate || 'N/A'}</span>
                                                     </p>
-                                                    <p className="text-[10px] flex items-center gap-2">
+                                                    <p className="text-xs flex items-center gap-2">
                                                         <span className="text-slate-400 w-12 text-right">EXP:</span>
                                                         <span className={cn(
                                                             "font-medium",
@@ -123,11 +123,11 @@ export default function BatchesList() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <p className="text-sm font-bold text-slate-900">{batch.quantity}</p>
-                                                <p className="text-[10px] text-slate-400">of {batch.initialQuantity} units</p>
+                                                <p className="text-xs text-slate-400">of {batch.initialQuantity} units</p>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <p className="text-sm font-bold text-emerald-600">${parseFloat(batch.sellingPrice).toFixed(2)}</p>
-                                                <p className="text-[10px] text-slate-400">Pur: ${parseFloat(batch.purchasePrice).toFixed(2)}</p>
+                                                <p className="text-xs text-slate-400">Pur: ${parseFloat(batch.purchasePrice).toFixed(2)}</p>
                                             </td>
                                         </tr>
                                     ))

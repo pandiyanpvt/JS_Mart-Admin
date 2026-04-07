@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Save, User, Lock, Bell, Store, Loader2, Camera, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
+import { Save, User, Lock, Bell, Store, Loader2, Camera, AlertCircle, Settings as SettingsIcon, X } from 'lucide-react';
 import { settingsService } from '@/lib/api';
-import { IMAGE_SPECS } from '@/lib/imageSpecs';
+import { IMAGE_SPECS, validateImageFileSize, getCropAspectForSpec } from '@/lib/imageSpecs';
+import { pickOutputMime } from '@/lib/cropImage';
+import ImageCropModal from '@/components/ui/ImageCropModal';
+import { useSingleImageCrop } from '@/hooks/useSingleImageCrop';
 
 export default function SettingsView() {
+    const logoCrop = useSingleImageCrop();
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,6 +40,7 @@ export default function SettingsView() {
 
     const [logoPreview, setLogoPreview] = useState('');
     const [logoFile, setLogoFile] = useState(null);
+    const [pendingLogoRemoval, setPendingLogoRemoval] = useState(false);
 
     const logoInputRef = useRef(null);
 
@@ -91,6 +96,21 @@ export default function SettingsView() {
         }));
     };
 
+    const clearStoreLogo = () => {
+        setLogoPreview((prev) => {
+            if (prev?.startsWith?.('blob:')) {
+                try {
+                    URL.revokeObjectURL(prev);
+                } catch {
+                    /* ignore */
+                }
+            }
+            return '';
+        });
+        setLogoFile(null);
+        setPendingLogoRemoval(true);
+    };
+
     const handleStoreSettingChange = (e) => {
         const { name, value } = e.target;
         setStoreSettings(prev => ({
@@ -111,6 +131,7 @@ export default function SettingsView() {
                     setLogoPreview(shop.logoUrl);
                 }
                 setLogoFile(null);
+                setPendingLogoRemoval(false);
             }
 
             await settingsService.updateShop({
@@ -123,7 +144,12 @@ export default function SettingsView() {
                 state: formData.state,
                 postalCode: formData.postalCode,
                 country: formData.country,
+                ...(pendingLogoRemoval && !logoFile ? { removeLogo: true } : {}),
             });
+            if (pendingLogoRemoval && !logoFile) {
+                setLogoPreview('');
+                setPendingLogoRemoval(false);
+            }
 
             await settingsService.updateStoreSettings([
                 { configKey: 'REFUND_DAYS', configValue: storeSettings.REFUND_DAYS, description: 'Number of days allowed for refund after delivery' },
@@ -144,11 +170,11 @@ export default function SettingsView() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-full min-w-0 max-w-full space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-                    <p className="text-slate-500 text-sm">Manage your account and preferences.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
+                    <p className="text-base text-slate-500">Manage your account and preferences.</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -185,6 +211,7 @@ export default function SettingsView() {
                         <div className="flex flex-col md:flex-row gap-8 items-start">
                             {/* Avatar / Logo Placeholder */}
                             <div className="flex flex-col items-center gap-3">
+                                <div className="relative">
                                 <button
                                     type="button"
                                     onClick={() => logoInputRef.current?.click()}
@@ -207,8 +234,20 @@ export default function SettingsView() {
                                     <span className="mt-2 block text-xs font-semibold text-emerald-600 hover:underline">
                                         Change Logo
                                     </span>
-                                    <p className="mt-1 text-[10px] text-slate-500 font-medium">Image size (before adding): {IMAGE_SPECS.logo.width}×{IMAGE_SPECS.logo.height} px, max {IMAGE_SPECS.logo.maxFileSizeLabel}.</p>
+                                    <p className="mt-1 text-xs text-slate-500 font-medium">Image size (before adding): {IMAGE_SPECS.logo.width}×{IMAGE_SPECS.logo.height} px, max {IMAGE_SPECS.logo.maxFileSizeLabel}.</p>
                                 </button>
+                                {logoPreview && (
+                                    <button
+                                        type="button"
+                                        onClick={clearStoreLogo}
+                                        className="absolute -right-1 -top-1 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600 text-white shadow-md ring-2 ring-white hover:bg-rose-700"
+                                        title="Remove logo"
+                                        aria-label="Remove store logo"
+                                    >
+                                        <X size={14} strokeWidth={2.5} />
+                                    </button>
+                                )}
+                                </div>
                                 <input
                                     ref={logoInputRef}
                                     type="file"
@@ -216,14 +255,15 @@ export default function SettingsView() {
                                     className="hidden"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
+                                        e.target.value = '';
                                         if (!file) return;
-                                        setLogoFile(file);
-                                        try {
-                                            const previewUrl = URL.createObjectURL(file);
-                                            setLogoPreview(previewUrl);
-                                        } catch {
-                                            // Fallback: no preview if URL.createObjectURL fails
+                                        const { valid, message } = validateImageFileSize(file, 'logo');
+                                        if (!valid) {
+                                            setError(message);
+                                            return;
                                         }
+                                        setError('');
+                                        logoCrop.open(file, 'logo');
                                     }}
                                 />
                             </div>
@@ -231,7 +271,7 @@ export default function SettingsView() {
                             {/* Inputs */}
                             <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Store Name</label>
+                                    <label className="text-xs font-bold text-slate-700">Store Name</label>
                                     <input
                                         type="text"
                                         name="storeName"
@@ -241,7 +281,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Phone Number</label>
+                                    <label className="text-xs font-bold text-slate-700">Phone Number</label>
                                     <input
                                         type="tel"
                                         name="phone"
@@ -251,7 +291,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Email Address</label>
+                                    <label className="text-xs font-bold text-slate-700">Email Address</label>
                                     <input
                                         type="email"
                                         name="email"
@@ -261,7 +301,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Address Line 1</label>
+                                    <label className="text-xs font-bold text-slate-700">Address Line 1</label>
                                     <input
                                         type="text"
                                         name="addressLine1"
@@ -271,7 +311,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5 md:col-span-2">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Address Line 2</label>
+                                    <label className="text-xs font-bold text-slate-700">Address Line 2</label>
                                     <input
                                         type="text"
                                         name="addressLine2"
@@ -281,7 +321,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">City</label>
+                                    <label className="text-xs font-bold text-slate-700">City</label>
                                     <input
                                         type="text"
                                         name="city"
@@ -291,7 +331,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">State/Province</label>
+                                    <label className="text-xs font-bold text-slate-700">State/Province</label>
                                     <input
                                         type="text"
                                         name="state"
@@ -301,7 +341,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Postal Code</label>
+                                    <label className="text-xs font-bold text-slate-700">Postal Code</label>
                                     <input
                                         type="text"
                                         name="postalCode"
@@ -311,7 +351,7 @@ export default function SettingsView() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Country</label>
+                                    <label className="text-xs font-bold text-slate-700">Country</label>
                                     <input
                                         type="text"
                                         name="country"
@@ -338,7 +378,7 @@ export default function SettingsView() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700 uppercase">Current Password</label>
+                                <label className="text-xs font-bold text-slate-700">Current Password</label>
                                 <input
                                     type="password"
                                     name="currentPassword"
@@ -349,7 +389,7 @@ export default function SettingsView() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700 uppercase">New Password</label>
+                                <label className="text-xs font-bold text-slate-700">New Password</label>
                                 <input
                                     type="password"
                                     name="newPassword"
@@ -360,7 +400,7 @@ export default function SettingsView() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-slate-700 uppercase">Confirm Password</label>
+                                <label className="text-xs font-bold text-slate-700">Confirm Password</label>
                                 <input
                                     type="password"
                                     name="confirmPassword"
@@ -474,6 +514,40 @@ export default function SettingsView() {
                     </div>
                 </form>
             </div>
+
+            {logoCrop.isOpen && logoCrop.target && (
+                <ImageCropModal
+                    key={logoCrop.target.src}
+                    open
+                    imageSrc={logoCrop.target.src}
+                    title="Crop store logo"
+                    aspect={getCropAspectForSpec('logo')}
+                    mimeType={pickOutputMime(logoCrop.target.mime)}
+                    originalFileName={logoCrop.target.fileName}
+                    onClose={() => logoCrop.close()}
+                    onComplete={(file) => {
+                        const check = validateImageFileSize(file, 'logo');
+                        if (!check.valid) {
+                            setError(check.message);
+                            logoCrop.close();
+                            return;
+                        }
+                        setLogoPreview((prev) => {
+                            if (prev?.startsWith?.('blob:')) {
+                                try {
+                                    URL.revokeObjectURL(prev);
+                                } catch {
+                                    /* ignore */
+                                }
+                            }
+                            return URL.createObjectURL(file);
+                        });
+                        setLogoFile(file);
+                        setPendingLogoRemoval(false);
+                        logoCrop.close();
+                    }}
+                />
+            )}
         </div>
     );
 }

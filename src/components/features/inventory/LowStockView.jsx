@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, AlertTriangle, Eye, ArrowUpRight, BarChart2, AlertOctagon, ArrowLeft, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { resolveProductImageUrl, hasProductImage, productImageUnoptimized } from '@/lib/productImage';
 import { getProducts } from '@/lib/products';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -130,11 +131,11 @@ export default function LowStockView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Stock</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Product</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Category</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Current Stock</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -149,30 +150,28 @@ export default function LowStockView() {
                                     const productId = product.id || `temp-${Math.random()}`;
                                     const sku = product.sku || `PROD-${1000 + (product.id || 0)}`;
                                     const stock = product.stock !== undefined ? product.stock : 0;
-                                    const imageSrc = product.image || (typeof product.image === 'string' && product.image.startsWith('data:') ? product.image : null);
+                                    const rawImage = product.image;
+                                    const displaySrc = resolveProductImageUrl(rawImage);
+                                    const hasImg = hasProductImage(rawImage);
                                     const status = getStockStatus(stock);
 
                                     return (
                                         <tr key={productId} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    {imageSrc ? (
-                                                        <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-100">
-                                                            <Image
-                                                                src={imageSrc}
-                                                                alt={product.name || ''}
-                                                                fill
-                                                                sizes="40px"
-                                                                className="object-cover"
-                                                                unoptimized={typeof imageSrc === 'string' && imageSrc.startsWith('data:')}
-                                                            />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="w-10 h-10 rounded-lg bg-slate-100 shrink-0" />
-                                                    )}
+                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-100">
+                                                        <Image
+                                                            src={displaySrc}
+                                                            alt={hasImg ? (product.name || '') : ''}
+                                                            fill
+                                                            sizes="40px"
+                                                            className="object-cover"
+                                                            unoptimized={productImageUnoptimized(displaySrc)}
+                                                        />
+                                                    </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-semibold text-slate-900 truncate">{product.name}</p>
-                                                        <p className="text-[10px] text-slate-500 uppercase">SKU: {sku}</p>
+                                                        <p className="text-xs text-slate-500">SKU: {sku}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -187,7 +186,7 @@ export default function LowStockView() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={cn(
-                                                    "inline-flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide border",
+                                                    "inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full  tracking-wide border",
                                                     status.color
                                                 )}>
                                                     {status.label}

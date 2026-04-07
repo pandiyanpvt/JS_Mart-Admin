@@ -49,11 +49,12 @@ export function MembershipCard({ user, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" data-lock-body-scroll>
-            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose} />
+        <div className="admin-modal-scroll z-[60]" data-lock-body-scroll role="dialog" aria-modal="true">
+            <div className="admin-modal-center">
+            <button type="button" className="admin-modal-backdrop" onClick={onClose} aria-label="Close dialog" />
 
-            <div className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col p-8 md:p-12 items-center">
-                <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+            <div className="admin-modal-panel-host relative flex w-full max-w-2xl flex-col items-center overflow-y-auto rounded-[1.5rem] bg-white p-6 shadow-2xl sm:rounded-[2.5rem] md:p-12">
+                <button type="button" onClick={onClose} className="absolute right-4 top-4 z-10 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 sm:right-6 sm:top-6" aria-label="Close">
                     <X size={24} />
                 </button>
 
@@ -101,14 +102,14 @@ export function MembershipCard({ user, onClose }) {
                                                     <Zap className="fill-white" size={24} />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-xl md:text-3xl font-black tracking-tighter leading-none">JS MART</span>
-                                                    <span className="text-[10px] font-black tracking-[0.4em] opacity-80 uppercase">Australia</span>
+                                                    <span className="text-xl md:text-3xl font-black tracking-tighter leading-none">JS Mart</span>
+                                                    <span className="text-xs font-black tracking-[0.4em] opacity-80">Australia</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3 bg-black/20 backdrop-blur-2xl px-5 py-2 rounded-2xl border border-white/10 shadow-xl">
                                             {isPlus ? <Gem size={16} className="text-amber-300" /> : <Zap size={16} className="text-white" />}
-                                            <span className="text-[12px] font-black uppercase tracking-[0.2em]">{planName}</span>
+                                            <span className="text-[12px] font-black tracking-[0.2em]">{planName}</span>
                                         </div>
                                     </div>
 
@@ -124,7 +125,7 @@ export function MembershipCard({ user, onClose }) {
                                                 <QrCode size={45} strokeWidth={1.5} />
                                             </div>
                                         </div>
-                                        <h3 className="text-2xl md:text-4xl font-black tracking-tight uppercase truncate drop-shadow-2xl">
+                                        <h3 className="text-2xl md:text-4xl font-black tracking-tight truncate drop-shadow-2xl">
                                             {user?.fullName || "Valued Member"}
                                         </h3>
                                     </div>
@@ -132,13 +133,13 @@ export function MembershipCard({ user, onClose }) {
                                     <div className="flex justify-between items-end border-t border-white/10 pt-6">
                                         <div className="flex gap-10">
                                             <div className="space-y-0.5">
-                                                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Member Since</p>
+                                                <p className="text-[8px] md:text-xs font-black tracking-[0.2em] opacity-40">Member Since</p>
                                                 <p className="text-xs md:text-lg font-black tracking-widest">
                                                     {new Date(user?.createdAt || Date.now()).toLocaleDateString(undefined, { month: '2-digit', year: '2-digit' })}
                                                 </p>
                                             </div>
                                             <div className="space-y-0.5">
-                                                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40 text-left">Valid Thru</p>
+                                                <p className="text-[8px] md:text-xs font-black tracking-[0.2em] opacity-40 text-left">Valid Thru</p>
                                                 <p className="text-xs md:text-lg font-black tracking-widest text-emerald-300 drop-shadow-sm">
                                                     {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString(undefined, { month: '2-digit', year: '2-digit' }) : "∞"}
                                                 </p>
@@ -180,13 +181,13 @@ export function MembershipCard({ user, onClose }) {
                                                     Authorized Signature
                                                 </span>
                                             </div>
-                                            <p className="text-[8px] text-gray-500 uppercase tracking-widest pl-1">Authorized Signature</p>
+                                            <p className="text-[8px] text-gray-500 tracking-widest pl-1">Authorized Signature</p>
                                         </div>
                                         <div className="space-y-1">
                                             <div className="h-10 md:h-12 w-16 md:w-20 bg-white/10 rounded border border-white/10 flex items-center justify-center backdrop-blur-sm">
                                                 <span className="text-white font-mono font-bold text-lg italic">707</span>
                                             </div>
-                                            <p className="text-[8px] text-gray-500 uppercase tracking-widest text-center">CVC</p>
+                                            <p className="text-[8px] text-gray-500 tracking-widest text-center">CVC</p>
                                         </div>
                                     </div>
 
@@ -194,12 +195,12 @@ export function MembershipCard({ user, onClose }) {
                                     <div className="flex items-end justify-between mt-auto mb-4">
                                         <div className="space-y-3">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-white/50 uppercase tracking-[0.2em] font-bold text-left">Member ID</p>
+                                                <p className="text-xs text-white/50 tracking-[0.2em] font-bold text-left">Member ID</p>
                                                 <p className="text-sm md:text-base text-white font-mono tracking-widest text-shadow-sm text-left">
                                                     {cardNumber}
                                                 </p>
                                             </div>
-                                            <p className="text-[9px] text-gray-600 max-w-[200px] leading-relaxed text-left">
+                                            <p className="text-xs text-gray-600 max-w-[200px] leading-relaxed text-left">
                                                 Issued by JS Mart Australia.
                                                 <br />This digital token verifies active membership status.
                                             </p>
@@ -218,7 +219,7 @@ export function MembershipCard({ user, onClose }) {
                 <div className="w-full grid grid-cols-2 gap-4 mt-4">
                     <button
                         onClick={() => setIsFlipped(!isFlipped)}
-                        className="flex items-center justify-center gap-3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                        className="flex items-center justify-center gap-3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-black text-xs tracking-widest transition-all"
                     >
                         <Info size={18} />
                         Flip Card
@@ -226,12 +227,13 @@ export function MembershipCard({ user, onClose }) {
                     <button
                         onClick={handleDownloadPDF}
                         disabled={isDownloading}
-                        className="flex items-center justify-center gap-3 bg-zinc-900 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 shadow-xl"
+                        className="flex items-center justify-center gap-3 bg-zinc-900 hover:bg-zinc-800 text-white py-4 rounded-2xl font-black text-xs tracking-widest transition-all disabled:opacity-50 shadow-xl"
                     >
                         <Download size={18} />
                         {isDownloading ? "..." : "Download PDF"}
                     </button>
                 </div>
+            </div>
             </div>
         </div>
     );

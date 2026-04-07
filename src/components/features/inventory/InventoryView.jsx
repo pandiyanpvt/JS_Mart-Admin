@@ -5,6 +5,7 @@ import { AlertCircle, ArrowRightLeft, PackageCheck, Truck, Plus, Download, Searc
 import { cn } from '@/lib/utils';
 import { getProducts, updateProduct } from '@/lib/products';
 import Image from 'next/image';
+import { resolveProductImageUrl, productImageUnoptimized } from '@/lib/productImage';
 import * as XLSX from 'xlsx';
 
 export default function InventoryView() {
@@ -137,11 +138,11 @@ export default function InventoryView() {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="w-full min-w-0 space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Inventory Management</h1>
-                    <p className="text-slate-500 text-sm">Monitor stock levels and manage supply chain.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Inventory Management</h1>
+                    <p className="text-base text-slate-500">Monitor stock levels and manage supply chain.</p>
                 </div>
                 <div className="flex gap-2">
                     <button
@@ -266,12 +267,12 @@ export default function InventoryView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product Info</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">SKU Code</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status & Level</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Location</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Asset Value</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Product Info</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">SKU Code</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status & Level</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Location</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Asset Value</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -309,11 +310,11 @@ export default function InventoryView() {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-semibold text-slate-900 truncate">{item.name}</p>
-                                                        <p className="text-[10px] text-slate-500 font-medium uppercase">{item.category}</p>
+                                                        <p className="text-xs text-slate-500 font-medium">{item.category}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm font-mono text-slate-500 uppercase">
+                                            <td className="px-6 py-4 text-sm font-mono text-slate-500">
                                                 {item.sku}
                                             </td>
                                             <td className="px-6 py-4">
@@ -325,7 +326,7 @@ export default function InventoryView() {
                                                         )}>
                                                             {item.currentStock} {item.unit}
                                                         </span>
-                                                        <span className="text-[10px] text-slate-400 font-bold uppercase">
+                                                        <span className="text-xs text-slate-400 font-bold">
                                                             / {item.maxLevel}
                                                         </span>
                                                     </div>
@@ -384,18 +385,21 @@ export default function InventoryView() {
 
             {/* Adjustment Modal */}
             {showAdjustModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => !isUpdating && setShowAdjustModal(false)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-lg font-bold text-slate-900">
                                     {selectedProduct ? 'Stock Adjustment' : 'Select Product'}
                                 </h3>
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                <p className="text-xs font-semibold text-slate-500 tracking-wider">
                                     {selectedProduct ? selectedProduct.name : 'Find item to update'}
                                 </p>
                             </div>
@@ -448,17 +452,18 @@ export default function InventoryView() {
                                                 className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-all border border-transparent hover:border-slate-100 text-left group"
                                             >
                                                 <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-100 bg-white">
-                                                    {item.image ? (
-                                                        <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                            <PackageCheck size={18} />
-                                                        </div>
-                                                    )}
+                                                    <Image
+                                                        src={resolveProductImageUrl(item.image)}
+                                                        alt={item.name}
+                                                        fill
+                                                        sizes="80px"
+                                                        className="object-cover"
+                                                        unoptimized={productImageUnoptimized(resolveProductImageUrl(item.image))}
+                                                    />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-bold text-slate-900 truncate">{item.name}</p>
-                                                    <p className="text-[10px] text-slate-500 uppercase">Stock: {item.currentStock} {item.unit}</p>
+                                                    <p className="text-xs text-slate-500">Stock: {item.currentStock} {item.unit}</p>
                                                 </div>
                                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-emerald-50 rounded-lg text-emerald-600">
                                                     <Plus size={16} />
@@ -472,11 +477,11 @@ export default function InventoryView() {
                                 <div className="p-6 space-y-6 overflow-y-auto">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Current Stock</p>
+                                            <p className="text-xs font-bold text-slate-500 mb-1">Current Stock</p>
                                             <p className="text-xl font-bold text-slate-900">{selectedProduct.currentStock} {selectedProduct.unit}</p>
                                         </div>
                                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Stock Level</p>
+                                            <p className="text-xs font-bold text-slate-500 mb-1">Stock Level</p>
                                             <div className="w-full h-1.5 bg-slate-200 rounded-full mt-2">
                                                 <div
                                                     className="h-full bg-emerald-500 rounded-full"
@@ -513,7 +518,7 @@ export default function InventoryView() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-700 uppercase">Quantity ({selectedProduct.unit})</label>
+                                            <label className="text-xs font-bold text-slate-700">Quantity ({selectedProduct.unit})</label>
                                             <input
                                                 type="number"
                                                 value={adjustmentQuantity || ''}
@@ -525,7 +530,7 @@ export default function InventoryView() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-700 uppercase">Reason for Adjustment</label>
+                                            <label className="text-xs font-bold text-slate-700">Reason for Adjustment</label>
                                             <select
                                                 value={adjustmentReason || ''}
                                                 onChange={(e) => setAdjustmentReason(e.target.value)}
@@ -561,6 +566,7 @@ export default function InventoryView() {
                                 </div>
                             </>
                         )}
+                    </div>
                     </div>
                 </div>
             )}

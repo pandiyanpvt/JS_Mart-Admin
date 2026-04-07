@@ -11,32 +11,37 @@ import {
     Loader2,
     AlertCircle,
     Layout,
-    HelpCircle
+    HelpCircle,
+    X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { promotionService } from '@/lib/api';
-import { IMAGE_SPECS, validateImageFileSize, getBannerSpecForLevel, BANNER_SPEC_BY_LEVEL } from '@/lib/imageSpecs';
+import { IMAGE_SPECS, validateImageFileSize, getBannerSpecForLevel, BANNER_SPEC_BY_LEVEL, getCropAspectForSpec } from '@/lib/imageSpecs';
+import { pickOutputMime } from '@/lib/cropImage';
+import ImageCropModal from '@/components/ui/ImageCropModal';
+import { useSingleImageCrop } from '@/hooks/useSingleImageCrop';
 import Image from 'next/image';
 
 const LEVELS = [
     { id: 1, name: 'Level 1: Header Banners', description: 'JS Mart: Hero carousel on homepage (1920×600, 16:5)' },
-    { id: 2, name: 'Level 2: Category Hero', description: 'JS Mart: Featured category hero (1920×600, 16:5)' },
-    { id: 3, name: 'Level 3: Curated picks / Mid-Page', description: 'JS Mart: Scrolling strip cards — 3:2 (e.g. 600×400)' },
-    { id: 4, name: 'Level 4: Seasonal Highlights', description: 'JS Mart: Same as Level 3 — 3:2 strip cards' },
-    { id: 5, name: 'Level 5: Footer Promotional', description: 'JS Mart: Footer wide strip (1920×420, 32:7)' },
+    { id: 2, name: 'Level 2: Category Hero', description: 'JS Mart: Wide strip banner (1920×300, 32:5)' },
+    { id: 3, name: 'Level 3: Curated picks / Mid-Page', description: 'JS Mart: Scrolling strip cards (900×375, 12:5)' },
+    { id: 4, name: 'Level 4: Seasonal Highlights', description: 'JS Mart: Wide strip banner (1920×300, 32:5)' },
+    { id: 5, name: 'Level 5: Footer Promotional', description: 'JS Mart: Footer wide strip (1920×300, 32:5)' },
 ];
 
 /** Preview aspect ratio matches JS Mart storefront display per level */
 const PREVIEW_ASPECT_BY_LEVEL = {
     1: 'aspect-[16/5]',   // Hero: 1920×600 — hero-section.tsx
-    2: 'aspect-[16/5]',   // Category hero: 1920×600
-    3: 'aspect-[3/2]',   // Curated picks: middle-banner-section.tsx — horizontal strip cards
-    4: 'aspect-[3/2]',   // Seasonal: same as Level 3 on storefront
-    5: 'aspect-[32/7]',   // Footer: footer-banner-section.tsx — 1920×420
+    2: 'aspect-[32/5]',   // Category hero: level2-banner-section.tsx
+    3: 'aspect-[12/5]',   // Curated picks: middle-banner-section.tsx
+    4: 'aspect-[32/5]',   // Seasonal: level4-banner-section.tsx
+    5: 'aspect-[32/5]',   // Footer: footer-banner-section.tsx
 };
 
 export default function BannersList() {
+    const bannerCrop = useSingleImageCrop();
     const [promotions, setPromotions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,6 +49,7 @@ export default function BannersList() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [notification, setNotification] = useState(null);
     const [showLinkHelp, setShowLinkHelp] = useState(false);
+    const [stripPromotionImg, setStripPromotionImg] = useState(false);
 
     const [formData, setFormData] = useState({
         level: 1,
@@ -75,21 +81,17 @@ export default function BannersList() {
         setTimeout(() => setNotification(null), 3000);
     };
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
         if (!file) return;
         const specKey = BANNER_SPEC_BY_LEVEL[formData.level] || 'banners';
         const { valid, message } = validateImageFileSize(file, specKey);
         if (!valid) {
             showNotification(message, 'error');
-            e.target.value = '';
             return;
         }
-        setFormData({
-            ...formData,
-            image: file,
-            preview: URL.createObjectURL(file)
-        });
+        bannerCrop.open(file, specKey);
     };
 
     const handleSubmit = async (e) => {
@@ -103,6 +105,9 @@ export default function BannersList() {
             if (formData.image) {
                 data.append('promotionImg', formData.image);
             }
+            if (editingBanner && stripPromotionImg && !formData.image) {
+                data.append('removePromotionImg', 'true');
+            }
 
             if (editingBanner) {
                 await promotionService.update(editingBanner.id, data);
@@ -115,6 +120,7 @@ export default function BannersList() {
             setIsModalOpen(false);
             setEditingBanner(null);
             setFormData({ level: 1, order: 1, redirectLink: '', image: null, preview: '' });
+            setStripPromotionImg(false);
             loadPromotions();
         } catch (error) {
             showNotification(error.message, 'error');
@@ -136,6 +142,7 @@ export default function BannersList() {
 
     const openEdit = (banner) => {
         setEditingBanner(banner);
+        setStripPromotionImg(false);
         setFormData({
             level: banner.level,
             order: banner.order,
@@ -146,12 +153,28 @@ export default function BannersList() {
         setIsModalOpen(true);
     };
 
+    const clearPromotionPreview = (e) => {
+        e?.preventDefault?.();
+        e?.stopPropagation?.();
+        setFormData((prev) => {
+            if (prev.preview?.startsWith?.('blob:')) {
+                try {
+                    URL.revokeObjectURL(prev.preview);
+                } catch {
+                    /* ignore */
+                }
+            }
+            return { ...prev, image: null, preview: '' };
+        });
+        if (editingBanner) setStripPromotionImg(true);
+    };
+
     return (
         <div className="space-y-10 min-h-screen pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    <div className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-[0.2em] mb-3">
+                    <div className="flex items-center gap-2 text-indigo-600 font-black text-xs tracking-[0.2em] mb-3">
                         <div className="w-8 h-[2px] bg-indigo-600 rounded-full" />
                         Promotional Banners
                     </div>
@@ -163,9 +186,10 @@ export default function BannersList() {
                     onClick={() => {
                         setEditingBanner(null);
                         setFormData({ level: 1, order: 1, redirectLink: '', image: null, preview: '' });
+                        setStripPromotionImg(false);
                         setIsModalOpen(true);
                     }}
-                    className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest"
+                    className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 tracking-widest"
                 >
                     <Plus size={18} />
                     Deploy New Banner
@@ -187,16 +211,16 @@ export default function BannersList() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h3 className="text-xl font-black text-slate-900">{level.name}</h3>
-                                    <p className="text-slate-400 text-xs font-bold uppercase tracking-tight mt-1">{level.description}</p>
+                                    <p className="text-slate-400 text-xs font-bold tracking-tight mt-1">{level.description}</p>
                                 </div>
-                                <div className="text-[10px] font-black text-slate-400 bg-slate-100 px-3 py-1 rounded-lg">
+                                <div className="text-xs font-black text-slate-400 bg-slate-100 px-3 py-1 rounded-lg">
                                     {levelBanners.length} ACTIVE
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {levelBanners.length === 0 ? (
-                                    <div className="lg:col-span-3 h-32 border-2 border-dashed border-slate-100 rounded-[2rem] flex items-center justify-center text-slate-300 font-bold text-xs uppercase tracking-widest">
+                                    <div className="lg:col-span-3 h-32 border-2 border-dashed border-slate-100 rounded-[2rem] flex items-center justify-center text-slate-300 font-bold text-xs tracking-widest">
                                         No banners deployed for this level
                                     </div>
                                 ) : (
@@ -218,7 +242,7 @@ export default function BannersList() {
                                             />
                                             <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-between translate-y-4 group-hover:translate-y-0 transition-transform">
                                                 <div className="text-white">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Priority</p>
+                                                    <p className="text-xs font-black tracking-widest opacity-60">Priority</p>
                                                     <p className="text-lg font-black">{banner.order}</p>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -248,31 +272,42 @@ export default function BannersList() {
             {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
+                    <div className="admin-modal-scroll z-[100]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                            className="admin-modal-backdrop"
                             onClick={() => setIsModalOpen(false)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden"
+                            className="admin-modal-panel-host relative w-full max-w-lg overflow-hidden rounded-[2rem] bg-white shadow-2xl sm:rounded-[3rem]"
                         >
-                            <form onSubmit={handleSubmit} className="p-10 space-y-8">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-black text-slate-900">
-                                        {editingBanner ? 'Refine Banner' : 'New Deployment'}
-                                    </h2>
-                                    <ImageIcon className="text-indigo-600" />
+                            <form onSubmit={handleSubmit} className="p-6 space-y-8 sm:p-10">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <ImageIcon className="h-8 w-8 shrink-0 text-indigo-600 sm:h-9 sm:w-9" />
+                                        <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
+                                            {editingBanner ? 'Refine Banner' : 'New Deployment'}
+                                        </h2>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="shrink-0 rounded-2xl bg-slate-50 p-3 text-slate-500 transition-all hover:bg-slate-100 hover:text-slate-800"
+                                        aria-label="Close"
+                                    >
+                                        <X size={22} />
+                                    </button>
                                 </div>
 
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Placement Level</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Placement Level</label>
                                         <select
                                             value={formData.level}
                                             onChange={(e) => setFormData({ ...formData, level: e.target.value })}
@@ -283,7 +318,7 @@ export default function BannersList() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Display Priority (Order)</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Display Priority (Order)</label>
                                         <input
                                             type="number"
                                             value={formData.order}
@@ -294,7 +329,7 @@ export default function BannersList() {
 
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between pl-1">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Redirect Link</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest">Redirect Link</label>
                                             <button
                                                 type="button"
                                                 onClick={() => setShowLinkHelp(!showLinkHelp)}
@@ -320,15 +355,15 @@ export default function BannersList() {
                                                     className="overflow-hidden"
                                                 >
                                                     <div className="mt-2 p-4 bg-indigo-50 border border-indigo-100 rounded-2xl space-y-2">
-                                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">How links work:</p>
+                                                        <p className="text-xs font-black text-indigo-600 tracking-wider">How links work:</p>
                                                         <div className="space-y-3">
                                                             <div>
-                                                                <p className="text-[11px] font-bold text-slate-700 mb-0.5">Internal Redirection</p>
-                                                                <p className="text-[10px] text-slate-500 leading-relaxed">Use relative paths like <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">/shop</code> or <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">/shop?category=5</code> to link to pages inside your store.</p>
+                                                                <p className="text-sm font-bold text-slate-700 mb-0.5">Internal Redirection</p>
+                                                                <p className="text-xs text-slate-500 leading-relaxed">Use relative paths like <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">/shop</code> or <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">/shop?category=5</code> to link to pages inside your store.</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[11px] font-bold text-slate-700 mb-0.5">External Promotion</p>
-                                                                <p className="text-[10px] text-slate-500 leading-relaxed">Use full URLs starting with <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">https://</code> to link to partner sites. These will automatically open in a new tab.</p>
+                                                                <p className="text-sm font-bold text-slate-700 mb-0.5">External Promotion</p>
+                                                                <p className="text-xs text-slate-500 leading-relaxed">Use full URLs starting with <code className="bg-white px-1 py-0.5 rounded border border-indigo-100">https://</code> to link to partner sites. These will automatically open in a new tab.</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -338,9 +373,9 @@ export default function BannersList() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Asset Upload</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Asset Upload</label>
                                         <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-2">
-                                            <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                                            <p className="text-xs font-black text-amber-800 tracking-wider mb-1">Image size (before adding)</p>
                                             <p className="text-xs font-semibold text-amber-900">
                                                 {(() => {
                                                     const spec = getBannerSpecForLevel(formData.level);
@@ -365,31 +400,77 @@ export default function BannersList() {
                                                         <div className={cn('relative w-full max-w-md mx-auto overflow-hidden', PREVIEW_ASPECT_BY_LEVEL[formData.level] || 'aspect-[16/5]')}>
                                                             <Image src={formData.preview} alt="" fill className="object-cover object-center" sizes="(max-width: 768px) 100vw, 28rem" />
                                                         </div>
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-2 block">Preview: same ratio as storefront</span>
+                                                        <span className="text-xs font-bold text-slate-400 tracking-wider mt-2 block">Preview: same ratio as storefront</span>
                                                     </>
                                                 ) : (
                                                     <div className="min-h-[160px] flex flex-col items-center justify-center">
                                                         <Upload className="text-slate-400 mb-2 group-hover:text-indigo-600 transition-colors" />
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Image Asset</span>
+                                                        <span className="text-xs font-black text-slate-400 tracking-widest">Select Image Asset</span>
                                                     </div>
                                                 )}
                                             </label>
+                                            {formData.preview && (
+                                                <button
+                                                    type="button"
+                                                    onClick={clearPromotionPreview}
+                                                    className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg ring-2 ring-white/90 transition hover:bg-rose-700"
+                                                    title="Remove image"
+                                                    aria-label="Remove banner image"
+                                                >
+                                                    <X size={18} strokeWidth={2.5} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
 
                                 <button
                                     disabled={isSubmitting}
-                                    className="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
+                                    className="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-sm tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
                                 >
                                     {isSubmitting ? <Loader2 className="animate-spin" /> : <Layout size={20} />}
                                     <span>{isSubmitting ? 'Processing...' : (editingBanner ? 'Save Changes' : 'Initialize Banner')}</span>
                                 </button>
                             </form>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>
+
+            {bannerCrop.isOpen && bannerCrop.target && (
+                <ImageCropModal
+                    key={bannerCrop.target.src}
+                    open
+                    imageSrc={bannerCrop.target.src}
+                    title="Crop banner"
+                    aspect={getCropAspectForSpec(bannerCrop.target.specKey)}
+                    mimeType={pickOutputMime(bannerCrop.target.mime)}
+                    originalFileName={bannerCrop.target.fileName}
+                    onClose={() => bannerCrop.close()}
+                    onComplete={async (file) => {
+                        const sk = bannerCrop.target.specKey;
+                        const check = validateImageFileSize(file, sk);
+                        if (!check.valid) {
+                            showNotification(check.message, 'error');
+                            bannerCrop.close();
+                            return;
+                        }
+                        setFormData((prev) => {
+                            if (prev.preview?.startsWith?.('blob:')) {
+                                try {
+                                    URL.revokeObjectURL(prev.preview);
+                                } catch {
+                                    /* ignore */
+                                }
+                            }
+                            return { ...prev, image: file, preview: URL.createObjectURL(file) };
+                        });
+                        setStripPromotionImg(false);
+                        bannerCrop.close();
+                    }}
+                />
+            )}
 
             {/* Notification */}
             <AnimatePresence>

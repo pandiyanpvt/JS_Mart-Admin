@@ -1,8 +1,5 @@
-const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL ||
-    (process.env.NODE_ENV === "development"
-        ? "http://localhost:5000/api"
-        : "https://js-mart-backend-production.up.railway.app/api");
+/** Local backend only — matches src/lib/api.js */
+const API_BASE_URL = "http://localhost:5000/api";
 
 function getAuthToken() {
     if (typeof window !== 'undefined') {
@@ -50,9 +47,10 @@ export async function getProducts() {
     }
 }
 
-export async function getProductsPaginated(page = 1, limit = 10) {
+export async function getProductsPaginated(page = 1, limit = 10, statusFilter = 'Active') {
     try {
-        const data = await fetchAPI(`/products/paginated?page=${page}&limit=${limit}`);
+        const status = mapStatusFilterToQuery(statusFilter);
+        const data = await fetchAPI(`/products/paginated?page=${page}&limit=${limit}&isActive=${status}`);
         return {
             products: mapProducts(data.products),
             totalItems: data.totalItems,
@@ -64,6 +62,12 @@ export async function getProductsPaginated(page = 1, limit = 10) {
         return { products: [], totalItems: 0, totalPages: 0, currentPage: 1 };
     }
 }
+
+const mapStatusFilterToQuery = (statusFilter = 'Active') => {
+    if (statusFilter === 'All') return 'all';
+    if (statusFilter === 'Inactive') return '0';
+    return '1';
+};
 
 export async function getProductById(id) {
     try {
@@ -82,7 +86,6 @@ export async function saveProduct(productData) {
         brandId: parseInt(productData.brandId) || 1,
         description: productData.description || productData.shortDescription,
         quantity: 0, // Stocks managed via batches
-        weight: parseFloat(productData.weight) || null,
         price: parseFloat(productData.price),
         isFeatured: productData.isFeatured,
         isReturnable: productData.isReturnable
@@ -110,6 +113,15 @@ export async function updateProduct(productId, productData) {
     });
 }
 
+export async function updateProductStatus(productId, nextActive) {
+    return await fetchAPI(`/products/${productId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            isActive: !!nextActive
+        })
+    });
+}
+
 export async function deleteProduct(productId) {
     await fetchAPI(`/products/${productId}`, { method: 'DELETE' });
     return true;
@@ -123,9 +135,10 @@ export async function getBrands() {
     return await fetchAPI('/brands');
 }
 
-export async function searchProducts(query) {
+export async function searchProducts(query, statusFilter = 'Active') {
     try {
-        const products = await fetchAPI(`/products/search/query?query=${encodeURIComponent(query)}`);
+        const status = mapStatusFilterToQuery(statusFilter);
+        const products = await fetchAPI(`/products/search/query?query=${encodeURIComponent(query)}&isActive=${status}`);
         return mapProducts(products);
     } catch (error) {
         console.error('Error searching products:', error);
@@ -133,9 +146,10 @@ export async function searchProducts(query) {
     }
 }
 
-export async function getProductsByBrand(brandId) {
+export async function getProductsByBrand(brandId, statusFilter = 'Active') {
     try {
-        const products = await fetchAPI(`/products/brand/${brandId}`);
+        const status = mapStatusFilterToQuery(statusFilter);
+        const products = await fetchAPI(`/products/brand/${brandId}?isActive=${status}`);
         return mapProducts(products);
     } catch (error) {
         console.error('Error fetching products by brand:', error);
@@ -143,9 +157,10 @@ export async function getProductsByBrand(brandId) {
     }
 }
 
-export async function getProductsByCategory(categoryId) {
+export async function getProductsByCategory(categoryId, statusFilter = 'Active') {
     try {
-        const products = await fetchAPI(`/products/category/${categoryId}`);
+        const status = mapStatusFilterToQuery(statusFilter);
+        const products = await fetchAPI(`/products/category/${categoryId}?isActive=${status}`);
         return mapProducts(products);
     } catch (error) {
         console.error('Error fetching products by category:', error);
@@ -163,22 +178,47 @@ export async function getProductsByPriceRange(min, max) {
     }
 }
 
+/** Resolves category label from various API/Sequelize JSON shapes (used by mapProduct and raw API rows). */
+export function pickCategoryName(p) {
+    const raw =
+        p.product_category?.category ??
+        p.productCategory?.category ??
+        p.ProductCategory?.category;
+    const s = raw != null ? String(raw).trim() : '';
+    return s || 'General';
+}
+
+export function pickBrandName(p) {
+    const raw = p.brand?.brand ?? p.Brand?.brand;
+    const s = raw != null ? String(raw).trim() : '';
+    return s || 'No Brand';
+}
+
 function mapProduct(p) {
+    const isActive =
+        typeof p.isActive === 'boolean'
+            ? p.isActive
+            : p.isActive === 1 || p.isActive === '1'
+                ? true
+                : typeof p.status === 'string'
+                    ? p.status.toLowerCase() === 'active'
+                    : true; // backend list endpoints already fetch active rows by default
+
     return {
         id: p.id,
         name: p.productName,
         sku: `PROD-${p.id}`,
-        category: p.product_category?.category || 'General',
+        category: pickCategoryName(p),
         categoryId: p.productCategoryId,
-        brand: p.brand?.brand || 'No Brand',
+        brand: pickBrandName(p),
         brandId: p.brandId,
         price: p.price,
         stock: p.quantity,
         description: p.description,
-        weight: p.weight,
         images: p.images || [],
         image: p.images?.[0]?.productImg || null,
-        status: p.isActive ? 'active' : 'archived',
+        status: isActive ? 'active' : 'archived',
+        isActive,
         unit: 'pcs',
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,

@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { resolveProductImageUrl } from '@/lib/productImage';
 
 export default function DeliveryAgentDashboard() {
     const { logout } = useAuth();
@@ -109,7 +110,7 @@ export default function DeliveryAgentDashboard() {
     }
 
     return (
-        <div className="max-w-md mx-auto space-y-6 pb-20">
+        <div className="w-full min-w-0 max-w-full space-y-6 pb-20">
             {/* Header */}
             <div className="flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md py-4 z-10 border-b border-slate-100 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
                 <div>
@@ -191,13 +192,13 @@ export default function DeliveryAgentDashboard() {
                             >
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                        <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full tracking-wider">
                                             #{order.id}
                                         </span>
                                         <h3 className="font-bold text-slate-900 mt-1">{order.user?.fullName}</h3>
                                     </div>
                                     <span className={cn(
-                                        "text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border",
+                                        "text-xs font-bold px-2 py-1 rounded-full  tracking-widest border",
                                         order.status === 'SHIPPED' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-amber-50 text-amber-600 border-amber-100"
                                     )}>
                                         {order.status}
@@ -246,13 +247,13 @@ export default function DeliveryAgentDashboard() {
                             >
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                        <span className="text-xs font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full tracking-wider">
                                             RETURN REQUEST #{pickup.id}
                                         </span>
                                         <h3 className="font-bold text-slate-900 mt-1">{pickup.user?.fullName}</h3>
                                     </div>
                                     <span className={cn(
-                                        "text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-widest border",
+                                        "text-xs font-bold px-2 py-1 rounded-full  tracking-widest border",
                                         pickup.status === 'PICKUP_ASSIGNED' ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
                                     )}>
                                         {pickup.status.replace('_', ' ')}
@@ -274,7 +275,7 @@ export default function DeliveryAgentDashboard() {
                                     </div>
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-3 text-sm">
-                                            <div className="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-bold">
+                                            <div className="px-2 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold">
                                                 ID: {pickup.orderId}
                                             </div>
                                         </div>
@@ -290,19 +291,20 @@ export default function DeliveryAgentDashboard() {
             {/* Modal/Verification Overlay */}
             <AnimatePresence>
                 {(selectedOrder || selectedPickup) && (
-                    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center p-0 sm:p-4">
+                    <div className="admin-modal-scroll z-[60]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center !p-0 sm:!p-4 md:!p-6">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => { setSelectedOrder(null); setSelectedPickup(null); }}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                            className="admin-modal-backdrop"
                         />
                         <motion.div
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
-                            className="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh]"
+                            className="admin-modal-panel-host relative w-full max-w-lg overflow-y-auto rounded-t-[2.5rem] bg-white shadow-2xl sm:rounded-[2.5rem]"
                         >
                             <div className="p-6 sm:p-8 space-y-6">
                                 {/* Modal Header */}
@@ -311,8 +313,10 @@ export default function DeliveryAgentDashboard() {
                                         {activeTab === 'deliveries' ? 'Deliver Order' : 'Pickup Return'}
                                     </h2>
                                     <button
+                                        type="button"
                                         onClick={() => { setSelectedOrder(null); setSelectedPickup(null); }}
                                         className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                                        aria-label="Close"
                                     >
                                         <X size={24} />
                                     </button>
@@ -328,7 +332,7 @@ export default function DeliveryAgentDashboard() {
                                             {activeTab === 'deliveries' ? <Package size={24} /> : <CornerUpLeft size={24} />}
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{activeTab === 'deliveries' ? 'Order ID' : 'Return ID'}</p>
+                                            <p className="text-xs font-black text-slate-400 tracking-widest">{activeTab === 'deliveries' ? 'Order ID' : 'Return ID'}</p>
                                             <p className="text-lg font-bold text-slate-900">
                                                 #{activeTab === 'deliveries' ? selectedOrder?.id : selectedPickup?.id}
                                             </p>
@@ -339,7 +343,7 @@ export default function DeliveryAgentDashboard() {
                                         <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100">
                                             <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
                                                 <img
-                                                    src={selectedPickup.product.images?.[0]?.productImg || '/placeholder.png'}
+                                                    src={resolveProductImageUrl(selectedPickup.product.images?.[0]?.productImg)}
                                                     alt="Product"
                                                     className="w-full h-full object-cover"
                                                 />
@@ -390,7 +394,7 @@ export default function DeliveryAgentDashboard() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Lock size={18} className={activeTab === 'deliveries' ? "text-emerald-600" : "text-purple-600"} />
-                                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Verification OTP</h3>
+                                        <h3 className="text-sm font-bold text-slate-900 tracking-wider">Verification OTP</h3>
                                     </div>
                                     <p className="text-xs text-slate-500">Ask the customer for the 6-digit OTP assigned to this {activeTab === 'deliveries' ? 'delivery' : 'pickup'}.</p>
 
@@ -446,6 +450,7 @@ export default function DeliveryAgentDashboard() {
                                 </button>
                             </div>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

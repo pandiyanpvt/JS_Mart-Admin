@@ -109,11 +109,11 @@ export default function UserSubscriptionsView() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">User / Account</th>
-                                <th className="px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Subscription Plan</th>
-                                <th className="px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Duration</th>
-                                <th className="px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                                <th className="px-6 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">Payment ID</th>
+                                <th className="px-6 py-5 text-sm font-black tracking-widest text-slate-400">User / Account</th>
+                                <th className="px-6 py-5 text-sm font-black tracking-widest text-slate-400">Subscription Plan</th>
+                                <th className="px-6 py-5 text-sm font-black tracking-widest text-slate-400">Duration</th>
+                                <th className="px-6 py-5 text-sm font-black tracking-widest text-slate-400">Status</th>
+                                <th className="px-6 py-5 text-sm font-black tracking-widest text-slate-400">Payment ID</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -122,7 +122,7 @@ export default function UserSubscriptionsView() {
                                     <td colSpan="5" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <Loader2 className="animate-spin text-indigo-600" size={32} />
-                                            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Loading subscriptions...</p>
+                                            <p className="text-slate-500 font-bold tracking-widest text-xs">Loading subscriptions...</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -156,7 +156,7 @@ export default function UserSubscriptionsView() {
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-black text-slate-900">{s.plan?.name || 'Unknown Plan'}</p>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Level {s.plan?.level || 1}</p>
+                                                    <p className="text-xs text-slate-400 font-bold tracking-widest">Level {s.plan?.level || 1}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -168,7 +168,7 @@ export default function UserSubscriptionsView() {
                                                     <span className="text-slate-300">→</span>
                                                     <p className="text-xs font-bold text-indigo-600">{new Date(s.endDate).toLocaleDateString()}</p>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">
+                                                <div className="flex items-center gap-2 text-xs text-slate-400 font-bold tracking-widest pl-1">
                                                     <Clock size={10} />
                                                     Created: {new Date(s.createdAt).toLocaleDateString()}
                                                 </div>
@@ -176,7 +176,7 @@ export default function UserSubscriptionsView() {
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className={cn(
-                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border",
+                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black  tracking-widest border",
                                                 s.status === 'ACTIVE'
                                                     ? "bg-emerald-50 border-emerald-100 text-emerald-600"
                                                     : s.status === 'CANCELLED'

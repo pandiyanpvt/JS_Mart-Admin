@@ -13,7 +13,6 @@ import {
     RefreshCw,
     User,
     Calendar,
-    Tag,
     Hash,
     ShieldCheck,
     Clock,
@@ -23,6 +22,7 @@ import {
     ChevronRight,
     Upload
 } from 'lucide-react';
+import { resolveProductImageUrl } from '@/lib/productImage';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -130,7 +130,7 @@ export default function StockLogsList() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                 >
-                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm uppercase tracking-widest mb-2">
+                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm tracking-widest mb-2">
                         <div className="w-8 h-[2px] bg-indigo-600 rounded-full" />
                         Audit Trail
                     </div>
@@ -151,7 +151,7 @@ export default function StockLogsList() {
                     </button>
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 uppercase tracking-widest"
+                        className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 tracking-widest"
                     >
                         <Upload size={18} className="rotate-180" strokeWidth={3} />
                         <span>Export Data</span>
@@ -167,7 +167,7 @@ export default function StockLogsList() {
                 className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden"
             >
                 <div className="p-8 border-b border-slate-50 bg-slate-50/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="relative flex-1 max-w-md">
+                    <div className="relative min-w-0 flex-1 max-w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                         <input
                             type="text"
@@ -189,12 +189,12 @@ export default function StockLogsList() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Batch ID</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Product Reference</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Supplier</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Transaction</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Audit & Record</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Account Shift</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Batch ID</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Product Reference</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Supplier</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Transaction</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Audit & Record</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em] text-right">Account Shift</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -217,7 +217,7 @@ export default function StockLogsList() {
                                             <td className="px-6 py-6">
                                                 <div>
                                                     <p className="text-sm font-black text-slate-900 leading-tight">{log.stockBatch?.batchNumber || 'N/A'}</p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">ID: {log.stockBatchId || '-'}</p>
+                                                    <p className="text-xs text-slate-400 font-bold tracking-tighter mt-0.5">ID: {log.stockBatchId || '-'}</p>
                                                 </div>
                                             </td>
 
@@ -225,17 +225,11 @@ export default function StockLogsList() {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
                                                     <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0">
-                                                        {log.product?.images?.[0]?.productImg ? (
-                                                            <img src={log.product.images[0].productImg} alt="" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-slate-200">
-                                                                <Tag size={18} />
-                                                            </div>
-                                                        )}
+                                                        <img src={resolveProductImageUrl(log.product?.images?.[0]?.productImg)} alt="" className="w-full h-full object-cover" />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-bold text-slate-700 truncate">{log.product?.productName}</p>
-                                                        <p className="text-[10px] text-slate-400 font-black uppercase">Ref: {log.product?.brand?.brand || 'In-House'}</p>
+                                                        <p className="text-xs text-slate-400 font-black">Ref: {log.product?.brand?.brand || 'In-House'}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -250,7 +244,7 @@ export default function StockLogsList() {
                                                         <p className="text-sm font-bold text-slate-700">
                                                             {log.supplier?.name || 'N/A'}
                                                         </p>
-                                                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
+                                                        <p className="text-xs text-slate-400 font-medium tracking-tighter">
                                                             {log.type === 'ADD' ? 'Source' : 'Internal'}
                                                         </p>
                                                     </div>
@@ -263,7 +257,7 @@ export default function StockLogsList() {
                                                     <div className="flex items-center gap-3">
                                                         <div className={cn("w-1 h-1 rounded-full", log.type === 'ADD' ? "bg-emerald-500" : "bg-rose-500")} />
                                                         <span className={cn(
-                                                            "text-[10px] font-black uppercase tracking-tighter",
+                                                            "text-xs font-black  tracking-tighter",
                                                             log.type === 'ADD' ? "text-emerald-600" : "text-rose-600"
                                                         )}>
                                                             {log.type} Operation
@@ -271,7 +265,7 @@ export default function StockLogsList() {
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                                        <span className="text-[11px] font-bold text-slate-500 truncate max-w-[140px]">
+                                                        <span className="text-sm font-bold text-slate-500 truncate max-w-[140px]">
                                                             {log.reason || 'No justification'}
                                                         </span>
                                                     </div>
@@ -286,10 +280,10 @@ export default function StockLogsList() {
                                                             <Clock size={14} />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[11px] font-bold text-slate-900">
+                                                            <p className="text-sm font-bold text-slate-900">
                                                                 {new Date(log.createdAt).toLocaleDateString()}
                                                             </p>
-                                                            <p className="text-[10px] text-slate-400 font-medium">
+                                                            <p className="text-xs text-slate-400 font-medium">
                                                                 {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                         </div>
@@ -309,7 +303,7 @@ export default function StockLogsList() {
                                                             </div>
                                                         )}
                                                         <div className={cn(
-                                                            "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter border",
+                                                            "px-2 py-0.5 rounded-full text-[8px] font-black  tracking-tighter border",
                                                             getTypeStyles(log.approvalStatus)
                                                         )}>
                                                             {log.approvalStatus}
@@ -330,7 +324,7 @@ export default function StockLogsList() {
                                                         </p>
                                                         <div className={cn("w-2 h-2 rounded-full", log.type === 'ADD' ? "bg-emerald-500" : "bg-rose-500")} />
                                                     </div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1.5 tracking-tighter">
+                                                    <p className="text-xs text-slate-400 font-bold mt-1.5 tracking-tighter">
                                                         Shift from {log.previousQuantity} to {log.newQuantity}
                                                     </p>
                                                 </div>
@@ -386,19 +380,20 @@ export default function StockLogsList() {
             {/* Image Popup Modal */}
             <AnimatePresence>
                 {selectedImage && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" data-lock-body-scroll>
+                    <div className="admin-modal-scroll z-[200]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setSelectedImage(null)}
-                            className="absolute inset-0 bg-slate-900/95 backdrop-blur-md"
+                            className="admin-modal-backdrop-heavy"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            className="relative max-w-5xl max-h-[90vh] bg-white rounded-3xl overflow-hidden shadow-2xl"
+                            className="relative z-10 my-auto max-h-[min(90dvh,900px)] w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl sm:rounded-3xl"
                         >
                             <button
                                 onClick={() => setSelectedImage(null)}
@@ -412,6 +407,7 @@ export default function StockLogsList() {
                                 className="w-full h-full object-contain"
                             />
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>
