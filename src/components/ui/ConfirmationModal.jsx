@@ -78,14 +78,17 @@ export function ConfirmationModal({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-                    {/* Backdrop */}
-                    <motion.div
+                <div className="admin-modal-scroll z-[9999]" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <motion.button
+                        type="button"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={loading ? undefined : onClose}
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity"
+                        disabled={loading}
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
 
                     {/* Modal Content */}
@@ -95,7 +98,7 @@ export function ConfirmationModal({
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         transition={{ type: "spring", damping: 25, stiffness: 400 }}
                         className={cn(
-                            "relative w-full max-w-lg overflow-hidden rounded-[2.5rem] bg-white text-left shadow-2xl border border-white/50",
+                            "admin-modal-panel-host relative w-full max-w-lg overflow-hidden rounded-2xl bg-white text-left shadow-2xl border border-white/50 sm:rounded-[2.5rem]",
                             "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/80 before:to-white/20 before:pointer-events-none"
                         )}
                     >
@@ -173,6 +176,7 @@ export function ConfirmationModal({
                             </button>
                         </div>
                     </motion.div>
+                    </div>
                 </div>
             )}
         </AnimatePresence>

@@ -56,10 +56,10 @@ export default function CmsView() {
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight font-display uppercase">Store Content Hub</h1>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight font-display">Store Content Hub</h1>
                     <p className="text-slate-500 text-sm font-medium">Manage banners, landing pages, and customer narratives.</p>
                 </div>
-                <button className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-sm font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest">
+                <button className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-2xl text-sm font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 tracking-widest">
                     <Plus size={18} />
                     <span>Create Content</span>
                 </button>
@@ -72,7 +72,7 @@ export default function CmsView() {
                         key={section.name}
                         onClick={() => setActiveSection(section.name)}
                         className={cn(
-                            "flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                            "flex items-center gap-2.5 px-6 py-3 rounded-2xl text-sm font-black  tracking-widest transition-all whitespace-nowrap",
                             activeSection === section.name
                                 ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
                                 : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
@@ -81,7 +81,7 @@ export default function CmsView() {
                         <section.icon size={18} />
                         <span>{section.name}</span>
                         <span className={cn(
-                            "px-1.5 py-0.5 rounded-md text-[10px]",
+                            "px-1.5 py-0.5 rounded-md text-xs",
                             activeSection === section.name ? "bg-white/20" : "bg-slate-100 text-slate-500"
                         )}>
                             {section.count}
@@ -120,7 +120,7 @@ export default function CmsView() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
                                         <div className="absolute bottom-4 left-4 z-20">
                                             <p className="text-white font-black text-lg drop-shadow-md">{banner.title}</p>
-                                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest">{banner.site}</p>
+                                            <p className="text-white/80 text-xs font-bold tracking-widest">{banner.site}</p>
                                         </div>
                                         {/* Placeholder when no banner image */}
                                         <div className="w-full h-full bg-slate-200 flex items-center justify-center">
@@ -128,7 +128,7 @@ export default function CmsView() {
                                         </div>
                                         <div className="absolute top-4 right-4 z-20 flex gap-2">
                                             <span className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/90 backdrop-blur-md",
+                                                "px-3 py-1 rounded-full text-xs font-black  tracking-widest bg-white/90 backdrop-blur-md",
                                                 banner.status === 'Active' ? "text-emerald-600" : "text-slate-500"
                                             )}>
                                                 {banner.status}
@@ -136,7 +136,7 @@ export default function CmsView() {
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between px-2">
-                                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <div className="flex items-center gap-2 text-xs font-black text-slate-400 tracking-widest">
                                             <Clock size={12} />
                                             <span>Updated {banner.updated}</span>
                                         </div>
@@ -158,7 +158,7 @@ export default function CmsView() {
                                 <div className="p-4 bg-slate-50 rounded-3xl mb-4 group-hover:bg-emerald-50">
                                     <Plus size={32} />
                                 </div>
-                                <span className="font-black uppercase tracking-[0.2em] text-xs">Add Banner</span>
+                                <span className="font-black tracking-[0.2em] text-xs">Add Banner</span>
                             </button>
                         </div>
                     )}
@@ -176,18 +176,18 @@ export default function CmsView() {
                                             <div className="flex items-center gap-3 mt-1">
                                                 <span className="text-xs font-bold text-slate-400">{page.slug}</span>
                                                 <div className="w-1 h-1 bg-slate-200 rounded-full" />
-                                                <span className="text-[10px] font-black text-slate-400 uppercase">Author: {page.author}</span>
+                                                <span className="text-xs font-black text-slate-400">Author: {page.author}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap items-center mt-4 md:mt-0 gap-8">
                                         <div className="flex flex-col items-end">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Views</span>
+                                            <span className="text-xs font-black text-slate-400 tracking-widest">Views</span>
                                             <span className="text-sm font-black text-slate-900">{page.views}</span>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <span className={cn(
-                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                "px-3 py-1 rounded-full text-xs font-black  tracking-widest",
                                                 page.status === 'Published' ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
                                             )}>
                                                 {page.status}
@@ -213,7 +213,7 @@ export default function CmsView() {
                                 <SearchX size={48} className="text-slate-200" />
                             </div>
                             <h3 className="text-lg font-black text-slate-900">No Content Found</h3>
-                            <p className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">Try adjusting your filters or search terms</p>
+                            <p className="text-sm font-medium text-slate-400 mt-1 tracking-widest">Try adjusting your filters or search terms</p>
                         </div>
                     )}
                 </div>
@@ -225,10 +225,10 @@ export default function CmsView() {
                     <Globe size={180} className="text-emerald-500" />
                 </div>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
-                    <div className="space-y-4 max-w-xl">
+                    <div className="min-w-0 flex-1 space-y-4">
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Storefront Live Sync</span>
+                            <span className="text-xs font-black text-emerald-500 tracking-[0.2em]">Storefront Live Sync</span>
                         </div>
                         <h2 className="text-2xl font-black text-white">Visual Content Orchestration</h2>
                         <p className="text-slate-400 text-sm leading-relaxed">
@@ -238,11 +238,11 @@ export default function CmsView() {
                     <div className="flex gap-4">
                         <button className="flex flex-col items-center gap-3 p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 hover:bg-white/10 transition-all text-white group">
                             <Monitor size={32} className="group-hover:scale-110 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Desktop</span>
+                            <span className="text-xs font-black tracking-widest opacity-60">Desktop</span>
                         </button>
                         <button className="flex flex-col items-center gap-3 p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 hover:bg-white/10 transition-all text-white group">
                             <Smartphone size={32} className="group-hover:scale-110 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Mobile</span>
+                            <span className="text-xs font-black tracking-widest opacity-60">Mobile</span>
                         </button>
                     </div>
                 </div>

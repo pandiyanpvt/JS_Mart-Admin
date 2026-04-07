@@ -128,7 +128,7 @@ export default function MessagesView() {
     const unreadCount = messages.filter(m => !m.is_read).length;
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-8 pb-12">
+        <div className="w-full min-w-0 max-w-full space-y-8 pb-12">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
                     <div className="flex items-center gap-3 mb-2">
@@ -137,18 +137,18 @@ export default function MessagesView() {
                         </div>
                         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Contact Messages</h1>
                     </div>
-                    <p className="text-slate-500 text-sm font-medium">Handle customer inquiries and support tickets from your website.</p>
+                    <p className="text-base font-medium text-slate-500">Handle customer inquiries and support tickets from your website.</p>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <div className="hidden lg:flex px-4 py-2 bg-white border border-slate-100 rounded-2xl shadow-sm items-center gap-8">
                         <div className="text-center">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total</p>
+                            <p className="text-xs font-black text-slate-400 tracking-widest leading-none mb-1">Total</p>
                             <p className="text-sm font-black text-slate-900">{messages.length}</p>
                         </div>
                         <div className="w-px h-8 bg-slate-100" />
                         <div className="text-center">
-                            <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest leading-none mb-1">Unread</p>
+                            <p className="text-xs font-black text-amber-500 tracking-widest leading-none mb-1">Unread</p>
                             <p className="text-sm font-black text-slate-900">{unreadCount}</p>
                         </div>
                     </div>
@@ -159,7 +159,7 @@ export default function MessagesView() {
                                 key={s}
                                 onClick={() => setFilterStatus(s)}
                                 className={cn(
-                                    "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                                    "px-5 py-2.5 rounded-xl text-xs font-black  tracking-widest transition-all",
                                     filterStatus === s
                                         ? "bg-white text-slate-900 shadow-sm"
                                         : "text-slate-400 hover:text-slate-600"
@@ -195,7 +195,7 @@ export default function MessagesView() {
                         {loading ? (
                             <div className="flex flex-col items-center justify-center p-20 gap-4">
                                 <Loader2 className="animate-spin text-indigo-600" size={32} />
-                                <p className="text-slate-400 font-bold text-xs uppercase tracking-tighter">Syncing Inbox...</p>
+                                <p className="text-slate-400 font-bold text-xs tracking-tighter">Syncing Inbox...</p>
                             </div>
                         ) : filteredMessages.length > 0 ? (
                             filteredMessages.map((msg) => (
@@ -229,11 +229,11 @@ export default function MessagesView() {
                                                 )}>
                                                     {msg.fullName}
                                                 </p>
-                                                <p className="text-[10px] text-slate-400 font-bold truncate">{msg.emailAddress}</p>
+                                                <p className="text-xs text-slate-400 font-bold truncate">{msg.emailAddress}</p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-1 shrink-0">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                            <span className="text-xs font-bold text-slate-400 tracking-tighter">
                                                 {new Date(msg.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                             </span>
                                             {!msg.is_read && (
@@ -262,7 +262,7 @@ export default function MessagesView() {
                                 </div>
                                 <div>
                                     <p className="text-sm font-black text-slate-900 leading-none mb-1">No Inquiries Found</p>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Inbox is clear</p>
+                                    <p className="text-xs font-bold text-slate-400">Inbox is clear</p>
                                 </div>
                             </div>
                         )}
@@ -289,7 +289,7 @@ export default function MessagesView() {
                                         <div className="flex items-center gap-3 mb-2">
                                             <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{selectedMessage.fullName}</h2>
                                             <div className="flex gap-2">
-                                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-black tracking-widest">
                                                     ID: #{selectedMessage.id}
                                                 </span>
                                             </div>
@@ -302,7 +302,7 @@ export default function MessagesView() {
 
                                 <div className="flex items-center gap-3">
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Received</p>
+                                        <p className="text-xs font-black text-slate-400 tracking-widest leading-none mb-1">Received</p>
                                         <p className="text-xs font-bold text-slate-900">
                                             {new Date(selectedMessage.createdAt).toLocaleString(undefined, {
                                                 month: 'short', day: 'numeric', year: 'numeric',
@@ -312,7 +312,7 @@ export default function MessagesView() {
                                     </div>
                                     <button
                                         onClick={() => setIsReplying(true)}
-                                        className="px-6 py-3.5 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-2 hover:bg-indigo-600 transition-all shadow-xl shadow-slate-100"
+                                        className="px-6 py-3.5 bg-slate-900 text-white rounded-2xl font-black text-xs tracking-[0.2em] flex items-center gap-2 hover:bg-indigo-600 transition-all shadow-xl shadow-slate-100"
                                     >
                                         <Reply size={16} /> Reply
                                     </button>
@@ -321,7 +321,7 @@ export default function MessagesView() {
 
                             {/* Message Bubble Column */}
                             <div className="flex-1 overflow-y-auto p-6 lg:p-10 bg-slate-50/30 custom-scrollbar">
-                                <div className="max-w-4xl mx-auto space-y-12">
+                                <div className="w-full min-w-0 max-w-full space-y-12">
                                     {/* Subject Banner */}
                                     <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
                                         <div className="absolute right-0 top-0 w-24 h-24 bg-indigo-600/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-150" />
@@ -330,7 +330,7 @@ export default function MessagesView() {
                                                 <Hash size={18} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Subject</p>
+                                                <p className="text-xs font-black text-slate-400 tracking-widest leading-none mb-1">Subject</p>
                                                 <h3 className="text-xl font-black text-slate-900 tracking-tight">{selectedMessage.subject}</h3>
                                             </div>
                                         </div>
@@ -348,7 +348,7 @@ export default function MessagesView() {
                                             </p>
                                             <div className="absolute -bottom-6 left-2 flex items-center gap-2">
                                                 <Clock size={12} className="text-slate-300" />
-                                                <span className="text-[10px] font-bold text-slate-400">Sent on {new Date(selectedMessage.createdAt).toLocaleDateString()}</span>
+                                                <span className="text-xs font-bold text-slate-400">Sent on {new Date(selectedMessage.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -366,7 +366,7 @@ export default function MessagesView() {
                                                 </div>
                                             </div>
                                             <div className="max-w-[85%] bg-indigo-600 p-6 lg:p-8 rounded-[2.5rem] rounded-tr-sm shadow-xl shadow-indigo-100 relative text-white">
-                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">{reply.subject}</p>
+                                                <p className="text-xs font-black tracking-widest opacity-60 mb-2">{reply.subject}</p>
                                                 <p className="text-indigo-50 text-base leading-relaxed font-medium whitespace-pre-wrap">
                                                     {reply.body || reply.message}
                                                 </p>
@@ -427,12 +427,12 @@ export default function MessagesView() {
                                         </button>
                                         <div>
                                             <h3 className="text-xl font-black text-slate-900 tracking-tight">Responding to Inquiry</h3>
-                                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Case #{selectedMessage?.id}</p>
+                                            <p className="text-xs font-black text-indigo-500 tracking-widest">Case #{selectedMessage?.id}</p>
                                         </div>
                                     </div>
                                     <div className="hidden sm:flex items-center gap-3">
                                         <div className="text-right">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">To</p>
+                                            <p className="text-xs font-black text-slate-400 tracking-widest leading-none mb-1">To</p>
                                             <p className="text-xs font-bold text-slate-900">{selectedMessage?.emailAddress}</p>
                                         </div>
                                     </div>
@@ -451,13 +451,13 @@ export default function MessagesView() {
                                             </button>
                                             <div>
                                                 <h3 className="text-lg font-black text-slate-900 tracking-tight">Compose Reply</h3>
-                                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">To: {selectedMessage?.emailAddress}</p>
+                                                <p className="text-xs font-black text-indigo-500 tracking-widest">To: {selectedMessage?.emailAddress}</p>
                                             </div>
                                         </div>
                                         <button
                                             type="submit"
                                             disabled={isSending || !replyForm.body}
-                                            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-100"
+                                            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs tracking-widest flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-indigo-100"
                                         >
                                             {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                                             Send Reply
@@ -466,9 +466,9 @@ export default function MessagesView() {
 
                                     {/* Scrollable Form Body */}
                                     <div className="flex-1 overflow-y-auto p-8 lg:p-12 custom-scrollbar">
-                                        <div className="max-w-4xl mx-auto space-y-8">
+                                        <div className="w-full min-w-0 max-w-full space-y-8">
                                             <div className="space-y-3">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Email Subject</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-2">Email Subject</label>
                                                 <input
                                                     type="text"
                                                     required
@@ -479,7 +479,7 @@ export default function MessagesView() {
                                             </div>
 
                                             <div className="space-y-3 pb-20">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Message Content</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-2">Message Content</label>
                                                 <textarea
                                                     required
                                                     rows={15}
@@ -497,14 +497,14 @@ export default function MessagesView() {
                                         <button
                                             type="button"
                                             onClick={() => setIsReplying(false)}
-                                            className="flex-1 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                                            className="flex-1 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs tracking-widest hover:bg-slate-50 transition-all"
                                         >
                                             Cancel & Close
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={isSending || !replyForm.body}
-                                            className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-indigo-600 disabled:opacity-50 shadow-2xl shadow-indigo-100 transition-all"
+                                            className="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-black text-xs tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-indigo-600 disabled:opacity-50 shadow-2xl shadow-indigo-100 transition-all"
                                         >
                                             {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                                             {isSending ? 'Sending...' : 'Deliver Response'}
@@ -525,7 +525,7 @@ export default function MessagesView() {
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, y: 50, x: '-50%' }}
                         className={cn(
-                            "fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl text-white font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 backdrop-blur-md border border-white/20",
+                            "fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl text-white font-black text-xs  tracking-[0.2em] flex items-center gap-3 backdrop-blur-md border border-white/20",
                             notification.type === 'success' ? "bg-emerald-600/90" : "bg-rose-600/90"
                         )}
                     >

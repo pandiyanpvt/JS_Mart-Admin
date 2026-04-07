@@ -6,13 +6,14 @@ import { Plus, Search, Filter, Edit, Trash2, Eye, X, Shield, Lock, CheckCircle2,
 import { cn } from '@/lib/utils';
 import { userRoleService, authService } from '@/lib/api';
 import { useModal } from '@/components/providers/ModalProvider';
+import { StatusToggle } from '@/components/ui/StatusToggle';
 
 const MODULES = ['dashboard', 'products', 'orders', 'users', 'content', 'settings', 'inventory'];
 const ACTIONS = ['read', 'write', 'delete'];
 
 const FormInput = ({ label, name, required = false, placeholder = '', value, onChange }) => (
     <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <label className="text-xs font-bold text-slate-700">{label}</label>
         <input
             type="text"
             required={required}
@@ -30,6 +31,7 @@ export default function RolesView() {
     const [searchQuery, setSearchQuery] = useState('');
     const [roles, setRoles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [togglingId, setTogglingId] = useState(null);
 
     useEffect(() => {
         const user = authService.getCurrentUser();
@@ -60,6 +62,33 @@ export default function RolesView() {
             console.error('Failed to load roles:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleToggleRole = async (role, nextActive) => {
+        if (!role?.id) return;
+        setTogglingId(role.id);
+        const prev = roles;
+        try {
+            setRoles((curr) =>
+                curr.map((r) =>
+                    r.id === role.id ? { ...r, status: nextActive ? 'Active' : 'Inactive' } : r
+                )
+            );
+
+            const apiData = {
+                role: role.name,
+                description: role.description,
+                isActive: !!nextActive,
+                permissions: role.permissions || {},
+            };
+            await userRoleService.update(role.id, apiData);
+        } catch (error) {
+            console.error('Failed to update role status:', error);
+            setRoles(prev);
+            showAlert('Update Failed', error?.message || 'Failed to update status. Please try again.', 'error');
+        } finally {
+            setTogglingId(null);
         }
     };
 
@@ -195,11 +224,11 @@ export default function RolesView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role Name</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Users</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Permissions</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Role Name</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Users</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Permissions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -221,7 +250,7 @@ export default function RolesView() {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-semibold text-slate-900 truncate">{role.name}</p>
-                                                        <p className="text-[10px] text-slate-500 truncate max-w-[200px]">{role.description}</p>
+                                                        <p className="text-xs text-slate-500 truncate max-w-[200px]">{role.description}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -232,18 +261,16 @@ export default function RolesView() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={cn(
-                                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                    role.status === 'Active'
-                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                                        : "bg-slate-50 text-slate-500 border-slate-100"
-                                                )}>
-                                                    {role.status === 'Active' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                                                    {role.status}
-                                                </span>
+                                                <StatusToggle
+                                                    checked={role.status === 'Active'}
+                                                    disabled={togglingId === role.id}
+                                                    onChange={(next) => handleToggleRole(role, next)}
+                                                    onLabel="Active"
+                                                    offLabel="Inactive"
+                                                />
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
                                                     {permCount} Access Points
                                                 </span>
                                             </td>
@@ -285,12 +312,15 @@ export default function RolesView() {
 
             {/* Add/Edit Modal */}
             {editingRole && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingRole(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                    <div className="admin-modal-panel-host relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewRole ? 'Create New Role' : 'Edit Role & Permissions'}</h3>
@@ -308,7 +338,7 @@ export default function RolesView() {
                                         <FormInput label="Role Name" name="name" required placeholder="e.g. Finance Manager" value={editingRole.name} onChange={handleRoleFieldChange} />
                                     </div>
                                     <div className="sm:col-span-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingRole.status}
                                             onChange={e => handleRoleFieldChange('status', e.target.value)}
@@ -326,7 +356,7 @@ export default function RolesView() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                                         <Lock size={16} className="text-slate-500" />
-                                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Permission Settings</h4>
+                                        <h4 className="text-sm font-bold text-slate-900 tracking-wide">Permission Settings</h4>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -386,17 +416,21 @@ export default function RolesView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* View Modal (Simple Read-only version of Edit) */}
             {viewRole && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewRole(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[80vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[80vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{viewRole.name}</h3>
@@ -407,7 +441,7 @@ export default function RolesView() {
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6">
-                            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-slate-900 tracking-wide mb-4 flex items-center gap-2">
                                 <Key size={16} className="text-emerald-500" />
                                 Active Permissions
                             </h4>
@@ -420,7 +454,7 @@ export default function RolesView() {
                                             <p className="text-sm font-bold text-slate-800 capitalize mb-2">{module}</p>
                                             <div className="flex flex-wrap gap-1">
                                                 {actions.map(action => (
-                                                    <span key={action} className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px] uppercase font-bold text-slate-500">
+                                                    <span key={action} className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-xs font-bold text-slate-500">
                                                         {action}
                                                     </span>
                                                 ))}
@@ -438,6 +472,7 @@ export default function RolesView() {
                                 Close View
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

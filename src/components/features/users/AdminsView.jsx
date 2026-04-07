@@ -7,10 +7,11 @@ import { useRouter } from 'next/navigation';
 import { userService, userRoleService, authService } from '@/lib/api';
 import * as XLSX from 'xlsx';
 import { useModal } from '@/components/providers/ModalProvider';
+import { StatusToggle } from '@/components/ui/StatusToggle';
 
 const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
     <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <label className="text-xs font-bold text-slate-700">{label}</label>
         <input
             type={type}
             required={required}
@@ -37,6 +38,7 @@ export default function AdminsView() {
     const [isNewAdmin, setIsNewAdmin] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [togglingId, setTogglingId] = useState(null);
 
     useEffect(() => {
         const user = authService.getCurrentUser();
@@ -77,6 +79,7 @@ export default function AdminsView() {
                         emailAddress: u.emailAddress,
                         userRoleId: u.userRoleId,
                         role: roleObj ? roleObj.role : 'Unknown',
+                        isActive: !!u.isActive,
                         status: u.isActive ? 'Active' : 'Inactive',
                         lastLogin: u.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : 'Never',
                         permissions: ['all'], // Placeholder
@@ -116,6 +119,7 @@ export default function AdminsView() {
                         emailAddress: u.emailAddress,
                         userRoleId: u.userRoleId,
                         role: roleObj ? roleObj.role : 'Unknown',
+                        isActive: !!u.isActive,
                         status: u.isActive ? 'Active' : 'Inactive',
                         lastLogin: u.updatedAt ? new Date(u.updatedAt).toLocaleDateString() : 'Never',
                         permissions: ['all'],
@@ -217,6 +221,36 @@ export default function AdminsView() {
         });
     };
 
+    const handleToggleAdmin = async (admin, nextActive) => {
+        if (!admin?.id) return;
+        setTogglingId(admin.id);
+        const prev = admins;
+        try {
+            setAdmins((curr) =>
+                curr.map((a) =>
+                    a.id === admin.id
+                        ? { ...a, isActive: !!nextActive, status: nextActive ? 'Active' : 'Inactive' }
+                        : a
+                )
+            );
+
+            const apiData = {
+                fullName: admin.fullName,
+                emailAddress: admin.emailAddress,
+                phoneNumber: admin.phoneNumber || '0000000000',
+                userRoleId: parseInt(admin.userRoleId),
+                isActive: !!nextActive,
+            };
+            await userService.update(admin.id, apiData);
+        } catch (error) {
+            console.error('Failed to update admin status:', error);
+            setAdmins(prev);
+            showAlert('Update Failed', error?.message || 'Failed to update status. Please try again.', 'error');
+        } finally {
+            setTogglingId(null);
+        }
+    };
+
     const handleExport = () => {
         const dataToExport = admins.map(a => ({
             'ID': a.id,
@@ -295,11 +329,11 @@ export default function AdminsView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Last Login</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">User</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Role</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Last Login</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -334,7 +368,7 @@ export default function AdminsView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 "bg-slate-50 text-slate-600 border-slate-100"
                                             )}>
                                                 <ShieldCheck size={12} />
@@ -342,15 +376,13 @@ export default function AdminsView() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
-                                                admin.status === 'Active'
-                                                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                                    : "bg-slate-50 text-slate-500 border-slate-100"
-                                            )}>
-                                                {admin.status === 'Active' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                                                {admin.status}
-                                            </span>
+                                            <StatusToggle
+                                                checked={admin.status === 'Active'}
+                                                disabled={togglingId === admin.id}
+                                                onChange={(next) => handleToggleAdmin(admin, next)}
+                                                onLabel="Active"
+                                                offLabel="Inactive"
+                                            />
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -397,12 +429,15 @@ export default function AdminsView() {
 
             {/* View Modal */}
             {viewAdmin && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewAdmin(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">Admin Profile</h3>
@@ -421,12 +456,12 @@ export default function AdminsView() {
                                     <h4 className="text-xl font-bold text-slate-900">{viewAdmin.fullName || viewAdmin.name}</h4>
                                     <p className="text-xs text-slate-500">{viewAdmin.emailAddress}</p>
                                     <div className="flex gap-2 mt-1">
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border bg-slate-50 text-slate-600 border-slate-100">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tracking-wide border bg-slate-50 text-slate-600 border-slate-100">
                                             <ShieldCheck size={10} />
                                             {viewAdmin.role}
                                         </span>
                                         <span className={cn(
-                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold  tracking-wide border",
                                             viewAdmin.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                                         )}>
                                             {viewAdmin.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
@@ -440,14 +475,14 @@ export default function AdminsView() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Mail className="text-emerald-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Email Address</p>
+                                        <p className="text-xs font-bold text-slate-500">Email Address</p>
                                         <p className="text-sm font-medium text-slate-900">{viewAdmin.emailAddress}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Calendar className="text-amber-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Last Login</p>
+                                        <p className="text-xs font-bold text-slate-500">Last Login</p>
                                         <p className="text-sm font-medium text-slate-900">{viewAdmin.lastLogin}</p>
                                     </div>
                                 </div>
@@ -462,17 +497,21 @@ export default function AdminsView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingAdmin && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingAdmin(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewAdmin ? 'Add Admin User' : 'Edit Admin User'}</h3>
@@ -508,7 +547,7 @@ export default function AdminsView() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Role</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Role</label>
                                         <select
                                             value={editingAdmin.userRoleId}
                                             onChange={e => setEditingAdmin({ ...editingAdmin, userRoleId: e.target.value })}
@@ -527,7 +566,7 @@ export default function AdminsView() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingAdmin.status}
                                             onChange={e => setEditingAdmin({ ...editingAdmin, status: e.target.value })}
@@ -541,7 +580,7 @@ export default function AdminsView() {
                                         <>
                                             <div className="sm:col-span-2 relative">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-xs font-bold text-slate-700 uppercase">Temporary Password</label>
+                                                    <label className="text-xs font-bold text-slate-700">Temporary Password</label>
                                                     <div className="relative">
                                                         <input
                                                             type={showPassword ? 'text' : 'password'}
@@ -561,7 +600,7 @@ export default function AdminsView() {
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="absolute top-0 right-0 text-[10px] text-amber-600 font-medium flex items-center gap-1">
+                                                <div className="absolute top-0 right-0 text-xs text-amber-600 font-medium flex items-center gap-1">
                                                     <Lock size={10} />
                                                     Required for new users
                                                 </div>
@@ -590,6 +629,7 @@ export default function AdminsView() {
                                 <span>{isSaving ? 'Saving...' : (isNewAdmin ? 'Create Admin' : 'Save Changes')}</span>
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

@@ -9,7 +9,6 @@ import {
     CheckCircle2,
     AlertTriangle,
     TrendingUp,
-    Box,
     Hash,
     Layers,
     History,
@@ -17,10 +16,14 @@ import {
     Camera
 } from 'lucide-react';
 
+import { resolveProductImageUrl } from '@/lib/productImage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { productService, stockService, stockLogService } from '@/lib/api';
-import { IMAGE_SPECS } from '@/lib/imageSpecs';
+import { IMAGE_SPECS, validateImageFileSize, getCropAspectForSpec } from '@/lib/imageSpecs';
+import { pickOutputMime } from '@/lib/cropImage';
+import ImageCropModal from '@/components/ui/ImageCropModal';
+import { useSingleImageCrop } from '@/hooks/useSingleImageCrop';
 import Image from 'next/image';
 import Link from 'next/link';
 import * as XLSX from 'xlsx';
@@ -28,6 +31,7 @@ import NumberInputNoScroll from '@/components/ui/NumberInputNoScroll';
 
 
 export default function StocksList() {
+    const evidenceCrop = useSingleImageCrop();
     const [searchQuery, setSearchQuery] = useState('');
     const [allBatches, setAllBatches] = useState([]);
     const [allProducts, setAllProducts] = useState([]);
@@ -89,15 +93,15 @@ export default function StocksList() {
     };
 
     const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setEvidencePhoto(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setEvidencePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        const { valid, message } = validateImageFileSize(file, 'evidencePhoto');
+        if (!valid) {
+            showNotification(message, 'error');
+            return;
         }
+        evidenceCrop.open(file, 'evidencePhoto');
     };
 
 
@@ -196,7 +200,7 @@ export default function StocksList() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                 >
-                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm uppercase tracking-widest mb-2">
+                    <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm tracking-widest mb-2">
                         <div className="w-8 h-[2px] bg-indigo-600 rounded-full" />
                         Unified Warehouse Management
                     </div>
@@ -211,14 +215,14 @@ export default function StocksList() {
                 >
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all shadow-sm uppercase tracking-widest"
+                        className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all shadow-sm tracking-widest"
                     >
                         <Upload size={18} className="rotate-180" />
                         <span>Export Data</span>
                     </button>
                     <Link
                         href="/stocks/add"
-                        className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 uppercase tracking-widest"
+                        className="flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 tracking-widest"
                     >
                         <Plus size={18} strokeWidth={3} />
                         <span>Procure New Batch</span>
@@ -243,9 +247,9 @@ export default function StocksList() {
                                 <stat.icon size={22} />
                             </div>
                             <div>
-                                <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{stat.title}</p>
+                                <p className="text-slate-500 text-xs font-bold tracking-wider">{stat.title}</p>
                                 <h3 className="text-2xl font-black text-slate-900 mt-1">{stat.value}</h3>
-                                <div className="text-[10px] text-slate-400 font-medium mt-2 flex items-center gap-1">
+                                <div className="text-xs text-slate-400 font-medium mt-2 flex items-center gap-1">
                                     <div className="w-1 h-1 rounded-full bg-slate-300" />
                                     {stat.trend}
                                 </div>
@@ -262,7 +266,7 @@ export default function StocksList() {
                 className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden"
             >
                 <div className="p-8 border-b border-slate-50 bg-slate-50/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="relative flex-1 max-w-md">
+                    <div className="relative min-w-0 flex-1 max-w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                         <input
                             type="text"
@@ -284,11 +288,11 @@ export default function StocksList() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Batch ID</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Product Reference</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Procurement Detail</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Created</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Available</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Batch ID</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Product Reference</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Procurement Detail</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em]">Created</th>
+                                    <th className="px-8 py-5 text-xs font-black text-slate-400 tracking-[0.2em] text-right">Available</th>
                                 </tr>
                             </thead>
 
@@ -306,18 +310,18 @@ export default function StocksList() {
                                                     </div>
                                                     <div>
                                                         <p className="text-base font-black text-slate-900 leading-tight">{batch.batchNumber}</p>
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">DB-ID: {batch.id}</p>
+                                                        <p className="text-xs text-slate-400 font-bold tracking-tighter mt-0.5">DB-ID: {batch.id}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
                                                     <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0">
-                                                        {batch.product?.images?.[0] ? <Image src={batch.product.images[0].productImg} alt="" fill sizes="40px" className="object-cover" /> : <Box size={18} className="absolute inset-0 m-auto text-slate-200" />}
+                                                        <Image src={resolveProductImageUrl(batch.product?.images?.[0]?.productImg)} alt="" fill sizes="40px" className="object-cover" />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-bold text-slate-700 truncate">{batch.product?.productName}</p>
-                                                        <p className="text-[10px] text-slate-400 font-black uppercase">Ref: {batch.product?.brand?.brand || 'In-House'}</p>
+                                                        <p className="text-xs text-slate-400 font-black">Ref: {batch.product?.brand?.brand || 'In-House'}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -325,13 +329,13 @@ export default function StocksList() {
                                                 <div className="space-y-1.5">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                                        <span className="text-[9px] font-black text-slate-400 uppercase w-12 tracking-tighter">Purchase</span>
-                                                        <span className="text-[11px] font-black text-emerald-600">${parseFloat(batch.purchasePrice).toFixed(2)}</span>
+                                                        <span className="text-xs font-black text-slate-400 w-12 tracking-tighter">Purchase</span>
+                                                        <span className="text-sm font-black text-emerald-600">${parseFloat(batch.purchasePrice).toFixed(2)}</span>
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         <div className={cn("w-1 h-1 rounded-full", batch.expiryDate && new Date(batch.expiryDate) < new Date() ? "bg-rose-500 animate-pulse" : "bg-indigo-400")} />
-                                                        <span className="text-[9px] font-black text-slate-400 uppercase w-12 tracking-tighter">Expiry</span>
-                                                        <span className={cn("text-[11px] font-black", batch.expiryDate && new Date(batch.expiryDate) < new Date() ? "text-rose-600" : "text-slate-900")}>
+                                                        <span className="text-xs font-black text-slate-400 w-12 tracking-tighter">Expiry</span>
+                                                        <span className={cn("text-sm font-black", batch.expiryDate && new Date(batch.expiryDate) < new Date() ? "text-rose-600" : "text-slate-900")}>
                                                             {batch.expiryDate || 'N/A'}
                                                         </span>
                                                     </div>
@@ -343,14 +347,14 @@ export default function StocksList() {
                                                         <Hash size={14} />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[11px] font-bold text-slate-900">
+                                                        <p className="text-sm font-bold text-slate-900">
                                                             {new Date(batch.createdAt).toLocaleDateString('en-US', {
                                                                 month: 'short',
                                                                 day: 'numeric',
                                                                 year: 'numeric'
                                                             })}
                                                         </p>
-                                                        <p className="text-[10px] text-slate-400 font-medium">
+                                                        <p className="text-xs text-slate-400 font-medium">
                                                             {new Date(batch.createdAt).toLocaleTimeString('en-US', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit'
@@ -365,7 +369,7 @@ export default function StocksList() {
                                                         <p className="text-lg font-black text-slate-900 leading-none">{batch.quantity}</p>
                                                         <div className={cn("w-2 h-2 rounded-full", batch.quantity > 10 ? "bg-emerald-500" : "bg-rose-500")} />
                                                     </div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1.5 tracking-tighter">pcs available</p>
+                                                    <p className="text-xs text-slate-400 font-bold mt-1.5 tracking-tighter">pcs available</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -382,9 +386,10 @@ export default function StocksList() {
             {/* Adjust Stock Modal */}
             <AnimatePresence>
                 {isAdjustOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" data-lock-body-scroll>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setIsAdjustOpen(false)} />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative w-full max-w-xl bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-scroll z-[100]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="admin-modal-backdrop" onClick={() => setIsAdjustOpen(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="admin-modal-panel-host relative w-full max-w-xl overflow-hidden rounded-[2rem] bg-white shadow-2xl sm:rounded-[3rem] flex flex-col">
                             <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white z-20 shrink-0">
                                 <h2 className="text-2xl font-black text-slate-900">Stock Removal</h2>
                                 <button onClick={() => setIsAdjustOpen(false)} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-all"><X size={20} /></button>
@@ -392,17 +397,17 @@ export default function StocksList() {
                             <div className="overflow-y-auto flex-1 min-h-0 custom-scrollbar">
                                 <form onSubmit={handleAdjustmentSubmit} className="p-10 pb-20 space-y-8">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Volume to Remove</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Volume to Remove</label>
                                         <NumberInputNoScroll required placeholder="Qty" value={adjustment.quantity} onChange={(e) => setAdjustment({ ...adjustment, quantity: e.target.value })} className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all" />
                                     </div>
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest pl-1 flex items-center gap-2">
+                                        <label className="text-xs font-black text-rose-500 tracking-widest pl-1 flex items-center gap-2">
                                             <Camera size={14} />
                                             Photo Evidence Required
                                         </label>
                                         <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 mb-2">
-                                            <p className="text-[9px] font-black text-amber-800 uppercase tracking-wider">Image size (before adding)</p>
-                                            <p className="text-[10px] font-semibold text-amber-900">Max {IMAGE_SPECS.evidencePhoto.maxFileSizeLabel}. {IMAGE_SPECS.evidencePhoto.formats}.</p>
+                                            <p className="text-xs font-black text-amber-800 tracking-wider">Image size (before adding)</p>
+                                            <p className="text-xs font-semibold text-amber-900">Max {IMAGE_SPECS.evidencePhoto.maxFileSizeLabel}. {IMAGE_SPECS.evidencePhoto.formats}.</p>
                                         </div>
                                         <div className="relative">
                                             <input
@@ -432,7 +437,17 @@ export default function StocksList() {
                                                     <img src={evidencePreview} alt="Evidence" className="w-full h-full object-cover" />
                                                     <button
                                                         type="button"
-                                                        onClick={() => { setEvidencePhoto(null); setEvidencePreview(null); }}
+                                                        onClick={() => {
+                                                            if (evidencePreview?.startsWith?.('blob:')) {
+                                                                try {
+                                                                    URL.revokeObjectURL(evidencePreview);
+                                                                } catch {
+                                                                    /* ignore */
+                                                                }
+                                                            }
+                                                            setEvidencePhoto(null);
+                                                            setEvidencePreview(null);
+                                                        }}
                                                         className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full backdrop-blur-md hover:bg-black/70 transition-all"
                                                     >
                                                         <X size={16} />
@@ -443,7 +458,7 @@ export default function StocksList() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Removal Context</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Removal Context</label>
                                         <select required value={adjustment.type} onChange={(e) => setAdjustment({ ...adjustment, type: e.target.value })} className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black outline-none appearance-none">
                                             <option value="REMOVE">Normal Removal</option>
                                             <option value="EXPIRED">Item Expiry</option>
@@ -453,19 +468,53 @@ export default function StocksList() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Official Justification</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Official Justification</label>
                                         <textarea required rows="3" placeholder="Explain the inventory shift..." value={adjustment.reason} onChange={(e) => setAdjustment({ ...adjustment, reason: e.target.value })} className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black outline-none resize-none" />
                                     </div>
 
-                                    <button disabled={isSubmitting} className="w-full py-5 bg-rose-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-rose-700 transition-all shadow-xl shadow-rose-100">
+                                    <button disabled={isSubmitting} className="w-full py-5 bg-rose-600 text-white rounded-3xl font-black text-sm tracking-widest hover:bg-rose-700 transition-all shadow-xl shadow-rose-100">
                                         {isSubmitting ? 'Processing...' : 'Submit for Approval'}
                                     </button>
                                 </form>
                             </div>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>
+
+            {evidenceCrop.isOpen && evidenceCrop.target && (
+                <ImageCropModal
+                    key={evidenceCrop.target.src}
+                    open
+                    imageSrc={evidenceCrop.target.src}
+                    title="Crop evidence photo"
+                    aspect={getCropAspectForSpec('evidencePhoto')}
+                    mimeType={pickOutputMime(evidenceCrop.target.mime)}
+                    originalFileName={evidenceCrop.target.fileName}
+                    onClose={() => evidenceCrop.close()}
+                    onComplete={(file) => {
+                        const check = validateImageFileSize(file, 'evidencePhoto');
+                        if (!check.valid) {
+                            showNotification(check.message, 'error');
+                            evidenceCrop.close();
+                            return;
+                        }
+                        setEvidencePreview((prev) => {
+                            if (prev?.startsWith?.('blob:')) {
+                                try {
+                                    URL.revokeObjectURL(prev);
+                                } catch {
+                                    /* ignore */
+                                }
+                            }
+                            return URL.createObjectURL(file);
+                        });
+                        setEvidencePhoto(file);
+                        evidenceCrop.close();
+                    }}
+                />
+            )}
 
             {/* Notification */}
             <AnimatePresence>

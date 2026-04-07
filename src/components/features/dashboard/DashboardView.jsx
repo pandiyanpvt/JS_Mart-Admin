@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { SalesChart } from "@/components/features/dashboard/SalesChart";
 import {
     ShoppingBag,
-    TrendingUp,
     Users,
     ArrowUpRight,
     ChevronRight,
@@ -22,6 +21,7 @@ import {
     Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { resolveProductImageUrl } from "@/lib/productImage";
 import Image from "next/image";
 import Link from 'next/link';
 import { dashboardService } from "@/lib/api";
@@ -62,22 +62,22 @@ export default function DashboardView() {
         const s = summary?.stats;
         if (!s) return [];
         return [
-            { title: 'Total Revenue', value: formatCurrency(s.totalRevenue), change: '—', type: 'up' },
-            { title: 'Total Expenses', value: formatCurrency(s.totalExpenses), change: '—', type: 'down' },
-            { title: 'Net Profit', value: formatCurrency(s.netProfit), change: '—', type: Number(s.netProfit) >= 0 ? 'up' : 'down' },
-            { title: 'Customers', value: String(s.totalCustomers || 0), change: '—', type: 'up' },
-            { title: 'Pending Orders', value: String(s.ordersByStatus?.PENDING || 0), change: '—', type: 'up' },
-            { title: 'Orders (YTD)', value: String(s.totalOrders || 0), change: '—', type: 'up' },
+            { title: 'Total Revenue', value: formatCurrency(s.totalRevenue) },
+            { title: 'Total Expenses', value: formatCurrency(s.totalExpenses) },
+            { title: 'Net Profit', value: formatCurrency(s.netProfit) },
+            { title: 'Customers', value: String(s.totalCustomers || 0) },
+            { title: 'Pending Orders', value: String(s.ordersByStatus?.PENDING || 0) },
+            { title: 'Orders (YTD)', value: String(s.totalOrders || 0) },
         ];
     }, [summary]);
 
     return (
-        <div className="space-y-8 pb-12">
+        <div className="w-full min-w-0 space-y-8 pb-12">
             {/* Upper Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-                    <p className="text-slate-500 text-sm">Overview of your store's performance.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+                    <p className="text-base text-slate-500">Overview of your store's performance.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link href="/products/add" className="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
@@ -94,26 +94,13 @@ export default function DashboardView() {
                         <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
                             <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
                             <div className="mt-4 h-8 w-40 bg-slate-100 rounded animate-pulse" />
-                            <div className="mt-6 h-2 w-full bg-slate-100 rounded animate-pulse" />
                         </div>
                     ))
                 ) : (
                     summaryStats.map((stat, i) => (
                         <div key={i} className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-xs font-bold text-slate-500 uppercase">{stat.title}</span>
-                                <div className={cn(
-                                    "flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full",
-                                    stat.type === 'up' ? "text-emerald-700 bg-emerald-50" : "text-rose-700 bg-rose-50"
-                                )}>
-                                    <TrendingUp size={12} />
-                                    {stat.change}
-                                </div>
-                            </div>
+                            <span className="text-xs font-bold text-slate-500 block mb-4">{stat.title}</span>
                             <h3 className="text-2xl font-bold text-slate-900">{stat.value}</h3>
-                            <div className="mt-4 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full bg-emerald-500" style={{ width: '70%' }} />
-                            </div>
                         </div>
                     ))
                 )}
@@ -134,7 +121,7 @@ export default function DashboardView() {
                         </div>
                         <div>
                             <p className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{link.title}</p>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">Manage</p>
+                            <p className="text-xs font-bold text-slate-400">Manage</p>
                         </div>
                     </Link>
                 ))}
@@ -170,11 +157,7 @@ export default function DashboardView() {
                             {(summary?.topProducts || []).slice(0, 4).map((product) => (
                                 <div key={product.id} className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-lg bg-slate-100 relative overflow-hidden shrink-0 border border-slate-100">
-                                        {product.image ? (
-                                            <Image src={product.image} alt={product.name} fill sizes="48px" className="object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-300"><ImageIcon size={16} /></div>
-                                        )}
+                                        <Image src={resolveProductImageUrl(product.image)} alt={product.name} fill sizes="48px" className="object-cover" />
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-slate-900 truncate">{product.name}</p>
@@ -215,10 +198,10 @@ export default function DashboardView() {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50/50">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Order ID</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Customer</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Amount</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Order ID</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Customer</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Amount</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">

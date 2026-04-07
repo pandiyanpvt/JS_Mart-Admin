@@ -71,7 +71,7 @@ export default function OffersView() {
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+            <label className="text-xs font-bold text-slate-700">{label}</label>
             <input
                 type={type}
                 required={required}
@@ -128,12 +128,12 @@ export default function OffersView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Section Name</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Layout Type</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Position</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Schedule</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Section Name</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Layout Type</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Position</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Schedule</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -153,7 +153,7 @@ export default function OffersView() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{offer.title}</p>
-                                                    <p className="text-[10px] text-slate-500 truncate max-w-[200px]">{offer.description}</p>
+                                                    <p className="text-xs text-slate-500 truncate max-w-[200px]">{offer.description}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -161,7 +161,7 @@ export default function OffersView() {
                                             <span className="text-sm font-medium text-slate-600">{offer.layout}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
                                                 {offer.position}
                                             </span>
                                         </td>
@@ -173,7 +173,7 @@ export default function OffersView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 offer.status === 'Active'
                                                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                     : "bg-slate-50 text-slate-500 border-slate-100"
@@ -229,12 +229,15 @@ export default function OffersView() {
 
             {/* View Modal */}
             {viewOffer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewOffer(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">Section Overview</h3>
@@ -257,20 +260,20 @@ export default function OffersView() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Layout Style</span>
+                                    <span className="text-xs font-bold text-slate-500">Layout Style</span>
                                     <p className="text-sm font-bold text-slate-900">{viewOffer.layout}</p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Page Position</span>
+                                    <span className="text-xs font-bold text-slate-500">Page Position</span>
                                     <p className="text-sm font-bold text-slate-900">{viewOffer.position}</p>
                                 </div>
                             </div>
 
                             <div className="p-4 rounded-xl border border-slate-200 bg-white">
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Active Status</span>
+                                    <span className="text-xs font-bold text-slate-500">Active Status</span>
                                     <span className={cn(
-                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                         viewOffer.status === 'Active'
                                             ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                             : "bg-slate-50 text-slate-500 border-slate-100"
@@ -280,7 +283,7 @@ export default function OffersView() {
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Frequency/Schedule</span>
+                                    <span className="text-xs font-bold text-slate-500">Frequency/Schedule</span>
                                     <span className="text-sm font-medium text-slate-900">{viewOffer.schedule}</span>
                                 </div>
                             </div>
@@ -294,17 +297,21 @@ export default function OffersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingOffer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingOffer(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewOffer ? 'New Offer Section' : 'Edit Section'}</h3>
@@ -319,7 +326,7 @@ export default function OffersView() {
                             <form id="offer-form" onSubmit={handleSave} className="space-y-6">
                                 <FormInput label="Section Title" name="title" required placeholder="e.g. Flash Deals" />
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Description</label>
+                                    <label className="text-xs font-bold text-slate-700">Description</label>
                                     <textarea
                                         value={editingOffer.description}
                                         onChange={e => setEditingOffer({ ...editingOffer, description: e.target.value })}
@@ -330,7 +337,7 @@ export default function OffersView() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Layout Type</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Layout Type</label>
                                         <select
                                             value={editingOffer.layout}
                                             onChange={e => setEditingOffer({ ...editingOffer, layout: e.target.value })}
@@ -343,7 +350,7 @@ export default function OffersView() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Page Position</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Page Position</label>
                                         <select
                                             value={editingOffer.position}
                                             onChange={e => setEditingOffer({ ...editingOffer, position: e.target.value })}
@@ -358,7 +365,7 @@ export default function OffersView() {
                                         <FormInput label="Schedule" name="schedule" placeholder="e.g. Daily, Weekly" />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingOffer.status}
                                             onChange={e => setEditingOffer({ ...editingOffer, status: e.target.value })}
@@ -391,17 +398,21 @@ export default function OffersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -423,6 +434,7 @@ export default function OffersView() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

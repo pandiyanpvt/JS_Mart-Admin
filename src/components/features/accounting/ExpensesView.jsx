@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, Calendar, DollarSign, Tag, FileText, Loader2, Download, Filter, XCircle, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Calendar, DollarSign, Tag, FileText, Loader2, Download, Filter, XCircle, X, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { expenseService } from '@/lib/api';
 import * as XLSX from 'xlsx';
@@ -19,7 +19,7 @@ const EXPENSE_CATEGORIES = [
 
 const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
     <div className="space-y-1.5 text-left">
-        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <label className="text-xs font-bold text-slate-700">{label}</label>
         <input
             type={type}
             required={required}
@@ -186,11 +186,11 @@ export default function ExpensesView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Expense Item</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Category</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Amount</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Date</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Expense Item</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Category</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Amount</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Date</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -216,7 +216,7 @@ export default function ExpensesView() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-600 border border-slate-200">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold tracking-wide bg-slate-100 text-slate-600 border border-slate-200">
                                                 {exp.category}
                                             </span>
                                         </td>
@@ -255,16 +255,22 @@ export default function ExpensesView() {
 
             {/* Add/Edit Modal */}
             {editingExpense && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div onClick={() => setEditingExpense(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
+                        onClick={() => setEditingExpense(null)}
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
+                    />
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{editingExpense.id ? 'Edit Expense' : 'Log New Expense'}</h3>
                                 <p className="text-sm text-slate-500">Record an outgoing company transaction.</p>
                             </div>
-                            <button onClick={() => setEditingExpense(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-500">
-                                <XCircle size={24} />
+                            <button type="button" onClick={() => setEditingExpense(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-500" aria-label="Close">
+                                <X size={22} />
                             </button>
                         </div>
 
@@ -279,7 +285,7 @@ export default function ExpensesView() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5 text-left">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Category</label>
+                                    <label className="text-xs font-bold text-slate-700">Category</label>
                                     <select
                                         value={editingExpense.category}
                                         onChange={e => setEditingExpense({ ...editingExpense, category: e.target.value })}
@@ -309,7 +315,7 @@ export default function ExpensesView() {
                                     onChange={e => setEditingExpense({ ...editingExpense, expenseDate: e.target.value })}
                                 />
                                 <div className="space-y-1.5 text-left">
-                                    <label className="text-xs font-bold text-slate-700 uppercase">Payment Method</label>
+                                    <label className="text-xs font-bold text-slate-700">Payment Method</label>
                                     <select
                                         value={editingExpense.paymentMethod}
                                         onChange={e => setEditingExpense({ ...editingExpense, paymentMethod: e.target.value })}
@@ -323,7 +329,7 @@ export default function ExpensesView() {
                             </div>
 
                             <div className="space-y-1.5 text-left">
-                                <label className="text-xs font-bold text-slate-700 uppercase block">Description</label>
+                                <label className="text-xs font-bold text-slate-700 block">Description</label>
                                 <textarea
                                     value={editingExpense.description || ''}
                                     onChange={e => setEditingExpense({ ...editingExpense, description: e.target.value })}
@@ -352,14 +358,29 @@ export default function ExpensesView() {
                             </div>
                         </form>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div onClick={() => setDeleteId(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 text-center">
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
+                        onClick={() => setDeleteId(null)}
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
+                    />
+                    <div className="admin-modal-panel-host relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl sm:rounded-3xl">
+                        <button
+                            type="button"
+                            onClick={() => setDeleteId(null)}
+                            className="absolute right-3 top-3 rounded-xl bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-800"
+                            aria-label="Close"
+                        >
+                            <X size={20} />
+                        </button>
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -369,6 +390,7 @@ export default function ExpensesView() {
                             <button onClick={() => setDeleteId(null)} className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold transition-all text-sm hover:bg-slate-50">Cancel</button>
                             <button onClick={confirmDelete} className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold transition-all text-sm shadow-lg">Confirm Delete</button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

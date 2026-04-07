@@ -84,10 +84,10 @@ export default function LoginPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.8 }}
                     >
-                        <h1 className="text-6xl font-extrabold text-slate-900 mb-4 tracking-tight">JS Mart</h1>
-                        <div className="h-1.5 w-32 bg-indigo-600 mx-auto mb-8 rounded-full shadow-sm" />
-                        <p className="text-2xl text-slate-500 font-medium tracking-[0.2em] uppercase">
-                            Admin
+                        <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-3 tracking-tight">JS Mart</h1>
+                        <div className="h-1 w-24 bg-indigo-600 mx-auto mb-6 rounded-full" />
+                        <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xs mx-auto">
+                            Admin dashboard — manage catalog, orders, and operations.
                         </p>
                     </motion.div>
                 </div>
@@ -101,9 +101,10 @@ export default function LoginPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <div className="mb-12 text-center lg:text-left">
-                            <h2 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">Welcome Back</h2>
-                            <p className="text-slate-500 text-lg mb-6">Sign in to manage your store.</p>
+                        <div className="mb-10 text-center lg:text-left space-y-2">
+                            <p className="text-xs font-semibold tracking-[0.2em] text-indigo-600">Sign in</p>
+                            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">Welcome back</h2>
+                            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">Enter your work email and password to continue.</p>
 
                             {error && (
                                 <motion.div
@@ -120,7 +121,7 @@ export default function LoginPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+                                <label className="text-sm font-semibold text-slate-800 ml-1">Email</label>
                                 <div className="relative group">
                                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                                     <input
@@ -136,12 +137,12 @@ export default function LoginPage() {
 
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-1">
-                                    <label className="text-sm font-semibold text-slate-700">Password</label>
+                                    <label className="text-sm font-semibold text-slate-800">Password</label>
                                     <Link
                                         href="/forgot-password"
-                                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                                        className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 underline-offset-4 hover:underline transition-colors"
                                     >
-                                        Forgot password?
+                                        Forgot?
                                     </Link>
                                 </div>
                                 <div className="relative group">
@@ -184,10 +185,10 @@ export default function LoginPage() {
                         </form>
 
                         <div className="mt-10 text-center">
-                            <p className="text-slate-500">
-                                Need an account?{" "}
-                                <Link href="/register" className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors border-b-2 border-indigo-600/10 hover:border-indigo-600">
-                                    Contact Support
+                            <p className="text-slate-600 text-sm">
+                                Need access?{" "}
+                                <Link href="/register" className="font-semibold text-indigo-600 hover:text-indigo-700 underline-offset-4 hover:underline transition-colors">
+                                    Contact support
                                 </Link>
                             </p>
                         </div>
@@ -195,7 +196,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="absolute bottom-8 text-center w-full text-sm font-medium text-slate-400">
+                <div className="absolute bottom-8 text-center w-full text-xs sm:text-sm text-slate-400">
                     © {new Date().getFullYear()} JS Mart. All rights reserved.
                 </div>
             </div>

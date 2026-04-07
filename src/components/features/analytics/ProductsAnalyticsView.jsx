@@ -57,7 +57,7 @@ export default function ProductsAnalyticsView() {
                             key={range}
                             onClick={() => setActiveRange(range)}
                             className={cn(
-                                "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
+                                "px-4 py-2 text-xs font-black  tracking-widest rounded-xl transition-all",
                                 activeRange === range
                                     ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
                                     : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
@@ -137,11 +137,11 @@ export default function ProductsAnalyticsView() {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50/50">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Product</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Sold</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Avg Price</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Discount</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Revenue</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500">Product</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Sold</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Avg Price</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Discount</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Revenue</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">

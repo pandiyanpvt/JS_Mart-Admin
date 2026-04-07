@@ -16,6 +16,7 @@ export function useBodyScrollLockObserver() {
         const lock = () => {
             if (isCurrentlyLocked) return;
             scrollY = window.scrollY;
+            document.documentElement.style.overflow = 'hidden';
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
             document.body.style.left = '0';
@@ -27,6 +28,7 @@ export function useBodyScrollLockObserver() {
 
         const unlock = () => {
             if (!isCurrentlyLocked) return;
+            document.documentElement.style.overflow = '';
             document.body.style.overflow = '';
             document.body.style.position = '';
             document.body.style.left = '';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { forwardRef } from 'react';
-import { Package } from 'lucide-react';
+import { resolveProductImageUrl } from '@/lib/productImage';
 
 const OrderReceipt = forwardRef(({ order }, ref) => {
     const toNumber = (value) => {
@@ -67,7 +67,7 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
             <div style={{ borderBottom: '2px solid #0f172a', paddingBottom: '24px', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                     <div>
-                        <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px', margin: 0 }}>JS MART</h1>
+                        <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#0f172a', marginBottom: '4px', margin: 0 }}>JS Mart</h1>
                         <p style={{ fontSize: '14px', color: '#475569', margin: 0 }}>Order Receipt</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -77,11 +77,11 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
                     <div>
-                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Order Date</p>
+                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: '', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Order Date</p>
                         <p style={{ fontWeight: '600', color: '#0f172a', margin: 0 }}>{formatDate(order?.dateTime)}</p>
                     </div>
                     <div>
-                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Status</p>
+                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: '', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Status</p>
                         <p style={{ fontWeight: '600', color: '#0f172a', margin: 0 }}>{order?.status || 'N/A'}</p>
                     </div>
                 </div>
@@ -90,7 +90,7 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
             {/* Customer & Shipping Info */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #e2e8f0' }}>
                 <div>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Customer Information</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Customer Information</h3>
                     <div style={{ fontSize: '14px', color: '#334155' }}>
                         <p style={{ fontWeight: '600', margin: '4px 0' }}>{customerName}</p>
                         <p style={{ margin: '4px 0' }}>{customerEmail}</p>
@@ -98,7 +98,7 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
                     </div>
                 </div>
                 <div>
-                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Shipping Address</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Shipping Address</h3>
                     <div style={{ fontSize: '14px', color: '#334155' }}>
                         {addressLine1 || city || state || postalCode || country ? (
                             <>
@@ -120,7 +120,7 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
 
             {/* Order Items */}
             <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px', margin: '0 0 16px 0' }}>Order Items</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em', marginBottom: '16px', margin: '0 0 16px 0' }}>Order Items</h3>
                 <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                     <colgroup>
                         <col style={{ width: '45%' }} />
@@ -130,10 +130,10 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
                     </colgroup>
                     <thead>
                         <tr style={{ borderBottom: '2px solid #0f172a' }}>
-                            <th style={{ textAlign: 'left', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Item</th>
-                            <th style={{ textAlign: 'center', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</th>
-                            <th style={{ textAlign: 'right', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Price</th>
-                            <th style={{ textAlign: 'right', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Total</th>
+                            <th style={{ textAlign: 'left', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em' }}>Item</th>
+                            <th style={{ textAlign: 'center', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em' }}>Qty</th>
+                            <th style={{ textAlign: 'right', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Price</th>
+                            <th style={{ textAlign: 'right', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#0f172a', textTransform: '', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -142,24 +142,11 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
                                 <td style={{ padding: '12px 8px', wordWrap: 'break-word' }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                                         <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '4px', border: '1px solid #e2e8f0', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            {(() => {
-                                                const imgRaw = detail.product?.images?.[0]?.productImg || detail.product?.productImage;
-                                                const imgSrc = imgRaw
-                                                    ? (imgRaw.startsWith('http') ? imgRaw : (imgRaw.startsWith('/') ? imgRaw : `/${imgRaw}`))
-                                                    : '';
-
-                                                if (!imgSrc || imgSrc === '/') {
-                                                    return <Package size={20} color="#cbd5e1" />;
-                                                }
-
-                                                return (
-                                                    <img
-                                                        src={imgSrc}
-                                                        alt={detail.product?.productName}
-                                                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
-                                                    />
-                                                );
-                                            })()}
+                                            <img
+                                                src={resolveProductImageUrl(detail.product?.images?.[0]?.productImg || detail.product?.productImage)}
+                                                alt={detail.product?.productName}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }}
+                                            />
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a', margin: 0, wordBreak: 'break-word' }}>{detail.product?.productName || 'Unknown Product'}</p>
@@ -186,7 +173,7 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
             {/* Discount Breakdown */}
             {Array.isArray(order?.discountLogs) && order.discountLogs.length > 0 && (
                 <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Discount Breakdown</h3>
+                    <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: '#166534', textTransform: '', letterSpacing: '0.05em', marginBottom: '8px', margin: '0 0 8px 0' }}>Discount Breakdown</h3>
                     {order.discountLogs.map((log, idx) => (
                         <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#166534', margin: '4px 0' }}>
                             <span>{log.description}</span>
@@ -237,11 +224,11 @@ const OrderReceipt = forwardRef(({ order }, ref) => {
             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginBottom: '24px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
                     <div>
-                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Payment Method</p>
+                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: '', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Payment Method</p>
                         <p style={{ fontWeight: '600', color: '#0f172a', margin: 0 }}>{order.paymentType?.type || 'N/A'}</p>
                     </div>
                     <div>
-                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Payment Status</p>
+                        <p style={{ fontSize: '12px', color: '#64748b', textTransform: '', letterSpacing: '0.05em', marginBottom: '4px', margin: '0 0 4px 0' }}>Payment Status</p>
                         <p style={{ fontWeight: '600', color: '#0f172a', margin: 0 }}>{order.isPaid ? 'Paid' : 'Pending'}</p>
                     </div>
                 </div>

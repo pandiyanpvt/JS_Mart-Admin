@@ -10,7 +10,7 @@ import { MembershipCard } from './MembershipCard';
 
 const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
     <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <label className="text-xs font-bold text-slate-700">{label}</label>
         <input
             type={type}
             required={required}
@@ -198,12 +198,12 @@ export default function CustomersView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Info</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Stats</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Membership</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Customer</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Contact Info</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Stats</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Membership</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -218,12 +218,12 @@ export default function CustomersView() {
                                     <tr key={customer.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 border border-slate-200 overflow-hidden text-xs font-bold uppercase">
+                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 border border-slate-200 overflow-hidden text-xs font-bold">
                                                     {(customer.fullName || 'U').split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{customer.fullName || customer.emailAddress || 'Unnamed'}</p>
-                                                    <p className="text-[10px] text-slate-500 uppercase">Joined: {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'}</p>
+                                                    <p className="text-xs text-slate-500">Joined: {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -253,7 +253,7 @@ export default function CustomersView() {
                                             {customer.activeSubscription ? (
                                                 <div className="flex flex-col gap-1">
                                                     <span className={cn(
-                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border",
+                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black  tracking-wide border",
                                                         customer.activeSubscription.plan?.level === 2
                                                             ? "bg-amber-50 text-amber-600 border-amber-100"
                                                             : "bg-indigo-50 text-indigo-600 border-indigo-100"
@@ -261,19 +261,19 @@ export default function CustomersView() {
                                                         <Gem size={10} />
                                                         {customer.activeSubscription.plan?.name}
                                                     </span>
-                                                    <span className="text-[9px] text-slate-400 font-bold uppercase pl-1">
+                                                    <span className="text-xs text-slate-400 font-bold pl-1">
                                                         Until {new Date(customer.activeSubscription.endDate).toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">
+                                                <span className="text-xs text-slate-400 font-bold tracking-widest pl-1">
                                                     Free Tier
                                                 </span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 customer.status === 'Active'
                                                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                     : "bg-slate-50 text-slate-500 border-slate-100"
@@ -329,12 +329,15 @@ export default function CustomersView() {
 
             {/* View Modal */}
             {viewCustomer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewCustomer(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">Customer Details</h3>
@@ -354,13 +357,13 @@ export default function CustomersView() {
                                     <p className="text-xs text-slate-500">{viewCustomer.emailAddress}</p>
                                     <div className="flex gap-2 mt-1">
                                         <span className={cn(
-                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold  tracking-wide border",
                                             viewCustomer.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                                         )}>
                                             {viewCustomer.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
                                             {viewCustomer.status}
                                         </span>
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border bg-blue-50 text-blue-700 border-blue-100">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold tracking-wide border bg-blue-50 text-blue-700 border-blue-100">
                                             {viewCustomer.role}
                                         </span>
                                     </div>
@@ -368,11 +371,11 @@ export default function CustomersView() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><ShoppingBag size={12} /> Total Orders</span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><ShoppingBag size={12} /> Total Orders</span>
                                     <p className="font-semibold text-slate-900">{viewCustomer.totalOrders || 0}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><DollarSign size={12} /> Total Spent</span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><DollarSign size={12} /> Total Spent</span>
                                     <p className="font-semibold text-slate-900">${(viewCustomer.totalSpent || 0).toFixed(2)}</p>
                                 </div>
                             </div>
@@ -380,46 +383,46 @@ export default function CustomersView() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Mail className="text-emerald-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Email Address</p>
+                                        <p className="text-xs font-bold text-slate-500">Email Address</p>
                                         <p className="text-sm font-medium text-slate-900">{viewCustomer.emailAddress}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Phone className="text-blue-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Phone Number</p>
+                                        <p className="text-xs font-bold text-slate-500">Phone Number</p>
                                         <p className="text-sm font-medium text-slate-900">{viewCustomer.phoneNumber}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <MapPin className="text-rose-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Address</p>
+                                        <p className="text-xs font-bold text-slate-500">Address</p>
                                         <p className="text-sm font-medium text-slate-900">{viewCustomer.address}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Calendar className="text-amber-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Joined On</p>
+                                        <p className="text-xs font-bold text-slate-500">Joined On</p>
                                         <p className="text-sm font-medium text-slate-900">{viewCustomer.createdAt ? new Date(viewCustomer.createdAt).toLocaleDateString() : (viewCustomer.joinDate ? new Date(viewCustomer.joinDate).toLocaleDateString() : 'N/A')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/50 border border-slate-100">
                                     <Gem className="text-indigo-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Membership</p>
+                                        <p className="text-xs font-bold text-slate-500 tracking-widest">Active Membership</p>
                                         {viewCustomer.activeSubscription ? (
                                             <div className="mt-1 flex items-center justify-between">
                                                 <div>
                                                     <p className="text-sm font-black text-slate-900">{viewCustomer.activeSubscription.plan?.name}</p>
-                                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter mt-0.5">
+                                                    <p className="text-xs text-slate-500 font-bold tracking-tighter mt-0.5">
                                                         Renews: {new Date(viewCustomer.activeSubscription.endDate).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                                 <button
                                                     onClick={() => setShowCardFor(viewCustomer)}
-                                                    className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
+                                                    className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-black tracking-widest hover:bg-indigo-100 transition-all border border-indigo-100"
                                                 >
                                                     <Gem size={12} />
                                                     View Card
@@ -441,17 +444,21 @@ export default function CustomersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingCustomer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingCustomer(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewCustomer ? 'Add Customer' : 'Edit Customer'}</h3>
@@ -473,7 +480,7 @@ export default function CustomersView() {
                                     </div>
                                     <FormInput label="Phone Number" name="phoneNumber" required placeholder="+1 (555) 000-0000" value={editingCustomer.phoneNumber} onChange={handleCustomerFieldChange} />
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingCustomer.status}
                                             onChange={e => handleCustomerFieldChange('status', e.target.value)}
@@ -484,7 +491,7 @@ export default function CustomersView() {
                                         </select>
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Address</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Address</label>
                                         <textarea
                                             value={editingCustomer.address ?? ''}
                                             onChange={e => handleCustomerFieldChange('address', e.target.value)}
@@ -516,17 +523,29 @@ export default function CustomersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl sm:rounded-3xl">
+                        <button
+                            type="button"
+                            onClick={() => setDeleteId(null)}
+                            className="absolute right-3 top-3 rounded-xl bg-slate-100 p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-800"
+                            aria-label="Close"
+                        >
+                            <X size={20} />
+                        </button>
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -548,6 +567,7 @@ export default function CustomersView() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

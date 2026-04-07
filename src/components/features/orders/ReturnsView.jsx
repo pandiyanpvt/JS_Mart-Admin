@@ -9,13 +9,13 @@ import {
     RefreshCw,
     CheckCircle2,
     XCircle,
+    X,
     AlertCircle,
     Eye,
     MoreHorizontal,
     CornerUpLeft,
     FileText,
     DollarSign,
-    PackageX,
     Loader2,
     Truck,
     MapPin,
@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { resolveProductImageUrl, productImageUnoptimized } from '@/lib/productImage';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useModal } from '@/components/providers/ModalProvider';
@@ -251,7 +252,7 @@ export default function ReturnsView() {
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-8 pb-12 font-sans">
+        <div className="w-full min-w-0 max-w-full space-y-8 pb-12 font-sans">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-1">
                 <div>
@@ -324,12 +325,12 @@ export default function ReturnsView() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-slate-100 bg-slate-50/50">
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Product Info</th>
-                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Reason</th>
-                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Amount</th>
-                                <th className="px-6 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-8 py-5 text-xs font-bold text-slate-400 tracking-wider">Product Info</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 tracking-wider">Customer</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 tracking-wider">Reason</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 tracking-wider">Amount</th>
+                                <th className="px-6 py-5 text-xs font-bold text-slate-400 tracking-wider">Status</th>
+                                <th className="px-8 py-5 text-xs font-bold text-slate-400 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -373,17 +374,13 @@ export default function ReturnsView() {
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-4">
                                                     <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                                                        {item.image ? (
-                                                            <Image
-                                                                src={item.image}
-                                                                alt={item.product}
-                                                                fill
-                                                                className="object-cover"
-                                                                unoptimized
-                                                            />
-                                                        ) : (
-                                                            <PackageX size={20} className="text-slate-400" />
-                                                        )}
+                                                        <Image
+                                                            src={resolveProductImageUrl(item.image)}
+                                                            alt={item.product}
+                                                            fill
+                                                            className="object-cover"
+                                                            unoptimized={productImageUnoptimized(resolveProductImageUrl(item.image))}
+                                                        />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-bold text-slate-900 truncate group-hover:text-emerald-700 transition-colors">{item.product}</p>
@@ -393,7 +390,7 @@ export default function ReturnsView() {
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex flex-col gap-0.5">
-                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">{item.orderId}</span>
+                                                    <span className="text-xs font-bold text-slate-400 tracking-tight">{item.orderId}</span>
                                                     <span className="text-sm font-semibold text-slate-700">{item.customer}</span>
                                                 </div>
                                             </td>
@@ -410,7 +407,7 @@ export default function ReturnsView() {
                                             </td>
                                             <td className="px-6 py-5">
                                                 <span className={cn(
-                                                    "inline-flex items-center gap-2 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wide border transform transition-transform group-hover:scale-105",
+                                                    "inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full  tracking-wide border transform transition-transform group-hover:scale-105",
                                                     getStatusStyle(item.status)
                                                 )}>
                                                     <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse",
@@ -458,34 +455,37 @@ export default function ReturnsView() {
 
             {/* Detail Modal */}
             {selectedReturn && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelectedReturn(null)}
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-xl bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]"
+                        className="admin-modal-panel-host relative w-full max-w-xl rounded-[1.5rem] border border-slate-100 bg-white shadow-2xl sm:rounded-[2rem] flex flex-col"
                     >
                         <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between shrink-0">
                             <div>
                                 <h2 className="text-xl font-bold text-slate-900 tracking-tight">Return Request Details</h2>
                                 <div className="flex items-center gap-2 mt-1.5">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">ID: {selectedReturn.id}</span>
+                                    <span className="text-xs font-bold text-slate-400 tracking-widest bg-slate-100 px-2 py-0.5 rounded">ID: {selectedReturn.id}</span>
                                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                                     <span className="text-xs font-medium text-slate-500">{selectedReturn.date}</span>
                                 </div>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => setSelectedReturn(null)}
                                 className="p-2.5 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-slate-600"
+                                aria-label="Close"
                             >
-                                <XCircle size={24} />
+                                <X size={22} />
                             </button>
                         </div>
 
@@ -493,23 +493,19 @@ export default function ReturnsView() {
                             {/* Product Info */}
                             <div className="flex items-center gap-6 p-5 bg-gradient-to-br from-slate-50 to-white rounded-3xl border border-slate-100 shadow-sm">
                                 <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white border border-slate-100 shadow-inner shrink-0 flex items-center justify-center">
-                                    {selectedReturn.image ? (
-                                        <Image
-                                            src={selectedReturn.image}
-                                            alt={selectedReturn.product}
-                                            fill
-                                            className="object-cover"
-                                            unoptimized
-                                        />
-                                    ) : (
-                                        <PackageX size={32} className="text-slate-300" />
-                                    )}
+                                    <Image
+                                        src={resolveProductImageUrl(selectedReturn.image)}
+                                        alt={selectedReturn.product}
+                                        fill
+                                        className="object-cover"
+                                        unoptimized={productImageUnoptimized(resolveProductImageUrl(selectedReturn.image))}
+                                    />
                                 </div>
                                 <div>
                                     <h3 className="text-base font-bold text-slate-900">{selectedReturn.product}</h3>
                                     <p className="text-xs font-medium text-slate-400 mt-1">SKU: {selectedReturn.sku}</p>
                                     <div className="flex items-center gap-2 mt-3">
-                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-lg text-[10px] font-bold uppercase tracking-wide">
+                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-lg text-xs font-bold tracking-wide">
                                             Verified Purchase
                                         </span>
                                     </div>
@@ -519,7 +515,7 @@ export default function ReturnsView() {
                             {/* Evidence Image */}
                             {selectedReturn.evidenceImageUrl && (
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                    <label className="text-xs font-black text-slate-400 tracking-widest mb-3 block flex items-center gap-2">
                                         <Eye size={12} /> Evidence Provided
                                     </label>
                                     <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50 group">
@@ -539,28 +535,28 @@ export default function ReturnsView() {
                             {/* Details Grid */}
                             <div className="grid grid-cols-2 gap-8 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Customer Info</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest mb-1.5 block">Customer Info</label>
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
                                             {selectedReturn.customer.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-slate-700 leading-tight">{selectedReturn.customer}</p>
-                                            <p className="text-[10px] text-slate-400 font-mono mt-0.5">{selectedReturn.orderId}</p>
+                                            <p className="text-xs text-slate-400 font-mono mt-0.5">{selectedReturn.orderId}</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Refund Amount</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-widest mb-1.5 block">Refund Amount</label>
                                     <div className="flex items-baseline gap-1">
                                         <p className="text-2xl font-black text-slate-900">${selectedReturn.amount.toFixed(2)}</p>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase">USD</span>
+                                        <span className="text-xs font-bold text-slate-400">USD</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                <label className="text-xs font-black text-slate-400 tracking-widest mb-3 block flex items-center gap-2">
                                     <AlertCircle size={12} /> Reason for Return
                                 </label>
                                 <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm relative overflow-hidden group">
@@ -587,14 +583,14 @@ export default function ReturnsView() {
                                     <div className="flex flex-col gap-4">
                                         {selectedReturn.original?.deliveryAgent ? (
                                             <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-indigo-100 shadow-sm">
-                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold uppercase">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
                                                     {selectedReturn.original.deliveryAgent.fullName?.charAt(0) || 'A'}
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-sm font-bold text-slate-900">{selectedReturn.original.deliveryAgent.fullName}</p>
                                                     <p className="text-xs text-slate-500">{selectedReturn.original.deliveryAgent.emailAddress}</p>
                                                 </div>
-                                                <div className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-[10px] font-bold">
+                                                <div className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full text-xs font-bold">
                                                     ASSIGNED
                                                 </div>
                                             </div>
@@ -621,7 +617,7 @@ export default function ReturnsView() {
                                                     <CheckCircle2 size={18} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-black text-emerald-800/60 uppercase tracking-widest">OTP Sent to Customer</p>
+                                                    <p className="text-xs font-black text-emerald-800/60 tracking-widest">OTP Sent to Customer</p>
                                                     <p className="text-sm font-bold text-emerald-900">Verification required at pickup</p>
                                                 </div>
                                             </div>
@@ -633,7 +629,7 @@ export default function ReturnsView() {
                             {/* Refund Tracking Timeline */}
                             {refundTracking.length > 0 && (
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                    <label className="text-xs font-black text-slate-400 tracking-widest mb-3 block flex items-center gap-2">
                                         <FileText size={12} /> Return / Refund Log
                                     </label>
                                     <div className="space-y-3">
@@ -662,13 +658,13 @@ export default function ReturnsView() {
                                     <>
                                         <button
                                             onClick={() => handleUpdateStatus(selectedReturn.id, 'Rejected')}
-                                            className="flex-1 py-3.5 bg-white text-rose-600 border border-slate-200 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
+                                            className="flex-1 py-3.5 bg-white text-rose-600 border border-slate-200 rounded-xl text-xs font-black tracking-widest hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm"
                                         >
                                             Reject
                                         </button>
                                         <button
                                             onClick={() => handleUpdateStatus(selectedReturn.id, 'Approved')}
-                                            className="flex-1 py-3.5 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+                                            className="flex-1 py-3.5 bg-emerald-600 text-white rounded-xl text-xs font-black tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
                                         >
                                             Approve Request
                                         </button>
@@ -677,7 +673,7 @@ export default function ReturnsView() {
                                 {selectedReturn.status.toUpperCase() === 'PICKED_UP' && (
                                     <button
                                         onClick={() => handleUpdateStatus(selectedReturn.id, 'Collected')}
-                                        className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-indigo-600 text-white rounded-xl text-xs font-black tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
                                     >
                                         <RefreshCw size={16} />
                                         Received at Warehouse
@@ -686,7 +682,7 @@ export default function ReturnsView() {
                                 {selectedReturn.status.toUpperCase() === 'COLLECTED' && (
                                     <button
                                         onClick={() => handleUpdateStatus(selectedReturn.id, 'Completed')}
-                                        className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl text-xs font-black tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
                                     >
                                         <DollarSign size={16} />
                                         Process Refund
@@ -695,7 +691,7 @@ export default function ReturnsView() {
                                 {(selectedReturn.status.toUpperCase() === 'REJECTED' || selectedReturn.status.toUpperCase() === 'COMPLETED') && (
                                     <button
                                         onClick={() => setSelectedReturn(null)}
-                                        className="flex-1 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md"
+                                        className="flex-1 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-black tracking-widest hover:bg-slate-800 transition-all shadow-md"
                                     >
                                         Close Details
                                     </button>
@@ -703,24 +699,26 @@ export default function ReturnsView() {
                             </div>
                         </div>
                     </motion.div>
+                    </div>
                 </div>
             )}
             {/* Agent Assignment Modal */}
             <AnimatePresence>
                 {assigningAgent && (
-                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div className="admin-modal-scroll z-[70]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setAssigningAgent(null)}
-                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                            className="admin-modal-backdrop"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden"
+                            className="admin-modal-panel-host relative w-full max-w-lg overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white shadow-2xl sm:rounded-[2.5rem]"
                         >
                             <div className="p-8 space-y-6">
                                 <div className="flex items-center justify-between">
@@ -734,15 +732,17 @@ export default function ReturnsView() {
                                         </div>
                                     </div>
                                     <button
+                                        type="button"
                                         onClick={() => setAssigningAgent(null)}
                                         className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                                        aria-label="Close"
                                     >
-                                        <XCircle size={24} />
+                                        <X size={22} />
                                     </button>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Available Delivery Agents</label>
+                                    <label className="text-xs font-black text-slate-400 tracking-[0.2em] ml-1">Available Delivery Agents</label>
                                     <div className="grid gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                         {deliveryAgents.length === 0 ? (
                                             <div className="p-8 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
@@ -779,6 +779,7 @@ export default function ReturnsView() {
                                 </button>
                             </div>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

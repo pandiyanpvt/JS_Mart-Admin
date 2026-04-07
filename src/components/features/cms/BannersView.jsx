@@ -73,7 +73,7 @@ export default function BannersView() {
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+            <label className="text-xs font-bold text-slate-700">{label}</label>
             <input
                 type={type}
                 required={required}
@@ -136,13 +136,13 @@ export default function BannersView() {
                                     <ImageIcon size={48} />
                                 </div>
                                 <div className="absolute top-3 left-3">
-                                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm">
+                                    <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm">
                                         {banner.type}
                                     </span>
                                 </div>
                                 <div className="absolute top-3 right-3">
                                     <span className={cn(
-                                        "px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-sm backdrop-blur-sm flex items-center gap-1",
+                                        "px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm backdrop-blur-sm flex items-center gap-1",
                                         banner.status === 'Active' ? "bg-emerald-500/90 text-white" : "bg-slate-500/90 text-white"
                                     )}>
                                         {banner.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
@@ -200,12 +200,15 @@ export default function BannersView() {
 
             {/* View Modal */}
             {viewBanner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewBanner(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="relative h-64 bg-slate-100 flex items-center justify-center">
                             <ImageIcon size={64} className="text-slate-300" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8 text-white">
@@ -219,14 +222,14 @@ export default function BannersView() {
                         <div className="p-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Link URL</p>
+                                    <p className="text-xs font-bold text-slate-500 mb-1">Link URL</p>
                                     <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
                                         <LinkIcon size={14} />
                                         {viewBanner.link}
                                     </div>
                                 </div>
                                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <p className="text-xs font-bold text-slate-500 uppercase mb-1">Display Order</p>
+                                    <p className="text-xs font-bold text-slate-500 mb-1">Display Order</p>
                                     <p className="text-sm font-bold text-slate-800">Position {viewBanner.order}</p>
                                 </div>
                             </div>
@@ -240,17 +243,21 @@ export default function BannersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingBanner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingBanner(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewBanner ? 'Upload Banner' : 'Edit Banner'}</h3>
@@ -264,7 +271,7 @@ export default function BannersView() {
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">
                             <form id="banner-form" onSubmit={handleSave} className="space-y-6">
                                 <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3 mb-4">
-                                    <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider mb-1">Image size (before adding)</p>
+                                    <p className="text-xs font-black text-amber-800 tracking-wider mb-1">Image size (before adding)</p>
                                     <p className="text-xs font-semibold text-amber-900">{IMAGE_SPECS.banners.width}×{IMAGE_SPECS.banners.height} px recommended, max {IMAGE_SPECS.banners.maxFileSizeLabel}. {IMAGE_SPECS.banners.formats}.</p>
                                 </div>
                                 <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-emerald-400 hover:bg-emerald-50/30 transition-all cursor-pointer group">
@@ -279,7 +286,7 @@ export default function BannersView() {
                                 <FormInput label="Target Link" name="link" placeholder="/collections/summer" />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Banner Type</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Banner Type</label>
                                         <select
                                             value={editingBanner.type}
                                             onChange={e => setEditingBanner({ ...editingBanner, type: e.target.value })}
@@ -292,7 +299,7 @@ export default function BannersView() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Order</label>
+                                            <label className="text-xs font-bold text-slate-700 block mb-1.5">Order</label>
                                             <input
                                                 type="number"
                                                 value={editingBanner.order}
@@ -301,7 +308,7 @@ export default function BannersView() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                            <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                             <select
                                                 value={editingBanner.status}
                                                 onChange={e => setEditingBanner({ ...editingBanner, status: e.target.value })}
@@ -335,17 +342,21 @@ export default function BannersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -367,6 +378,7 @@ export default function BannersView() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

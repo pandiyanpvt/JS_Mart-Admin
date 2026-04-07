@@ -75,7 +75,7 @@ export default function PartnersView() {
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+            <label className="text-xs font-bold text-slate-700">{label}</label>
             <input
                 type={type}
                 required={required}
@@ -132,12 +132,12 @@ export default function PartnersView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Partner</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Performance</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Orders</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Partner</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Contact</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Performance</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Active Orders</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -157,7 +157,7 @@ export default function PartnersView() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{partner.name}</p>
-                                                    <a href={`https://${partner.website}`} target="_blank" rel="noreferrer" className="text-[10px] text-indigo-500 hover:underline truncate block">
+                                                    <a href={`https://${partner.website}`} target="_blank" rel="noreferrer" className="text-xs text-indigo-500 hover:underline truncate block">
                                                         {partner.website}
                                                     </a>
                                                 </div>
@@ -166,7 +166,7 @@ export default function PartnersView() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1">
                                                 <span className="text-xs font-medium text-slate-700">{partner.contactPerson}</span>
-                                                <span className="text-[10px] text-slate-500">{partner.phone}</span>
+                                                <span className="text-xs text-slate-500">{partner.phone}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -183,7 +183,7 @@ export default function PartnersView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 partner.status === 'Active'
                                                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                     : "bg-slate-50 text-slate-500 border-slate-100"
@@ -239,12 +239,15 @@ export default function PartnersView() {
 
             {/* View Modal */}
             {viewPartner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewPartner(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">Partner Details</h3>
@@ -263,13 +266,13 @@ export default function PartnersView() {
                                     <h4 className="text-xl font-bold text-slate-900">{viewPartner.name}</h4>
                                     <div className="flex gap-2 mt-1">
                                         <span className={cn(
-                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold  tracking-wide border",
                                             viewPartner.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                                         )}>
                                             {viewPartner.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
                                             {viewPartner.status}
                                         </span>
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border bg-amber-50 text-amber-700 border-amber-100">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tracking-wide border bg-amber-50 text-amber-700 border-amber-100">
                                             <Star size={10} fill="currentColor" />
                                             {viewPartner.rating} Rating
                                         </span>
@@ -281,7 +284,7 @@ export default function PartnersView() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Phone className="text-blue-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Contact Support</p>
+                                        <p className="text-xs font-bold text-slate-500">Contact Support</p>
                                         <p className="text-sm font-medium text-slate-900">{viewPartner.phone}</p>
                                         <p className="text-xs text-slate-500">Point of Contact: {viewPartner.contactPerson}</p>
                                     </div>
@@ -289,14 +292,14 @@ export default function PartnersView() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Mail className="text-emerald-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Email Address</p>
+                                        <p className="text-xs font-bold text-slate-500">Email Address</p>
                                         <p className="text-sm font-medium text-slate-900">{viewPartner.email}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <Globe className="text-purple-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Website</p>
+                                        <p className="text-xs font-bold text-slate-500">Website</p>
                                         <a href={`https://${viewPartner.website}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-indigo-600 hover:underline">
                                             {viewPartner.website}
                                         </a>
@@ -313,17 +316,21 @@ export default function PartnersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingPartner && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingPartner(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewPartner ? 'Add Delivery Partner' : 'Edit Partner Info'}</h3>
@@ -349,7 +356,7 @@ export default function PartnersView() {
                                         <FormInput label="Website URL" name="website" placeholder="www.company.com" />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingPartner.status}
                                             onChange={e => setEditingPartner({ ...editingPartner, status: e.target.value })}
@@ -382,17 +389,21 @@ export default function PartnersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -414,6 +425,7 @@ export default function PartnersView() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

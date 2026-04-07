@@ -120,7 +120,7 @@ export default function ReviewsView() {
     };
 
     return (
-        <div className="max-w-[1400px] mx-auto space-y-8 pb-20">
+        <div className="w-full min-w-0 max-w-full space-y-8 pb-20">
             {/* Glassmorphism Header */}
             <header className="relative overflow-hidden rounded-[3rem] bg-slate-900 p-8 text-white shadow-2xl">
                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-[100px]" />
@@ -130,10 +130,10 @@ export default function ReviewsView() {
                     <div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 mb-4">
                             <ShieldCheck size={14} className="text-emerald-400" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">Feedback Center</span>
+                            <span className="text-xs font-black tracking-widest text-emerald-100">Feedback Center</span>
                         </div>
                         <h1 className="text-4xl font-black tracking-tight mb-2">Customer Reviews</h1>
-                        <p className="text-slate-400 font-medium max-w-md">
+                        <p className="max-w-full text-base font-medium text-slate-400 lg:max-w-3xl">
                             Monitor, moderate, and gain insights from customer feedback across your entire product catalog.
                         </p>
                     </div>
@@ -148,7 +148,7 @@ export default function ReviewsView() {
                             <div key={i} className="bg-white/5 backdrop-blur-xl border border-white/5 p-4 rounded-3xl text-center min-w-[120px]">
                                 <stat.icon size={20} className={cn("mx-auto mb-2", stat.color)} />
                                 <div className="text-2xl font-black">{stat.value}</div>
-                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</div>
+                                <div className="text-xs font-bold text-slate-500 tracking-widest">{stat.label}</div>
                             </div>
                         ))}
                     </div>
@@ -161,7 +161,7 @@ export default function ReviewsView() {
                 {/* Sidebar Filters */}
                 <div className="xl:col-span-1 space-y-6">
                     <div className="bg-white rounded-[2.5rem] border border-slate-100 p-6 shadow-sm">
-                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <h3 className="text-sm font-black text-slate-900 tracking-widest mb-6 flex items-center gap-2">
                             <Filter size={16} className="text-indigo-600" /> Filter Reviews
                         </h3>
 
@@ -179,7 +179,7 @@ export default function ReviewsView() {
                                 >
                                     <span className="capitalize">{status}</span>
                                     <div className={cn(
-                                        "w-6 h-6 rounded-lg flex items-center justify-center text-[10px]",
+                                        "w-6 h-6 rounded-lg flex items-center justify-center text-xs",
                                         filterStatus === status ? "bg-white/20" : "bg-slate-100 group-hover:bg-slate-200"
                                     )}>
                                         {status === 'all' ? stats.total : status === 'pending' ? stats.pending : stats.approved}
@@ -205,7 +205,7 @@ export default function ReviewsView() {
                             className="w-full pl-16 pr-8 py-6 bg-white border border-slate-100 rounded-[2.5rem] text-sm font-bold shadow-xl shadow-slate-200/50 outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/30 transition-all placeholder:text-slate-300"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
-                            <kbd className="hidden sm:inline-flex items-center gap-1 h-8 px-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black text-slate-400">
+                            <kbd className="hidden sm:inline-flex items-center gap-1 h-8 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-400">
                                 ⌘ K
                             </kbd>
                         </div>
@@ -218,7 +218,7 @@ export default function ReviewsView() {
                                     <div className="w-16 h-16 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin" />
                                     <MessageSquare size={24} className="absolute inset-0 m-auto text-indigo-400 animate-pulse" />
                                 </div>
-                                <p className="mt-6 text-slate-400 font-black uppercase tracking-widest text-[10px]">Processing Database...</p>
+                                <p className="mt-6 text-slate-400 font-black tracking-widest text-xs">Processing Database...</p>
                             </div>
                         ) : filteredReviews.length > 0 ? (
                             <AnimatePresence mode="popLayout">
@@ -242,7 +242,7 @@ export default function ReviewsView() {
                                                         <h4 className="font-black text-slate-900 truncate tracking-tight">
                                                             {usersMap[rev.userId] || rev.user?.fullName || 'Anonymous'}
                                                         </h4>
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-indigo-500 font-bold uppercase tracking-wider">
+                                                        <div className="flex items-center gap-1.5 text-xs text-indigo-500 font-bold tracking-wider">
                                                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                                                             ID: #{rev.userId}
                                                         </div>
@@ -255,7 +255,7 @@ export default function ReviewsView() {
                                                             <Package size={16} />
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Product</p>
+                                                            <p className="text-xs font-black text-slate-400 tracking-widest leading-none mb-1">Product</p>
                                                             <p className="text-xs font-black text-slate-900 truncate">
                                                                 {rev.product?.productName}
                                                             </p>
@@ -264,7 +264,7 @@ export default function ReviewsView() {
                                                     <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
                                                         <div className="flex items-center gap-2">
                                                             <Calendar size={14} className="text-slate-300" />
-                                                            <span className="text-[10px] font-bold text-slate-500">
+                                                            <span className="text-xs font-bold text-slate-500">
                                                                 {new Date(rev.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                             </span>
                                                         </div>
@@ -285,7 +285,7 @@ export default function ReviewsView() {
                                                         </div>
 
                                                         <div className={cn(
-                                                            "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] flex items-center gap-2",
+                                                            "px-4 py-1.5 rounded-full text-xs font-black  tracking-[0.1em] flex items-center gap-2",
                                                             rev.is_approved
                                                                 ? "bg-emerald-50 text-emerald-600"
                                                                 : "bg-amber-50 text-amber-500"
@@ -308,7 +308,7 @@ export default function ReviewsView() {
                                                         {rev.order && (
                                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
                                                                 <Check size={14} className="text-emerald-500" />
-                                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Verified Purchase</span>
+                                                                <span className="text-xs font-black text-emerald-600 tracking-widest">Verified Purchase</span>
                                                             </div>
                                                         )}
                                                         <button className="p-2 text-slate-300 hover:text-indigo-600 transition-colors">
@@ -322,7 +322,7 @@ export default function ReviewsView() {
                                                                 <button
                                                                     onClick={() => handleApproval(rev.id, true)}
                                                                     disabled={isUpdating === rev.id}
-                                                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                                                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-emerald-200 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                                                                 >
                                                                     {isUpdating === rev.id ? <Loader2 size={16} className="animate-spin" /> : <ThumbsUp size={16} />}
                                                                     Approve Feedback
@@ -338,7 +338,7 @@ export default function ReviewsView() {
                                                             <button
                                                                 onClick={() => handleApproval(rev.id, false)}
                                                                 disabled={isUpdating === rev.id}
-                                                                className="flex-1 sm:flex-none px-8 py-3.5 bg-white border border-rose-200 text-rose-600 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-rose-50 disabled:opacity-50"
+                                                                className="flex-1 sm:flex-none px-8 py-3.5 bg-white border border-rose-200 text-rose-600 rounded-2xl font-black text-xs tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-rose-50 disabled:opacity-50"
                                                             >
                                                                 {isUpdating === rev.id ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
                                                                 Unpublish Review
@@ -361,12 +361,12 @@ export default function ReviewsView() {
                                     <MessageSquare size={48} />
                                 </div>
                                 <h3 className="text-2xl font-black text-slate-900 mb-2">No results matching your filter</h3>
-                                <p className="text-slate-400 font-medium max-w-sm mx-auto mb-8">
+                                <p className="mx-auto mb-8 max-w-lg text-base font-medium text-slate-400">
                                     Try adjusting your search terms or filters to find specific customer feedback.
                                 </p>
                                 <button
                                     onClick={() => { setSearchQuery(''); setFilterStatus('all'); }}
-                                    className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all"
+                                    className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs tracking-widest hover:bg-slate-800 transition-all"
                                 >
                                     Reset Filters
                                 </button>
@@ -398,7 +398,7 @@ export default function ReviewsView() {
                                 {notification.type === 'success' ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
                             </div>
                             <div className="flex-1">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-0.5">Notification</p>
+                                <p className="text-xs font-black tracking-widest text-white/60 mb-0.5">Notification</p>
                                 <p className="text-sm font-bold text-white">{notification.message}</p>
                             </div>
                         </div>

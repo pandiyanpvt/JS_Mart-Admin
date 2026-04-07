@@ -10,6 +10,7 @@ import {
     Truck,
     CheckCircle2,
     XCircle,
+    X,
     Clock,
     User,
     MapPin,
@@ -29,6 +30,7 @@ import { useModal } from '@/components/providers/ModalProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { orderService, orderTrackingService, userService } from '@/lib/api';
 import Image from 'next/image';
+import { resolveProductImageUrl, productImageUnoptimized } from '@/lib/productImage';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -410,7 +412,7 @@ export default function OrdersView() {
                             className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow"
                         >
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{status}</span>
+                                <span className="text-xs font-bold text-slate-400 tracking-wider">{status}</span>
                                 {status !== 'All' && getStatusIcon(status)}
                             </div>
                             <p className="text-2xl font-bold text-slate-900">{count}</p>
@@ -459,13 +461,13 @@ export default function OrdersView() {
                     <table className="w-full text-left table-fixed">
                         <thead>
                             <tr className="border-b border-slate-100 bg-slate-50/50">
-                                <th className="w-[110px] px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Order ID</th>
-                                <th className="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Customer</th>
-                                <th className="hidden sm:table-cell w-[110px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Items</th>
-                                <th className="hidden sm:table-cell w-[140px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Total</th>
-                                <th className="w-[120px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                <th className="hidden lg:table-cell w-[190px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Date</th>
-                                <th className="w-[110px] px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
+                                <th className="w-[110px] px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider">Order ID</th>
+                                <th className="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider">Customer</th>
+                                <th className="hidden sm:table-cell w-[110px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider">Items</th>
+                                <th className="hidden sm:table-cell w-[140px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider">Total</th>
+                                <th className="w-[120px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider">Status</th>
+                                <th className="hidden lg:table-cell w-[190px] px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider">Date</th>
+                                <th className="w-[110px] px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-5 text-xs font-bold text-slate-400 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -509,7 +511,7 @@ export default function OrdersView() {
                                             <td className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-5">
                                                 <div className="flex flex-col gap-0.5">
                                                     <span className="text-xs sm:text-sm font-bold text-slate-900">#{order.id}</span>
-                                                    <span className="text-[10px] sm:text-xs font-medium text-slate-400 md:hidden">{formatDate(order.dateTime)}</span>
+                                                    <span className="text-xs sm:text-xs font-medium text-slate-400 md:hidden">{formatDate(order.dateTime)}</span>
                                                 </div>
                                             </td>
                                             <td className="px-3 sm:px-4 lg:px-6 py-4 sm:py-5">
@@ -517,7 +519,7 @@ export default function OrdersView() {
                                                     <span className="text-xs sm:text-sm font-semibold text-slate-700 truncate">
                                                         {order.user?.fullName || order.user?.emailAddress || 'Unknown'}
                                                     </span>
-                                                    <span className="text-[10px] sm:text-xs text-slate-400 truncate hidden sm:block">{order.user?.emailAddress}</span>
+                                                    <span className="text-xs sm:text-xs text-slate-400 truncate hidden sm:block">{order.user?.emailAddress}</span>
                                                 </div>
                                             </td>
                                             <td className="hidden sm:table-cell px-3 sm:px-4 lg:px-6 py-4 sm:py-5">
@@ -532,7 +534,7 @@ export default function OrdersView() {
                                             </td>
                                             <td className="px-3 sm:px-4 lg:px-6 py-4 sm:py-5">
                                                 <span className={cn(
-                                                    "inline-flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full uppercase tracking-wide border transform transition-transform group-hover:scale-105",
+                                                    "inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full  tracking-wide border transform transition-transform group-hover:scale-105",
                                                     getStatusColor(order.status)
                                                 )}>
                                                     {getStatusIcon(order.status)}
@@ -548,7 +550,7 @@ export default function OrdersView() {
                                             <td className="px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-5 text-right">
                                                 <button
                                                     onClick={() => handleViewOrder(order)}
-                                                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
+                                                    className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
                                                 >
                                                     <Eye size={12} className="sm:w-[14px] sm:h-[14px]" />
                                                     <span className="hidden sm:inline">View</span>
@@ -574,26 +576,27 @@ export default function OrdersView() {
 
             {/* Order Details Modal */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto" data-lock-body-scroll>
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSelectedOrder(null)}
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh] my-4 mx-2 sm:mx-4"
+                        className="admin-modal-panel-host relative w-full max-w-4xl rounded-[1.25rem] border border-slate-100 bg-white shadow-2xl sm:rounded-[2rem] flex flex-col mx-1 sm:mx-2"
                     >
                         <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between shrink-0">
                             <div>
                                 <h2 className="text-xl font-bold text-slate-900 tracking-tight">Order Details</h2>
                                 <div className="flex items-center gap-2 mt-1.5">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">
+                                    <span className="text-xs font-bold text-slate-400 tracking-widest bg-slate-100 px-2 py-0.5 rounded">
                                         Order #{selectedOrder.id}
                                     </span>
                                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
@@ -626,10 +629,12 @@ export default function OrdersView() {
                                     PDF
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setSelectedOrder(null)}
                                     className="p-2.5 hover:bg-slate-100 rounded-full transition-all text-slate-400 hover:text-slate-600"
+                                    aria-label="Close"
                                 >
-                                    <XCircle size={24} />
+                                    <X size={22} />
                                 </button>
                             </div>
                         </div>
@@ -640,7 +645,7 @@ export default function OrdersView() {
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-bold text-slate-900">Order Status</h3>
                                     <span className={cn(
-                                        "inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wide border",
+                                        "inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full  tracking-wide border",
                                         getStatusColor(selectedOrder.status)
                                     )}>
                                         {getStatusIcon(selectedOrder.status)}
@@ -695,7 +700,7 @@ export default function OrdersView() {
                                     <div className="flex-1 min-w-0">
                                         {selectedOrder.deliveryAgent ? (
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold uppercase">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
                                                     {selectedOrder.deliveryAgent.fullName?.charAt(0) || 'A'}
                                                 </div>
                                                 <div>
@@ -777,24 +782,18 @@ export default function OrdersView() {
                             <div>
                                 <h3 className="text-lg font-bold text-slate-900 mb-4">Order Items</h3>
                                 <div className="space-y-3">
-                                    {selectedOrder.details?.map((detail, idx) => (
+                                    {selectedOrder.details?.map((detail, idx) => {
+                                        const lineImg = resolveProductImageUrl(detail.product?.images?.[0]?.productImg || detail.product?.productImage);
+                                        return (
                                         <div key={idx} className="flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
                                             <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center">
-                                                {(() => {
-                                                    const imgRaw = detail.product?.images?.[0]?.productImg || detail.product?.productImage;
-                                                    const imgSrc = imgRaw
-                                                        ? (imgRaw.startsWith('http') ? imgRaw : (imgRaw.startsWith('/') ? imgRaw : `/${imgRaw}`))
-                                                        : '/placeholder.png';
-                                                    return (
-                                                        <Image
-                                                            src={imgSrc}
-                                                            alt={detail.product?.productName || 'Product'}
-                                                            fill
-                                                            className="object-cover"
-                                                            unoptimized
-                                                        />
-                                                    );
-                                                })()}
+                                                <Image
+                                                    src={lineImg}
+                                                    alt={detail.product?.productName || 'Product'}
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized={productImageUnoptimized(lineImg)}
+                                                />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-bold text-slate-900 truncate">
@@ -811,7 +810,8 @@ export default function OrdersView() {
                                                 )}
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -887,6 +887,7 @@ export default function OrdersView() {
                             )}
                         </div>
                     </motion.div>
+                    </div>
                 </div>
             )}
 

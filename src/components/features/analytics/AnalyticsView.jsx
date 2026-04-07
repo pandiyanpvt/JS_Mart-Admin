@@ -75,7 +75,7 @@ export default function AnalyticsView() {
     }, [data]);
 
     return (
-        <div className="space-y-8">
+        <div className="w-full min-w-0 space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Sales Report</h1>
@@ -87,7 +87,7 @@ export default function AnalyticsView() {
                             key={range}
                             onClick={() => setActiveRange(range)}
                             className={cn(
-                                "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
+                                "px-4 py-2 text-xs font-black  tracking-widest rounded-xl transition-all",
                                 activeRange === range
                                     ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
                                     : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
@@ -123,7 +123,7 @@ export default function AnalyticsView() {
                         </div>
                         <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+12.5%</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Net Revenue</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">Net Revenue</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">
                         {loading ? '—' : formatCurrency(data?.metrics?.netRevenue)}
                     </h3>
@@ -136,7 +136,7 @@ export default function AnalyticsView() {
                         </div>
                         <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">+8.2%</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Orders</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">Total Orders</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">
                         {loading ? '—' : (data?.metrics?.totalOrders ?? 0)}
                     </h3>
@@ -149,7 +149,7 @@ export default function AnalyticsView() {
                         </div>
                         <span className="text-xs font-black text-purple-600 bg-purple-50 px-2 py-1 rounded-lg">Repeat</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Repeat Rate</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">Repeat Rate</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">
                         {loading ? '—' : `${(data?.metrics?.repeatRate ?? 0).toFixed(1)}%`}
                     </h3>
@@ -162,7 +162,7 @@ export default function AnalyticsView() {
                         </div>
                         <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+2.4%</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Avg. Ticket</p>
+                    <p className="text-xs font-black text-slate-400 tracking-[0.2em]">Avg. Ticket</p>
                     <h3 className="text-2xl font-black text-slate-900 mt-1">
                         {loading ? '—' : formatCurrency(data?.metrics?.aov)}
                     </h3>
@@ -177,7 +177,7 @@ export default function AnalyticsView() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 relative">
                         <div>
                             <h2 className="text-xl font-black text-slate-900">Performance Index</h2>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Revenue vs Daily Target</p>
+                            <p className="text-xs font-bold text-slate-400 tracking-widest mt-1">Revenue vs Daily Target</p>
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export default function AnalyticsView() {
                 {/* Categories Distribution */}
                 <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col">
                     <h2 className="text-xl font-black text-slate-900 mb-2">Market Share</h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-8">Sales by Product Type</p>
+                    <p className="text-xs font-bold text-slate-400 tracking-widest mb-8">Sales by Product Type</p>
 
                     <div className="h-[280px] w-full relative">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -265,7 +265,7 @@ export default function AnalyticsView() {
                                         if (active && payload && payload.length) {
                                             return (
                                                 <div className="bg-slate-900 text-white p-3 rounded-2xl border-none shadow-xl">
-                                                    <p className="text-xs font-black uppercase tracking-wider">{payload[0].name}</p>
+                                                    <p className="text-xs font-black tracking-wider">{payload[0].name}</p>
                                                     <p className="text-lg font-black text-emerald-400">{payload[0].value}%</p>
                                                 </div>
                                             );
@@ -278,7 +278,7 @@ export default function AnalyticsView() {
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-center">
                                 <p className="text-3xl font-black text-slate-900">100%</p>
-                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Revenue</p>
+                                <p className="text-xs text-slate-400 font-black tracking-widest">Revenue</p>
                             </div>
                         </div>
                     </div>
@@ -287,7 +287,7 @@ export default function AnalyticsView() {
                         {categoryData.map((cat) => (
                             <div key={cat.name} className="flex items-center justify-between group cursor-default">
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-wider truncate">{cat.name}</span>
+                                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors tracking-wider truncate">{cat.name}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="w-24 h-1.5 bg-slate-50 rounded-full overflow-hidden">
@@ -311,7 +311,7 @@ export default function AnalyticsView() {
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h2 className="text-xl font-black text-slate-900">Payment Mix</h2>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Orders by payment method</p>
+                            <p className="text-xs font-bold text-slate-400 tracking-widest mt-1">Orders by payment method</p>
                         </div>
                         <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                             <CreditCard size={20} />
@@ -321,7 +321,7 @@ export default function AnalyticsView() {
                     <div className="space-y-4">
                         {paymentData.map((p) => (
                             <div key={p.name} className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{p.name}</span>
+                                <span className="text-xs font-bold text-slate-600 tracking-wider">{p.name}</span>
                                 <span className="text-sm font-black text-slate-900">{p.value}</span>
                             </div>
                         ))}
@@ -352,27 +352,27 @@ export default function AnalyticsView() {
 
                     <div className="grid grid-cols-2 gap-4 relative">
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">New Customers</p>
+                            <p className="text-xs font-black text-white/40 tracking-widest mb-2">New Customers</p>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-black">{loading ? '—' : (data?.metrics?.newCustomers ?? 0)}</h3>
                                 <span className="text-emerald-400 text-xs font-bold">range</span>
                             </div>
                         </div>
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Returning</p>
+                            <p className="text-xs font-black text-white/40 tracking-widest mb-2">Returning</p>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-black">{loading ? '—' : (data?.metrics?.returningCustomers ?? 0)}</h3>
                                 <span className="text-emerald-400 text-xs font-bold">{loading ? '' : `${(data?.metrics?.repeatRate ?? 0).toFixed(1)}%`}</span>
                             </div>
                         </div>
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Refund Rate</p>
+                            <p className="text-xs font-black text-white/40 tracking-widest mb-2">Refund Rate</p>
                             <div className="flex items-center gap-2">
                                 <h3 className="text-3xl font-black">{loading ? '—' : `${(data?.metrics?.refundRate ?? 0).toFixed(1)}%`}</h3>
                             </div>
                         </div>
                         <div className="p-6 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 group hover:bg-white/10 transition-all">
-                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Active Customers</p>
+                            <p className="text-xs font-black text-white/40 tracking-widest mb-2">Active Customers</p>
                             <div className="flex items-baseline gap-2">
                                 <h3 className="text-3xl font-black">{loading ? '—' : (data?.metrics?.activeCustomers ?? 0)}</h3>
                                 <span className="text-blue-400 text-xs font-bold">range</span>
@@ -386,7 +386,7 @@ export default function AnalyticsView() {
                                 <Target size={24} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Refunded Amount</p>
+                                <p className="text-xs font-black text-slate-400 tracking-widest">Refunded Amount</p>
                                 <p className="text-lg font-black tracking-tight">{loading ? '—' : formatCurrency(data?.metrics?.refundedAmount)}</p>
                             </div>
                         </div>

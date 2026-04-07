@@ -6,7 +6,6 @@ import {
     X,
     Loader2,
     CheckCircle2,
-    Box,
     Hash,
     Camera,
     Upload,
@@ -14,14 +13,19 @@ import {
     Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveProductImageUrl } from '@/lib/productImage';
 import { cn } from '@/lib/utils';
-import { IMAGE_SPECS } from '@/lib/imageSpecs';
+import { IMAGE_SPECS, validateImageFileSize, getCropAspectForSpec } from '@/lib/imageSpecs';
+import { pickOutputMime } from '@/lib/cropImage';
+import ImageCropModal from '@/components/ui/ImageCropModal';
+import { useSingleImageCrop } from '@/hooks/useSingleImageCrop';
 import { productService, stockService, stockLogService } from '@/lib/api';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import NumberInputNoScroll from '@/components/ui/NumberInputNoScroll';
 
 export default function RemoveStockForm() {
+    const evidenceCrop = useSingleImageCrop();
     const router = useRouter();
     const [allProducts, setAllProducts] = useState([]);
     const [productBatches, setProductBatches] = useState([]);
@@ -88,15 +92,15 @@ export default function RemoveStockForm() {
     };
 
     const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setEvidencePhoto(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setEvidencePreview(reader.result);
-            };
-            reader.readAsDataURL(file);
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        const { valid, message } = validateImageFileSize(file, 'evidencePhoto');
+        if (!valid) {
+            showNotification(message, 'error');
+            return;
         }
+        evidenceCrop.open(file, 'evidencePhoto');
     };
 
     const handleSubmit = async (e) => {
@@ -133,7 +137,7 @@ export default function RemoveStockForm() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex items-center justify-between">
                 <div>
-                    <div className="flex items-center gap-2 text-rose-600 font-bold text-sm uppercase tracking-widest mb-2">
+                    <div className="flex items-center gap-2 text-rose-600 font-bold text-sm tracking-widest mb-2">
                         <div className="w-8 h-[2px] bg-rose-600 rounded-full" />
                         Inventory Depletion
                     </div>
@@ -149,7 +153,7 @@ export default function RemoveStockForm() {
                         <div className="space-y-8">
                             {/* Product Search */}
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">1. Identify Product</label>
+                                <label className="text-xs font-black text-slate-400 tracking-[0.2em] pl-1">1. Identify Product</label>
                                 <div className="relative">
                                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" size={18} />
                                     <input
@@ -176,11 +180,11 @@ export default function RemoveStockForm() {
                                                 )}
                                             >
                                                 <div className="w-12 h-12 rounded-xl bg-slate-200 overflow-hidden relative shrink-0">
-                                                    {p.images?.[0] ? <Image src={p.images[0].productImg} alt="" fill sizes="48px" className="object-cover" /> : <Box size={20} className="absolute inset-0 m-auto text-slate-400" />}
+                                                    <Image src={resolveProductImageUrl(p.images?.[0]?.productImg)} alt="" fill sizes="48px" className="object-cover" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-black text-slate-900 truncate">{p.productName}</p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase">Stock: {p.quantity} units</p>
+                                                    <p className="text-xs text-slate-400 font-bold">Stock: {p.quantity} units</p>
                                                 </div>
                                                 {selectedProduct?.id === p.id && <CheckCircle2 size={16} className="text-rose-500" />}
                                             </button>
@@ -197,12 +201,12 @@ export default function RemoveStockForm() {
                                         animate={{ opacity: 1, y: 0 }}
                                         className="space-y-4"
                                     >
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">2. Select Specific Batch</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-[0.2em] pl-1">2. Select Specific Batch</label>
                                         <div className="bg-slate-50/50 border border-slate-100 rounded-[2rem] overflow-hidden max-h-[250px] overflow-y-auto custom-scrollbar">
                                             {batchesLoading ? (
                                                 <div className="p-8 text-center"><Loader2 className="animate-spin inline text-slate-300" /></div>
                                             ) : productBatches.length === 0 ? (
-                                                <div className="p-8 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">No active batches available</div>
+                                                <div className="p-8 text-center text-slate-400 text-xs font-bold tracking-widest">No active batches available</div>
                                             ) : (
                                                 <div className="divide-y divide-slate-100">
                                                     {productBatches.map(b => (
@@ -219,12 +223,12 @@ export default function RemoveStockForm() {
                                                                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400"><Hash size={14} /></div>
                                                                 <div>
                                                                     <p className="text-xs font-black text-slate-900">{b.batchNumber}</p>
-                                                                    <p className="text-[9px] text-slate-400 font-bold">Expires: {b.expiryDate || 'N/A'}</p>
+                                                                    <p className="text-xs text-slate-400 font-bold">Expires: {b.expiryDate || 'N/A'}</p>
                                                                 </div>
                                                             </div>
                                                             <div className="text-right">
                                                                 <p className="text-sm font-black text-slate-900">{b.quantity}</p>
-                                                                <p className="text-[8px] text-slate-400 font-bold uppercase">Qty left</p>
+                                                                <p className="text-[8px] text-slate-400 font-bold">Qty left</p>
                                                             </div>
                                                         </button>
                                                     ))}
@@ -256,17 +260,17 @@ export default function RemoveStockForm() {
                                                         <Layers size={32} />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Source Batch</p>
+                                                        <p className="text-xs font-black tracking-widest opacity-60">Source Batch</p>
                                                         <h3 className="text-xl font-black">{selectedBatch.batchNumber}</h3>
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
                                                     <div>
-                                                        <p className="text-[9px] font-black uppercase opacity-60">Current Stock</p>
+                                                        <p className="text-xs font-black opacity-60">Current Stock</p>
                                                         <p className="text-lg font-black">{selectedBatch.quantity} Units</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[9px] font-black uppercase opacity-60">Product Ref</p>
+                                                        <p className="text-xs font-black opacity-60">Product Ref</p>
                                                         <p className="text-xs font-bold truncate">{selectedProduct.productName}</p>
                                                     </div>
                                                 </div>
@@ -275,11 +279,11 @@ export default function RemoveStockForm() {
 
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Volume to Remove</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Volume to Remove</label>
                                                 <NumberInputNoScroll required max={selectedBatch.quantity} placeholder="Qty" value={adjustment.quantity} onChange={(e) => setAdjustment({ ...adjustment, quantity: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none focus:bg-white transition-all shadow-sm" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Reason Code</label>
+                                                <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Reason Code</label>
                                                 <select required value={adjustment.type} onChange={(e) => setAdjustment({ ...adjustment, type: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black outline-none appearance-none focus:bg-white transition-all shadow-sm">
                                                     <option value="REMOVE">Normal Removal</option>
                                                     <option value="EXPIRED">Item Expiry</option>
@@ -290,18 +294,18 @@ export default function RemoveStockForm() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Official Justification</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Official Justification</label>
                                             <textarea required rows="2" placeholder="Explain the depletion..." value={adjustment.reason} onChange={(e) => setAdjustment({ ...adjustment, reason: e.target.value })} className="w-full px-6 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold outline-none resize-none focus:bg-white transition-all shadow-sm" />
                                         </div>
 
                                         <div className="space-y-4">
-                                            <label className="text-[10px] font-black text-rose-500 uppercase tracking-widest pl-1 flex items-center gap-2">
+                                            <label className="text-xs font-black text-rose-500 tracking-widest pl-1 flex items-center gap-2">
                                                 <Camera size={14} />
                                                 Evidence Required
                                             </label>
                                             <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 mb-2">
-                                                <p className="text-[9px] font-black text-amber-800 uppercase tracking-wider">Image size (before adding)</p>
-                                                <p className="text-[10px] font-semibold text-amber-900">Max {IMAGE_SPECS.evidencePhoto.maxFileSizeLabel}. {IMAGE_SPECS.evidencePhoto.formats}.</p>
+                                                <p className="text-xs font-black text-amber-800 tracking-wider">Image size (before adding)</p>
+                                                <p className="text-xs font-semibold text-amber-900">Max {IMAGE_SPECS.evidencePhoto.maxFileSizeLabel}. {IMAGE_SPECS.evidencePhoto.formats}.</p>
                                             </div>
                                             <div className="relative">
                                                 <input type="file" accept="image/jpeg,image/png,image/webp,image/jpg" onChange={handlePhotoChange} className="hidden" id="evidence-upload-page" />
@@ -315,14 +319,30 @@ export default function RemoveStockForm() {
                                             {evidencePreview && (
                                                 <div className="mt-4 relative w-full aspect-video rounded-3xl overflow-hidden border-2 border-slate-100 shadow-lg">
                                                     <img src={evidencePreview} alt="" className="w-full h-full object-cover" />
-                                                    <button type="button" onClick={() => { setEvidencePhoto(null); setEvidencePreview(null); }} className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full"><X size={16} /></button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (evidencePreview?.startsWith?.('blob:')) {
+                                                                try {
+                                                                    URL.revokeObjectURL(evidencePreview);
+                                                                } catch {
+                                                                    /* ignore */
+                                                                }
+                                                            }
+                                                            setEvidencePhoto(null);
+                                                            setEvidencePreview(null);
+                                                        }}
+                                                        className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
 
                                         <button
                                             disabled={isSubmitting}
-                                            className="w-full py-5 bg-rose-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-rose-700 transition-all shadow-xl shadow-rose-100 disabled:opacity-50"
+                                            className="w-full py-5 bg-rose-600 text-white rounded-3xl font-black text-sm tracking-widest hover:bg-rose-700 transition-all shadow-xl shadow-rose-100 disabled:opacity-50"
                                         >
                                             {isSubmitting ? 'Syncing...' : 'Authenticate Removal'}
                                         </button>
@@ -333,7 +353,7 @@ export default function RemoveStockForm() {
                                             -
                                         </div>
                                         <h3 className="text-xl font-black text-slate-900">Select Batch</h3>
-                                        <p className="text-sm font-medium text-slate-500 mt-2 max-w-xs uppercase tracking-widest opacity-60">Choose a product and a specific batch on the left to activate removal fields</p>
+                                        <p className="text-sm font-medium text-slate-500 mt-2 max-w-xs tracking-widest opacity-60">Choose a product and a specific batch on the left to activate removal fields</p>
                                     </div>
                                 )}
                             </AnimatePresence>
@@ -341,6 +361,39 @@ export default function RemoveStockForm() {
                     </div>
                 </form>
             </div>
+
+            {evidenceCrop.isOpen && evidenceCrop.target && (
+                <ImageCropModal
+                    key={evidenceCrop.target.src}
+                    open
+                    imageSrc={evidenceCrop.target.src}
+                    title="Crop evidence photo"
+                    aspect={getCropAspectForSpec('evidencePhoto')}
+                    mimeType={pickOutputMime(evidenceCrop.target.mime)}
+                    originalFileName={evidenceCrop.target.fileName}
+                    onClose={() => evidenceCrop.close()}
+                    onComplete={(file) => {
+                        const check = validateImageFileSize(file, 'evidencePhoto');
+                        if (!check.valid) {
+                            showNotification(check.message, 'error');
+                            evidenceCrop.close();
+                            return;
+                        }
+                        setEvidencePreview((prev) => {
+                            if (prev?.startsWith?.('blob:')) {
+                                try {
+                                    URL.revokeObjectURL(prev);
+                                } catch {
+                                    /* ignore */
+                                }
+                            }
+                            return URL.createObjectURL(file);
+                        });
+                        setEvidencePhoto(file);
+                        evidenceCrop.close();
+                    }}
+                />
+            )}
 
             {/* Notification */}
             <AnimatePresence>

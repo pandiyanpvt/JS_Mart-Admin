@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
                     </div>
                     <h1 className="text-6xl font-extrabold text-slate-900 mb-4 tracking-tight">JS Mart</h1>
                     <div className="h-1.5 w-32 bg-indigo-600 mx-auto mb-8 rounded-full" />
-                    <p className="text-2xl text-slate-500 font-medium tracking-[0.2em] uppercase">Inventory Management</p>
+                    <p className="text-2xl text-slate-500 font-medium tracking-[0.2em]">Inventory Management</p>
                 </div>
             </div>
 

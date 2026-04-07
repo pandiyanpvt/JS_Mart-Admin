@@ -1,9 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Eye, Edit, Trash2, Phone, Mail, MapPin, Building2, CheckCircle2, XCircle, MoreHorizontal, Loader2, Download } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit, Trash2, Phone, Mail, MapPin, Building2, CheckCircle2, XCircle, X, MoreHorizontal, Loader2, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supplierService } from '@/lib/api';
+import { validateImageFileSize, getCropAspectForSpec } from '@/lib/imageSpecs';
+import { pickOutputMime } from '@/lib/cropImage';
+import ImageCropModal from '@/components/ui/ImageCropModal';
+import { useSingleImageCrop } from '@/hooks/useSingleImageCrop';
+import { toast } from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
 const initialSuppliers = [
@@ -24,7 +29,7 @@ const initialSuppliers = [
 
 const FormInput = ({ label, name, type = "text", required = false, placeholder = "", value, onChange }) => (
     <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+        <label className="text-xs font-bold text-slate-700">{label}</label>
         <input
             type={type}
             required={required}
@@ -37,6 +42,8 @@ const FormInput = ({ label, name, type = "text", required = false, placeholder =
 );
 
 export default function SuppliersView() {
+    const supplierLogoCrop = useSingleImageCrop();
+    const [stripCompanyLogo, setStripCompanyLogo] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [suppliers, setSuppliers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -78,6 +85,7 @@ export default function SuppliersView() {
     // --- Handlers ---
 
     const handleOpenAdd = () => {
+        setStripCompanyLogo(false);
         setEditingSupplier({
             companyName: '',
             companyContactNo: '',
@@ -94,8 +102,14 @@ export default function SuppliersView() {
     };
 
     const handleOpenEdit = (supplier) => {
+        setStripCompanyLogo(false);
         setEditingSupplier({ ...supplier });
         setIsNewSupplier(false);
+    };
+
+    const clearSupplierCompanyLogo = () => {
+        setEditingSupplier((prev) => (prev ? { ...prev, companyLogo: null } : prev));
+        setStripCompanyLogo(true);
     };
 
     const handleSave = async (e) => {
@@ -111,6 +125,9 @@ export default function SuppliersView() {
                     formData.append(key, editingSupplier[key]);
                 }
             });
+            if (!isNewSupplier && stripCompanyLogo && !(editingSupplier.companyLogo instanceof File)) {
+                formData.append('removeCompanyLogo', 'true');
+            }
 
             if (isNewSupplier) {
                 await supplierService.create(formData);
@@ -202,11 +219,11 @@ export default function SuppliersView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Company</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact Person</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Company Contact</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Address</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Company</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Contact Person</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Company Contact</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Address</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -230,15 +247,15 @@ export default function SuppliersView() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{supplier.companyName}</p>
-                                                    <p className="text-[10px] text-slate-400 truncate">{supplier.socialMediaLink}</p>
+                                                    <p className="text-xs text-slate-400 truncate">{supplier.socialMediaLink}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-0.5">
                                                 <p className="text-sm font-semibold text-slate-800">{supplier.contactPersonName}</p>
-                                                <p className="text-[10px] text-slate-500">{supplier.contactPersonEmail}</p>
-                                                <p className="text-[10px] text-slate-500">{supplier.contactPersonPhone}</p>
+                                                <p className="text-xs text-slate-500">{supplier.contactPersonEmail}</p>
+                                                <p className="text-xs text-slate-500">{supplier.contactPersonPhone}</p>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -306,12 +323,15 @@ export default function SuppliersView() {
 
             {/* View Modal */}
             {viewSupplier && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewSupplier(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">Supplier Details</h3>
@@ -338,15 +358,15 @@ export default function SuppliersView() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 rounded-2xl bg-emerald-50/30 border border-emerald-100 space-y-1">
-                                    <span className="text-xs font-bold text-emerald-600 uppercase">Contact Person</span>
+                                    <span className="text-xs font-bold text-emerald-600">Contact Person</span>
                                     <p className="font-bold text-slate-900">{viewSupplier.contactPersonName}</p>
-                                    <p className="text-[10px] text-slate-500">{viewSupplier.contactPersonEmail}</p>
-                                    <p className="text-[10px] text-slate-500">{viewSupplier.contactPersonPhone}</p>
+                                    <p className="text-xs text-slate-500">{viewSupplier.contactPersonEmail}</p>
+                                    <p className="text-xs text-slate-500">{viewSupplier.contactPersonPhone}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-blue-50/30 border border-blue-100 space-y-1">
-                                    <span className="text-xs font-bold text-blue-600 uppercase">Company Contact</span>
+                                    <span className="text-xs font-bold text-blue-600">Company Contact</span>
                                     <p className="font-bold text-slate-900">{viewSupplier.companyContactNo}</p>
-                                    <p className="text-[10px] text-slate-500">{viewSupplier.companyEmail}</p>
+                                    <p className="text-xs text-slate-500">{viewSupplier.companyEmail}</p>
                                 </div>
                             </div>
 
@@ -354,7 +374,7 @@ export default function SuppliersView() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
                                     <MapPin className="text-rose-600 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Registered Address</p>
+                                        <p className="text-xs font-bold text-slate-500">Registered Address</p>
                                         <p className="text-sm font-medium text-slate-900">{viewSupplier.companyAddress}</p>
                                     </div>
                                 </div>
@@ -369,17 +389,21 @@ export default function SuppliersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingSupplier && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingSupplier(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewSupplier ? 'Add Supplier' : 'Edit Supplier'}</h3>
@@ -396,7 +420,7 @@ export default function SuppliersView() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                                         <Building2 size={18} className="text-emerald-600" />
-                                        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Company Information</h4>
+                                        <h4 className="text-sm font-bold text-slate-800 tracking-wider">Company Information</h4>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="sm:col-span-2">
@@ -427,17 +451,52 @@ export default function SuppliersView() {
                                             value={editingSupplier.socialMediaLink}
                                             onChange={e => setEditingSupplier({ ...editingSupplier, socialMediaLink: e.target.value })}
                                         />
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-700 uppercase">Company Logo</label>
+                                        <div className="space-y-1.5 sm:col-span-2">
+                                            <label className="text-xs font-bold text-slate-700">Company Logo</label>
+                                            {(typeof editingSupplier.companyLogo === 'string' && editingSupplier.companyLogo) ||
+                                            editingSupplier.companyLogo instanceof File ? (
+                                                <div className="relative inline-flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                                                    {typeof editingSupplier.companyLogo === 'string' ? (
+                                                        <img
+                                                            src={editingSupplier.companyLogo}
+                                                            alt=""
+                                                            className="h-16 w-16 shrink-0 rounded-lg border border-slate-200 object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white text-[10px] font-bold text-slate-500 px-1 text-center leading-tight">
+                                                            {editingSupplier.companyLogo.name}
+                                                        </div>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={clearSupplierCompanyLogo}
+                                                        className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-white shadow-md ring-2 ring-white hover:bg-rose-700"
+                                                        title="Remove logo"
+                                                        aria-label="Remove company logo"
+                                                    >
+                                                        <X size={16} strokeWidth={2.5} />
+                                                    </button>
+                                                </div>
+                                            ) : null}
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={e => setEditingSupplier({ ...editingSupplier, companyLogo: e.target.files[0] })}
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    e.target.value = '';
+                                                    if (!file) return;
+                                                    const { valid, message } = validateImageFileSize(file, 'brandImages');
+                                                    if (!valid) {
+                                                        toast.error(message);
+                                                        return;
+                                                    }
+                                                    supplierLogoCrop.open(file, 'supplierLogo');
+                                                }}
                                                 className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all"
                                             />
                                         </div>
                                         <div className="sm:col-span-2">
-                                            <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Company Address</label>
+                                            <label className="text-xs font-bold text-slate-700 block mb-1.5">Company Address</label>
                                             <textarea
                                                 value={editingSupplier.companyAddress || ''}
                                                 onChange={e => setEditingSupplier({ ...editingSupplier, companyAddress: e.target.value })}
@@ -453,7 +512,7 @@ export default function SuppliersView() {
                                 <div className="space-y-4 pt-4">
                                     <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                                         <Plus size={18} className="text-blue-600" />
-                                        <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Contact Person Information</h4>
+                                        <h4 className="text-sm font-bold text-slate-800 tracking-wider">Contact Person Information</h4>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="sm:col-span-2">
@@ -501,17 +560,21 @@ export default function SuppliersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -534,7 +597,32 @@ export default function SuppliersView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
+            )}
+
+            {supplierLogoCrop.isOpen && supplierLogoCrop.target && (
+                <ImageCropModal
+                    key={supplierLogoCrop.target.src}
+                    open
+                    imageSrc={supplierLogoCrop.target.src}
+                    title="Crop company logo"
+                    aspect={getCropAspectForSpec('supplierLogo')}
+                    mimeType={pickOutputMime(supplierLogoCrop.target.mime)}
+                    originalFileName={supplierLogoCrop.target.fileName}
+                    onClose={() => supplierLogoCrop.close()}
+                    onComplete={(file) => {
+                        const check = validateImageFileSize(file, 'brandImages');
+                        if (!check.valid) {
+                            toast.error(check.message);
+                            supplierLogoCrop.close();
+                            return;
+                        }
+                        setEditingSupplier((prev) => ({ ...prev, companyLogo: file }));
+                        setStripCompanyLogo(false);
+                        supplierLogoCrop.close();
+                    }}
+                />
             )}
         </div>
     );

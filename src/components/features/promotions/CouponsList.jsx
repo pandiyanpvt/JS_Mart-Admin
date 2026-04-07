@@ -143,7 +143,7 @@ export default function CouponsList() {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    <div className="flex items-center gap-2 text-rose-600 font-black text-[10px] uppercase tracking-[0.2em] mb-3">
+                    <div className="flex items-center gap-2 text-rose-600 font-black text-xs tracking-[0.2em] mb-3">
                         <div className="w-8 h-[2px] bg-rose-600 rounded-full" />
                         Engagement Rewards
                     </div>
@@ -153,7 +153,7 @@ export default function CouponsList() {
 
                 <button
                     onClick={() => { resetForm(); setIsModalOpen(true); }}
-                    className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-rose-600 transition-all shadow-xl shadow-slate-200 uppercase tracking-widest"
+                    className="flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-rose-600 transition-all shadow-xl shadow-slate-200 tracking-widest"
                 >
                     <Plus size={18} />
                     Generate Coupon
@@ -173,7 +173,7 @@ export default function CouponsList() {
                     />
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all">
+                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 rounded-2xl text-xs font-black tracking-widest hover:bg-slate-100 transition-all">
                         <Filter size={14} />
                         Active Only
                     </button>
@@ -185,12 +185,12 @@ export default function CouponsList() {
                 {loading ? (
                     <div className="col-span-full h-64 flex flex-col items-center justify-center gap-4">
                         <Loader2 className="animate-spin text-rose-600" size={40} />
-                        <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Processing Vault Data...</p>
+                        <p className="text-slate-400 font-black tracking-widest text-xs">Processing Vault Data...</p>
                     </div>
                 ) : filteredCoupons.length === 0 ? (
                     <div className="col-span-full h-80 border-2 border-dashed border-slate-100 rounded-[3rem] flex flex-col items-center justify-center text-slate-300 gap-4">
                         <Ticket size={48} />
-                        <p className="font-black uppercase tracking-[0.2em] text-xs">No coupons generated yet</p>
+                        <p className="font-black tracking-[0.2em] text-xs">No coupons generated yet</p>
                     </div>
                 ) : (
                     filteredCoupons.map((coupon, index) => (
@@ -213,26 +213,26 @@ export default function CouponsList() {
                                 </div>
 
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Coupon Code</p>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tighter group-hover:text-rose-600 transition-colors uppercase">{coupon.code}</h3>
+                                    <p className="text-xs font-black text-slate-400 tracking-widest mb-1">Coupon Code</p>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tighter group-hover:text-rose-600 transition-colors">{coupon.code}</h3>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Benefit</p>
+                                        <p className="text-xs font-black text-slate-400 tracking-widest mb-1">Benefit</p>
                                         <p className="text-lg font-black text-emerald-600">
                                             {coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : `$${coupon.discountValue}`}
                                         </p>
                                     </div>
                                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Threshold</p>
+                                        <p className="text-xs font-black text-slate-400 tracking-widest mb-1">Threshold</p>
                                         <p className="text-lg font-black text-slate-900">${coupon.minOrderAmount}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3 pt-4">
-                                    <div className="flex items-center justify-between text-[11px] font-bold">
-                                        <span className="text-slate-400 uppercase tracking-widest">Usage Limit</span>
+                                    <div className="flex items-center justify-between text-sm font-bold">
+                                        <span className="text-slate-400 tracking-widest">Usage Limit</span>
                                         <span className="text-slate-900">{coupon.usedCount} / {coupon.usageLimit} REDEEMED</span>
                                     </div>
                                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -245,9 +245,9 @@ export default function CouponsList() {
                                             )}
                                         />
                                     </div>
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 pt-2">
+                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 pt-2">
                                         <Calendar size={12} />
-                                        <span>EXPIRES {new Date(coupon.expiryDate).toLocaleDateString()}</span>
+                                        <span>Expires {new Date(coupon.expiryDate).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </div>
@@ -259,9 +259,10 @@ export default function CouponsList() {
             {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6" data-lock-body-scroll>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
-                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative w-full max-w-xl bg-white rounded-[3rem] shadow-2xl overflow-hidden">
+                    <div className="admin-modal-scroll z-[100]" data-lock-body-scroll role="dialog" aria-modal="true">
+                        <div className="admin-modal-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="admin-modal-backdrop" onClick={() => setIsModalOpen(false)} />
+                        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="admin-modal-panel-host relative w-full max-w-xl overflow-hidden rounded-[2rem] bg-white shadow-2xl sm:rounded-[3rem]">
                             <form onSubmit={handleSubmit} className="p-10 space-y-8">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-3xl font-black text-slate-900 leading-tight">
@@ -272,49 +273,49 @@ export default function CouponsList() {
 
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Coupon Code (Unique identifier)</label>
+                                        <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Coupon Code (Unique identifier)</label>
                                         <input required placeholder="E.G. SUMMER25" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })} className="w-full px-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black outline-none focus:bg-white focus:ring-4 focus:ring-rose-500/10 transition-all shadow-sm" />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Reduction Logic</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Reduction Logic</label>
                                             <select value={formData.discountType} onChange={(e) => setFormData({ ...formData, discountType: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-xl text-xs font-black outline-none appearance-none">
-                                                <option value="PERCENTAGE">PERCENTAGE (%)</option>
-                                                <option value="FIXED">FIXED AMOUNT ($)</option>
+                                                <option value="PERCENTAGE">Percentage (%)</option>
+                                                <option value="FIXED">Fixed amount ($)</option>
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Reduction Magnitude</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Reduction Magnitude</label>
                                             <input required type="number" step="0.01" value={formData.discountValue} onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })} className="w-full px-8 py-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold" />
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Activation Limit (First N)</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Activation Limit (First N)</label>
                                             <input required type="number" value={formData.usageLimit} onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })} className="w-full px-8 py-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Threshold Amount ($)</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Threshold Amount ($)</label>
                                             <input required type="number" step="0.01" value={formData.minOrderAmount} onChange={(e) => setFormData({ ...formData, minOrderAmount: e.target.value })} className="w-full px-8 py-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold" />
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Max Discount ($)</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Max Discount ($)</label>
                                             <input type="number" step="0.01" placeholder="Optional" value={formData.maxDiscountAmount} onChange={(e) => setFormData({ ...formData, maxDiscountAmount: e.target.value })} className="w-full px-8 py-4 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold" />
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Horizon Start</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Horizon Start</label>
                                             <input required type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-none rounded-xl text-xs font-bold" />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Horizon End</label>
+                                            <label className="text-xs font-black text-slate-400 tracking-widest pl-1">Horizon End</label>
                                             <input required type="date" value={formData.expiryDate} onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-none rounded-xl text-xs font-bold" />
                                         </div>
                                     </div>
@@ -322,13 +323,14 @@ export default function CouponsList() {
 
                                 <button
                                     disabled={isSubmitting}
-                                    className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
+                                    className="w-full py-5 bg-slate-900 text-white rounded-[2rem] font-black text-sm tracking-widest hover:bg-rose-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3"
                                 >
                                     {isSubmitting ? <Loader2 className="animate-spin" /> : <TrendingUp size={20} />}
                                     {isSubmitting ? 'Finalizing Sync...' : (editingCoupon ? 'Confirm Strategy Shift' : 'Deploy Discount Code')}
                                 </button>
                             </form>
                         </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

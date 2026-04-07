@@ -73,7 +73,7 @@ export default function FlashSalesView() {
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "" }) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+            <label className="text-xs font-bold text-slate-700">{label}</label>
             <input
                 type={type}
                 required={required}
@@ -131,12 +131,12 @@ export default function FlashSalesView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Campaign</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Discount</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Duration</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Products</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Campaign</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Discount</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Duration</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Products</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -161,8 +161,8 @@ export default function FlashSalesView() {
                                             <span className="text-sm font-bold text-emerald-600">{sale.discount}% OFF</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1 text-[10px] text-slate-500 font-medium uppercase tracking-wide">
-                                                <span className="flex items-center gap-1.5 ">
+                                            <div className="flex flex-col gap-1 text-xs text-slate-500 font-medium tracking-wide">
+                                                <span className="flex items-center gap-1.5">
                                                     <Calendar size={10} /> {sale.startDate}
                                                 </span>
                                                 <span className="flex items-center gap-1.5">
@@ -178,7 +178,7 @@ export default function FlashSalesView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 sale.status === 'Active' ? "bg-rose-50 text-rose-600 border-rose-100 animate-pulse" :
                                                     sale.status === 'Scheduled' ? "bg-blue-50 text-blue-600 border-blue-100" :
                                                         "bg-slate-100 text-slate-500 border-slate-200"
@@ -222,17 +222,20 @@ export default function FlashSalesView() {
 
             {/* View Modal */}
             {viewSale && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewSale(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 bg-gradient-to-r from-amber-500 to-rose-500 text-white text-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-full opacity-10">
                                 <Zap size={200} className="absolute -left-10 -bottom-10 transform -rotate-12" fill="currentColor" />
                             </div>
-                            <h3 className="text-2xl font-bold uppercase tracking-wide mb-1 relative z-10">{viewSale.name}</h3>
+                            <h3 className="text-2xl font-bold tracking-wide mb-1 relative z-10">{viewSale.name}</h3>
                             <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white text-rose-600 text-sm font-bold shadow-lg mt-2 relative z-10">
                                 {viewSale.discount}% OFF EVERYTHING
                             </div>
@@ -240,14 +243,14 @@ export default function FlashSalesView() {
                         <div className="p-6 space-y-6">
                             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div className="text-center flex-1 border-r border-slate-200">
-                                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Status</p>
+                                    <p className="text-xs font-bold text-slate-400 mb-1">Status</p>
                                     <p className={cn(
-                                        "font-bold text-sm uppercase",
+                                        "font-bold text-sm ",
                                         viewSale.status === 'Active' ? "text-rose-600" : "text-slate-800"
                                     )}>{viewSale.status}</p>
                                 </div>
                                 <div className="text-center flex-1">
-                                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Products Included</p>
+                                    <p className="text-xs font-bold text-slate-400 mb-1">Products Included</p>
                                     <p className="font-bold text-slate-800">{viewSale.productsCount}</p>
                                 </div>
                             </div>
@@ -259,11 +262,11 @@ export default function FlashSalesView() {
                                     </div>
                                     <div className="flex-1 grid grid-cols-2 gap-4">
                                         <div>
-                                            <p className="text-xs font-bold text-slate-500 uppercase">Start Date</p>
+                                            <p className="text-xs font-bold text-slate-500">Start Date</p>
                                             <p className="font-medium text-slate-900">{viewSale.startDate}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-500 uppercase">End Date</p>
+                                            <p className="text-xs font-bold text-slate-500">End Date</p>
                                             <p className="font-medium text-slate-900">{viewSale.endDate}</p>
                                         </div>
                                     </div>
@@ -274,11 +277,11 @@ export default function FlashSalesView() {
                                     </div>
                                     <div className="flex-1 grid grid-cols-2 gap-4">
                                         <div>
-                                            <p className="text-xs font-bold text-slate-500 uppercase">Start Time</p>
+                                            <p className="text-xs font-bold text-slate-500">Start Time</p>
                                             <p className="font-medium text-slate-900">{viewSale.startTime}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-500 uppercase">End Time</p>
+                                            <p className="text-xs font-bold text-slate-500">End Time</p>
                                             <p className="font-medium text-slate-900">{viewSale.endTime}</p>
                                         </div>
                                     </div>
@@ -294,17 +297,21 @@ export default function FlashSalesView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingSale && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingSale(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewSale ? 'Schedule Flash Sale' : 'Edit Campaign'}</h3>
@@ -327,7 +334,7 @@ export default function FlashSalesView() {
                                     <FormInput label="End Date" name="endDate" type="date" required />
                                     <FormInput label="End Time" name="endTime" type="time" required />
                                     <div className="sm:col-span-2">
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingSale.status}
                                             onChange={e => setEditingSale({ ...editingSale, status: e.target.value })}
@@ -344,7 +351,7 @@ export default function FlashSalesView() {
                                             <button type="button" className="text-emerald-600 font-bold text-sm hover:underline flex items-center justify-center gap-1">
                                                 <Plus size={16} /> Select Products
                                             </button>
-                                            <p className="text-[10px] text-slate-400 mt-2">{editingSale.productsCount} products selected</p>
+                                            <p className="text-xs text-slate-400 mt-2">{editingSale.productsCount} products selected</p>
                                         </div>
                                     </div>
                                 </div>
@@ -370,17 +377,21 @@ export default function FlashSalesView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -402,6 +413,7 @@ export default function FlashSalesView() {
                                 Cancel Event
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

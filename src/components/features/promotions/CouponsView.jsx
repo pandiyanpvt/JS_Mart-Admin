@@ -77,7 +77,7 @@ export default function CouponsView() {
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "", step }) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+            <label className="text-xs font-bold text-slate-700">{label}</label>
             <input
                 type={type}
                 step={step}
@@ -136,12 +136,12 @@ export default function CouponsView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Code</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Discount</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Usage</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Expiry</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Code</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Discount</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Usage</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Expiry</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -161,7 +161,7 @@ export default function CouponsView() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-bold text-slate-900 font-mono tracking-wide">{coupon.code}</p>
-                                                    <p className="text-[10px] text-slate-500">Min. Spend: ${coupon.minPurchase}</p>
+                                                    <p className="text-xs text-slate-500">Min. Spend: ${coupon.minPurchase}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -179,7 +179,7 @@ export default function CouponsView() {
                                                         style={{ width: `${Math.min((coupon.usedCount / coupon.usageLimit) * 100, 100)}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-[10px] text-slate-500 font-medium">{coupon.usedCount} / {coupon.usageLimit} used</span>
+                                                <span className="text-xs text-slate-500 font-medium">{coupon.usedCount} / {coupon.usageLimit} used</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -190,7 +190,7 @@ export default function CouponsView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 coupon.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
                                                     coupon.status === 'Expired' ? "bg-slate-100 text-slate-500 border-slate-200" :
                                                         "bg-amber-50 text-amber-700 border-amber-100"
@@ -234,17 +234,20 @@ export default function CouponsView() {
 
             {/* View Modal */}
             {viewCoupon && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewCoupon(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-full opacity-10">
                                 <Ticket size={200} className="absolute -right-10 -top-10 transform rotate-12" />
                             </div>
-                            <h3 className="text-sm font-medium uppercase tracking-wider opacity-90 mb-1">Coupon Code</h3>
+                            <h3 className="text-sm font-medium tracking-wider opacity-90 mb-1">Coupon Code</h3>
                             <div className="text-3xl font-bold font-mono tracking-widest my-2 flex items-center justify-center gap-2">
                                 {viewCoupon.code}
                                 <Copy size={18} className="cursor-pointer hover:opacity-80" />
@@ -256,11 +259,11 @@ export default function CouponsView() {
                         <div className="p-6 space-y-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Discount Type</span>
+                                    <span className="text-xs font-bold text-slate-500">Discount Type</span>
                                     <p className="font-semibold text-slate-900">{viewCoupon.type}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Value</span>
+                                    <span className="text-xs font-bold text-slate-500">Value</span>
                                     <p className="font-semibold text-slate-900 text-lg text-emerald-600">
                                         {viewCoupon.type === 'Free Shipping' ? 'Free Ship' : `${viewCoupon.value}${viewCoupon.type === 'Percentage' ? '%' : ''}`}
                                     </p>
@@ -268,17 +271,17 @@ export default function CouponsView() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Min. Spend</span>
+                                    <span className="text-xs font-bold text-slate-500">Min. Spend</span>
                                     <p className="font-medium text-slate-900">${viewCoupon.minPurchase}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Expiry Date</span>
+                                    <span className="text-xs font-bold text-slate-500">Expiry Date</span>
                                     <p className="font-medium text-slate-900">{viewCoupon.expiryDate}</p>
                                 </div>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-xs font-bold text-slate-500 uppercase">Usage Limit</span>
+                                    <span className="text-xs font-bold text-slate-500">Usage Limit</span>
                                     <span className="text-xs font-bold text-indigo-600">{Math.round((viewCoupon.usedCount / viewCoupon.usageLimit) * 100)}% Used</span>
                                 </div>
                                 <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -299,17 +302,21 @@ export default function CouponsView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingCoupon && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingCoupon(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewCoupon ? 'Create Coupon' : 'Edit Coupon'}</h3>
@@ -325,7 +332,7 @@ export default function CouponsView() {
                                 <FormInput label="Coupon Code" name="code" required placeholder="e.g. SUMMER2024" />
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Discount Type</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Discount Type</label>
                                         <select
                                             value={editingCoupon.type}
                                             onChange={e => setEditingCoupon({ ...editingCoupon, type: e.target.value })}
@@ -343,7 +350,7 @@ export default function CouponsView() {
                                         <FormInput label="Expiry Date" name="expiryDate" type="date" required />
                                     </div>
                                     <div className="sm:col-span-2">
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingCoupon.status}
                                             onChange={e => setEditingCoupon({ ...editingCoupon, status: e.target.value })}
@@ -377,17 +384,21 @@ export default function CouponsView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -409,6 +420,7 @@ export default function CouponsView() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}

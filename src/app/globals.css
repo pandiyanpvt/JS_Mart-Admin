@@ -1,33 +1,139 @@
 @import "tailwindcss";
 
+/*
+ * =============================================================================
+ * JS Mart Admin — responsive system (single source for “all screens”)
+ * =============================================================================
+ * Breakpoint: lg = 1024px (Tailwind default).
+ *
+ * PHONE / TABLET (< 1024px) — drawer nav, full-width main
+ * LAPTOP (1024px–1535px) — fixed sidebar + compact type (same rem scale as before)
+ * LARGE DESKTOP (≥ 1536px / Tailwind 2xl) — larger text tokens + html % for big monitors
+ * =============================================================================
+ */
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  /* Desktop / large: sidebar width (also overridden below per viewport) */
+  --admin-sidebar-width: 280px;
+  /* Mobile drawer width (matches Sidebar `w-[var(--admin-sidebar-drawer-width)]`) */
+  --admin-sidebar-drawer-width: min(288px, 88vw);
+}
+
+/* Wider sidebar only on very large desktops (laptops keep 280px) */
+@media (min-width: 1920px) {
+  :root {
+    --admin-sidebar-width: 328px;
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --admin-sidebar-width: 380px;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-outfit);
+  /* Match JS-Mart-ECom (store footer / body): Geist */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Larger Tailwind text-* from 2xl (1536px) — laptops stay default scale */
+@media (min-width: 1536px) {
+  :root {
+    --text-xs: 0.8125rem;
+    --text-xs--line-height: 1.25rem;
+    --text-sm: 0.9375rem;
+    --text-sm--line-height: 1.375rem;
+    --text-base: 1.0625rem;
+    --text-base--line-height: 1.55rem;
+    --text-lg: 1.1875rem;
+    --text-lg--line-height: 1.65rem;
+    --text-xl: 1.3125rem;
+    --text-xl--line-height: 1.75rem;
+    --text-2xl: 1.5625rem;
+    --text-2xl--line-height: 2rem;
+    --text-3xl: 1.9375rem;
+    --text-3xl--line-height: 2.35rem;
+    --text-4xl: 2.375rem;
+    --text-4xl--line-height: 2.6rem;
+  }
 }
 
 html {
   overflow-x: hidden;
   max-width: 100vw;
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (min-width: 1536px) {
+  html {
+    font-size: 112.5%;
+  }
+}
+
+@media (min-width: 1920px) {
+  html {
+    font-size: 120%;
+  }
+}
+
+@media (min-width: 2560px) {
+  html {
+    font-size: 128%;
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
   max-width: 100vw;
+  font-size: 1rem;
 }
 
-/* Custom Scrollbar for better aesthetics */
+/* Lock scroll when mobile drawer is open (class set on <html> from layout) */
+html.admin-mobile-nav-open,
+html.admin-mobile-nav-open body {
+  overflow: hidden;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
+}
+
+@media (min-width: 1536px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+@media (min-width: 1920px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
 }
 
 ::-webkit-scrollbar-track {
@@ -43,28 +149,108 @@ body {
   background: #cbd5e1;
 }
 
-/* Hide scrollbar utility */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none;
 }
 
-/* Print styles for receipt */
+/* -------------------------------------------------------------------------- */
+/* Admin dialogs / popups — same behavior on phone, laptop, and large screens  */
+/* -------------------------------------------------------------------------- */
+
+/* Overlay does not scroll — only the panel (.admin-modal-panel-host) scrolls inside */
+.admin-modal-scroll {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.admin-modal-center {
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  max-height: 100%;
+  width: 100%;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+  .admin-modal-center {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-modal-center {
+    padding: 1.5rem;
+  }
+}
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgb(15 23 42 / 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.admin-modal-backdrop-heavy {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgb(15 23 42 / 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+/* Panel: scroll happens here only, not on the dimmed overlay.
+   !important beats Tailwind `overflow-hidden` still present on many panels. */
+.admin-modal-panel-host {
+  position: relative;
+  z-index: 10;
+  margin-top: auto;
+  margin-bottom: auto;
+  width: 100%;
+  min-height: 0;
+  max-height: min(92dvh, 56rem);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 @media print {
   @page {
     size: A4;
     margin: 0;
   }
-  
+
   body {
     margin: 0;
     padding: 0;
   }
-  
+
   .print-receipt {
     width: 210mm !important;
     min-height: 297mm !important;
@@ -72,7 +258,7 @@ body {
     padding: 20mm !important;
     box-shadow: none !important;
   }
-  
+
   .no-print {
     display: none !important;
   }

@@ -84,7 +84,7 @@ export default function DeliveryAreasView() {
 
     const FormInput = ({ label, name, type = "text", required = false, placeholder = "", step }) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase">{label}</label>
+            <label className="text-xs font-bold text-slate-700">{label}</label>
             <input
                 type={type}
                 step={step}
@@ -142,12 +142,12 @@ export default function DeliveryAreasView() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Area Name</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Region</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Shipping Fee</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Est. Time</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Area Name</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Region</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Shipping Fee</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Est. Time</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -167,7 +167,7 @@ export default function DeliveryAreasView() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 truncate">{area.name}</p>
-                                                    <p className="text-[10px] text-slate-500 truncate">{area.postalCodes.length} zones defined</p>
+                                                    <p className="text-xs text-slate-500 truncate">{area.postalCodes.length} zones defined</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -177,7 +177,7 @@ export default function DeliveryAreasView() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="text-sm font-bold text-slate-900">${area.fee.toFixed(2)}</span>
-                                                {area.minOrder > 0 && <span className="text-[10px] text-slate-500">Min Order: ${area.minOrder}</span>}
+                                                {area.minOrder > 0 && <span className="text-xs text-slate-500">Min Order: ${area.minOrder}</span>}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -188,7 +188,7 @@ export default function DeliveryAreasView() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
-                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold  tracking-wide border",
                                                 area.status === 'Active'
                                                     ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                                                     : "bg-slate-50 text-slate-500 border-slate-100"
@@ -244,12 +244,15 @@ export default function DeliveryAreasView() {
 
             {/* View Modal */}
             {viewArea && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setViewArea(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="admin-modal-panel-host relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">Delivery Zone Details</h3>
@@ -268,13 +271,13 @@ export default function DeliveryAreasView() {
                                     <h4 className="text-xl font-bold text-slate-900">{viewArea.name}</h4>
                                     <div className="flex gap-2 mt-1">
                                         <span className={cn(
-                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold  tracking-wide border",
                                             viewArea.status === 'Active' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                                         )}>
                                             {viewArea.status === 'Active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
                                             {viewArea.status}
                                         </span>
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border bg-blue-50 text-blue-700 border-blue-100">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold tracking-wide border bg-blue-50 text-blue-700 border-blue-100">
                                             <Navigation size={10} />
                                             {viewArea.region}
                                         </span>
@@ -284,18 +287,18 @@ export default function DeliveryAreasView() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><Truck size={12} /> Shipping Cost</span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Truck size={12} /> Shipping Cost</span>
                                     <p className="text-lg font-bold text-slate-900">${viewArea.fee.toFixed(2)}</p>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-1">
-                                    <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><DollarSign size={12} /> Min Order To Qualify</span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><DollarSign size={12} /> Min Order To Qualify</span>
                                     <p className="text-lg font-bold text-slate-900">${viewArea.minOrder > 0 ? viewArea.minOrder.toFixed(2) : 'None'}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="p-4 rounded-2xl border border-slate-200 bg-white">
-                                    <p className="text-xs font-bold text-slate-500 uppercase mb-2">Covered Postal Codes</p>
+                                    <p className="text-xs font-bold text-slate-500 mb-2">Covered Postal Codes</p>
                                     <div className="flex flex-wrap gap-2">
                                         {viewArea.postalCodes.map((code, idx) => (
                                             <span key={idx} className="px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-mono font-medium border border-slate-200">
@@ -307,7 +310,7 @@ export default function DeliveryAreasView() {
                                 <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
                                     <Clock className="text-blue-500 mt-0.5" size={18} />
                                     <div>
-                                        <p className="text-xs font-bold text-slate-500 uppercase">Estimated Delivery Time</p>
+                                        <p className="text-xs font-bold text-slate-500">Estimated Delivery Time</p>
                                         <p className="text-sm font-semibold text-slate-900">{viewArea.estimatedTime}</p>
                                     </div>
                                 </div>
@@ -322,17 +325,21 @@ export default function DeliveryAreasView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Add/Edit Modal */}
             {editingArea && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setEditingArea(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="admin-modal-panel-host relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{isNewArea ? 'Add Delivery Area' : 'Edit Delivery Area'}</h3>
@@ -351,7 +358,7 @@ export default function DeliveryAreasView() {
                                     </div>
                                     <FormInput label="Region / Zone" name="region" required placeholder="e.g. City Center" />
                                     <div>
-                                        <label className="text-xs font-bold text-slate-700 uppercase block mb-1.5">Status</label>
+                                        <label className="text-xs font-bold text-slate-700 block mb-1.5">Status</label>
                                         <select
                                             value={editingArea.status}
                                             onChange={e => setEditingArea({ ...editingArea, status: e.target.value })}
@@ -363,7 +370,7 @@ export default function DeliveryAreasView() {
                                     </div>
                                     <div className="sm:col-span-2">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-700 uppercase">Postal Codes / Zip Codes</label>
+                                            <label className="text-xs font-bold text-slate-700">Postal Codes / Zip Codes</label>
                                             <textarea
                                                 required
                                                 value={editingArea.postalCodes}
@@ -372,7 +379,7 @@ export default function DeliveryAreasView() {
                                                 rows="3"
                                                 placeholder="Enter codes separated by commas (e.g. 10001, 10002, 10003)"
                                             />
-                                            <p className="text-[10px] text-slate-500 text-right">Separate multiple codes with commas</p>
+                                            <p className="text-xs text-slate-500 text-right">Separate multiple codes with commas</p>
                                         </div>
                                     </div>
                                     <FormInput label="Shipping Fee ($)" name="fee" type="number" step="0.01" required placeholder="0.00" />
@@ -403,17 +410,21 @@ export default function DeliveryAreasView() {
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
             )}
 
             {/* Delete Modal */}
             {deleteId && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" data-lock-body-scroll>
-                    <div
+                <div className="admin-modal-scroll z-50" data-lock-body-scroll role="dialog" aria-modal="true">
+                    <div className="admin-modal-center">
+                    <button
+                        type="button"
                         onClick={() => setDeleteId(null)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        className="admin-modal-backdrop"
+                        aria-label="Close dialog"
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
+                    <div className="admin-modal-panel-host relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 text-center">
                         <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
                             <Trash2 size={32} />
                         </div>
@@ -435,6 +446,7 @@ export default function DeliveryAreasView() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             )}
