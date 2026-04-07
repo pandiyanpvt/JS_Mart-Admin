@@ -34,7 +34,7 @@ export default function BrandsView() {
     const [allBrands, setAllBrands] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState('Active');
+    const [selectedStatus, setSelectedStatus] = useState('All');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [editingBrand, setEditingBrand] = useState(null);
@@ -99,7 +99,7 @@ export default function BrandsView() {
         const isActive = isBrandActive(b.isActive);
         return selectedStatus === 'Active' ? isActive : !isActive;
     });
-    const hasActiveFilters = Boolean(searchQuery?.trim()) || selectedStatus !== 'Active';
+    const hasActiveFilters = Boolean(searchQuery?.trim()) || selectedStatus !== 'All';
 
     const handleOpenModal = (brand = null) => {
         if (brand) {
@@ -269,7 +269,7 @@ export default function BrandsView() {
                             type="button"
                             onClick={() => {
                                 setSearchQuery('');
-                                setSelectedStatus('Active');
+                                setSelectedStatus('All');
                             }}
                             className={cn(
                                 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition hover:bg-slate-200',

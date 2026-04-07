@@ -53,7 +53,7 @@ export default function CategoriesView() {
     const [statusUpdatingId, setStatusUpdatingId] = useState(null);
     const [editingCategory, setEditingCategory] = useState(null);
     const [notification, setNotification] = useState(null);
-    const [selectedStatus, setSelectedStatus] = useState('Active');
+    const [selectedStatus, setSelectedStatus] = useState('All');
     const [selectedLevel, setSelectedLevel] = useState('All');
     const [selectedRowIds, setSelectedRowIds] = useState(new Set());
 
@@ -125,11 +125,11 @@ export default function CategoriesView() {
             .sort((a, b) => String(a.category || '').localeCompare(String(b.category || '')));
     }, [allCategories, searchQuery, selectedStatus, selectedLevel]);
 
-    const hasActiveFilters = Boolean(searchQuery.trim()) || selectedStatus !== 'Active' || selectedLevel !== 'All';
+    const hasActiveFilters = Boolean(searchQuery.trim()) || selectedStatus !== 'All' || selectedLevel !== 'All';
 
     const handleReset = () => {
         setSearchQuery('');
-        setSelectedStatus('Active');
+        setSelectedStatus('All');
         setSelectedLevel('All');
         setSelectedRowIds(new Set());
     };
